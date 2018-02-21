@@ -25,11 +25,13 @@ class TranslatorTests : FunSpec
 		var translation = translator.translate(layout.parse("HEL"))
 		translation.raw shouldBe "hell"
 		translation.replaces.size shouldBe 0
+		translation.fullMatch shouldBe true
 		translator.apply(layout.parse("HEL"))
 
 		translation = translator.translate(layout.parse("HROE"))
 		translation.raw shouldBe "hello"
 		translation.replaces.size shouldBe 1
+		translation.fullMatch shouldBe true
 		translator.apply(layout.parse("HROE"))
 
 		translation = translator.translate(layout.parse("THR"))
@@ -40,5 +42,25 @@ class TranslatorTests : FunSpec
 		translation = translator.translate(layout.parse("PWEU"))
 		translation.raw shouldBe "PWEU"
 		translation.replaces.size shouldBe 0
+		translation.fullMatch shouldBe false
+	}
+
+	test("suffix stroke translation")
+	{
+		dictionary["HEL"] = "hell"
+		dictionary["HEL/HROE"] = "hello"
+		dictionary["HROED"] = "lode"
+		dictionary["-D"] = "{^ed}"
+
+		var translation = translator.translate(layout.parse("HELD"))
+		translation.raw shouldBe " hell {^ed}"
+		translation.replaces.size shouldBe 0
+		translation.fullMatch shouldBe false
+
+		translator.apply(layout.parse("HEL"))
+		translation = translator.translate(layout.parse("HROED"))
+		translation.raw shouldBe "lode"
+		translation.replaces.size shouldBe 0
+		translation.fullMatch shouldBe true
 	}
 })
