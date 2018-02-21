@@ -3,11 +3,11 @@
 
 package nimble.dotterel.translation
 
-class Translator
+class Translator(var dictionary: Dictionary = MultiDictionary())
 {
 	fun apply(s: Stroke): List<Any>
 	{
-		var translation = s.rtfcre
-		return listOf(FormattedText(0, " ${translation}"))
+		val translation = this.dictionary[listOf(s)] ?: s.rtfcre
+		return listOf(FormattedText(0, " $translation"))
 	}
 }

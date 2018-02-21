@@ -35,7 +35,7 @@ class TouchStenoView(context: Context, attributes: AttributeSet) :
 	ConstraintLayout(context, attributes)
 {
 	private var keys = listOf<TextView>()
-	private val keyLayout = KeyLayout("STKPWHR", "AO*EU", "FRPBLGTSDZ")
+	val keyLayout = KeyLayout("STKPWHR", "AO*EU", "FRPBLGTSDZ")
 	var strokeListener: StrokeListener? = null
 
 	private val touches = mutableMapOf<Int, Touch>()

@@ -4,8 +4,11 @@
 package nimble.dotterel
 
 import android.inputmethodservice.InputMethodService
+import android.util.Log
 import android.view.KeyEvent
 import android.view.View
+
+import java.io.IOException
 
 import nimble.dotterel.machines.TouchStenoView
 import nimble.dotterel.translation.*
@@ -19,8 +22,19 @@ class Dotterel : InputMethodService(), StrokeListener
 	{
 		val touchSteno = layoutInflater.inflate(R.layout.touch_steno, null)
 			as TouchStenoView
-		touchSteno.strokeListener = this
 		this.touchSteno = touchSteno
+		touchSteno.strokeListener = this
+
+		try
+		{
+			this.translator.dictionary = MultiDictionary(listOf(
+				JsonDictionary(this.assets.open("dictionaries/main.json"))))
+		}
+		catch(e: IOException)
+		{
+			Log.i("IO", "Error reading main.json asset.");
+		}
+
 		return touchSteno
 	}
 
