@@ -1,0 +1,49 @@
+// This file is part of Dotterel which is released under GPL-2.0-or-later.
+// See file <LICENSE.txt> or go to <http://www.gnu.org/licenses/> for full license details.
+
+package nimble.dotterel
+
+import android.inputmethodservice.InputMethodService
+import android.view.KeyEvent
+import android.view.View
+
+import nimble.dotterel.machines.TouchStenoView
+import nimble.dotterel.translation.*
+
+class Dotterel : InputMethodService(), StrokeListener
+{
+	private var touchSteno: TouchStenoView? = null
+	private var translator = Translator()
+
+	override fun onCreateInputView(): View
+	{
+		val touchSteno = layoutInflater.inflate(R.layout.touch_steno, null)
+			as TouchStenoView
+		touchSteno.strokeListener = this
+		this.touchSteno = touchSteno
+		return touchSteno
+	}
+
+	override fun onStroke(stroke: Stroke)
+	{
+		val ic = this.currentInputConnection
+		for(a in this.translator.apply(stroke))
+			when(a)
+			{
+				is FormattedText ->
+				{
+					ic?.run({
+						this.beginBatchEdit()
+						// TODO: Make sure that this is deleting the expected content.
+						// InputConnection.deleteSurroundingText should not delete
+						// half of a surrogate pair or nonexistent characters.
+						this.deleteSurroundingText(a.backspaces, 0)
+						this.commitText(a.text, 1)
+						this.endBatchEdit()
+					})
+				}
+				is KeyEvent -> ic?.sendKeyEvent(a)
+				is Runnable -> a.run()
+			}
+	}
+}

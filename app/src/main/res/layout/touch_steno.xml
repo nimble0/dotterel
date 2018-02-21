@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This file is part of Dotterel which is released under GPL-2.0-or-later. -->
+<!-- See file <LICENSE.txt> or go to <http://www.gnu.org/licenses/> for full license details. -->
+
+<nimble.dotterel.machines.TouchStenoView
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent">
+
+	<android.support.v7.widget.GridLayout android:id="@+id/keys"
+		android:layout_width="0dp"
+		android:layout_height="0dp"
+		app:layout_constraintStart_toStartOf="parent"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintBottom_toBottomOf="parent"
+		app:layout_constraintDimensionRatio="H,11:2.3"
+		app:columnCount="11">
+
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="S-"
+			android:text="S"
+			app:layout_rowSpan="2"
+			app:layout_rowWeight="2" />
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="T-"
+			android:text="T" />
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="P-"
+			android:text="P" />
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="H-"
+			android:text="H" />
+
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="*"
+			android:text="*"
+			app:layout_columnSpan="2"
+			app:layout_rowSpan="2"
+			app:layout_columnWeight="2"
+			app:layout_rowWeight="2" />
+
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="-F"
+			android:text="F" />
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="-P"
+			android:text="P" />
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="-L"
+			android:text="L" />
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="-T"
+			android:text="T" />
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="-D"
+			android:text="D" />
+
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="K-"
+			android:text="K" />
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="W-"
+			android:text="W" />
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="R-"
+			android:text="R" />
+
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="-R"
+			android:text="R" />
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="-B"
+			android:text="B" />
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="-G"
+			android:text="G" />
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="-S"
+			android:text="S" />
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="-Z"
+			android:text="Z" />
+
+		<Space
+			android:layout_height="10dp"
+			app:layout_columnSpan="11" />
+
+		<Space
+			style="@style/StenoKey"
+			app:layout_columnSpan="3" />
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="A-"
+			android:text="A" />
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="O-"
+			android:text="O" />
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="-E"
+			android:text="E" />
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="-U"
+			android:text="U" />
+		<Space
+			style="@style/StenoKey"
+			app:layout_columnSpan="4" />
+
+	</android.support.v7.widget.GridLayout>
+
+</nimble.dotterel.machines.TouchStenoView>
