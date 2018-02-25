@@ -12,8 +12,8 @@ import android.view.View
 import android.widget.TextView
 
 import nimble.dotterel.StrokeListener
-import nimble.dotterel.translation.KeyLayout
 import nimble.dotterel.translation.Stroke
+import nimble.dotterel.translation.systems.IRELAND_LAYOUT
 import nimble.dotterel.util.*
 
 import kotlin.math.*
@@ -35,22 +35,7 @@ class TouchStenoView(context: Context, attributes: AttributeSet) :
 	ConstraintLayout(context, attributes)
 {
 	private var keys = listOf<TextView>()
-	val keyLayout = KeyLayout(
-		"#1S2TK3PW4HR",
-		"5A0O*EU",
-		"6FR7PB8LG9TSDZ",
-		mapOf(
-			Pair("1-", listOf("#-", "S-")),
-			Pair("2-", listOf("#-", "T-")),
-			Pair("3-", listOf("#-", "P-")),
-			Pair("4-", listOf("#-", "H-")),
-			Pair("5-", listOf("#-", "A-")),
-			Pair("0-", listOf("#-", "O-")),
-			Pair("-6", listOf("#-", "-F")),
-			Pair("-7", listOf("#-", "-P")),
-			Pair("-8", listOf("#-", "-L")),
-			Pair("-9", listOf("#-", "-T")))
-	)
+	val keyLayout = IRELAND_LAYOUT
 	var strokeListener: StrokeListener? = null
 
 	private val touches = mutableMapOf<Int, Touch>()

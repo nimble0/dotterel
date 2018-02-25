@@ -4,47 +4,38 @@
 package nimble.dotterel.translation
 
 private const val TRANSLATION_HISTORY_SIZE = 100
-private val PREFIX_STROKES = listOf<String>()
-private val SUFFIX_STROKES = listOf("-Z", "-D", "-S", "-G")
 
-class Translator(var dictionary: Dictionary = MultiDictionary())
+private data class Affix(val prefix: Stroke, val suffix: Stroke)
+
+private fun permutateAffixes(prefixes: List<Stroke>, suffixes: List<Stroke>
+): List<Affix>
 {
+	val affixes = mutableListOf<Affix>()
+	affixes.addAll(prefixes.map({ Affix(it, Stroke(it.layout, 0)) }))
+	affixes.addAll(suffixes.map({ Affix(Stroke(it.layout, 0), it) }))
+	for(s in prefixes)
+		for(s2 in suffixes)
+			affixes.add(Affix(s, s2))
+
+	return affixes
+}
+
+class Translator(system: System)
+{
+	var system: System = system
+		set(v)
+		{
+			field = v
+			this.affixStrokes = permutateAffixes(
+				this.system.prefixStrokes.map({ this.system.keyLayout.parse(it) }),
+				this.system.suffixStrokes.map({ this.system.keyLayout.parse(it) }))
+		}
+	var dictionary: Dictionary = MultiDictionary()
+
+	private var affixStrokes: List<Affix> = listOf()
 	private val history = mutableListOf<Translation>()
 
-	private data class Affix(val prefix: Stroke, val suffix: Stroke)
-
-	private fun permutateAffixes(prefixes: List<Stroke>, suffixes: List<Stroke>)
-		: List<Affix>
-	{
-		val affixes = mutableListOf<Affix>()
-		affixes.addAll(prefixes.map({ Affix(it, Stroke(it.layout, 0)) }))
-		affixes.addAll(suffixes.map({ Affix(Stroke(it.layout, 0), it) }))
-		for(s in prefixes)
-			for(s2 in suffixes)
-				affixes.add(Affix(s, s2))
-
-		return affixes
-	}
-
-	private val keyLayout = KeyLayout(
-		"#1S2TK3PW4HR",
-		"5A0O*EU",
-		"6FR7PB8LG9TSDZ",
-		mapOf(
-			Pair("1-", listOf("#-", "S-")),
-			Pair("2-", listOf("#-", "T-")),
-			Pair("3-", listOf("#-", "P-")),
-			Pair("4-", listOf("#-", "H-")),
-			Pair("5-", listOf("#-", "A-")),
-			Pair("0-", listOf("#-", "O-")),
-			Pair("-6", listOf("#-", "-F")),
-			Pair("-7", listOf("#-", "-P")),
-			Pair("-8", listOf("#-", "-L")),
-			Pair("-9", listOf("#-", "-T")))
-	)
-	private val affixStrokes = permutateAffixes(
-		PREFIX_STROKES.map({ this.keyLayout.parse(it) }),
-		SUFFIX_STROKES.map({ this.keyLayout.parse(it) }))
+	init { this.system = system }
 
 	private fun lookupWithAffixFolding(strokes: List<Stroke>): String?
 	{
@@ -86,6 +77,9 @@ class Translator(var dictionary: Dictionary = MultiDictionary())
 
 	fun translate(s: Stroke): Translation
 	{
+		if(s.layout != this.system.keyLayout)
+			throw IllegalArgumentException("s.layout must match system.keyLayout")
+
 		var translation = this.lookup(listOf(s), listOf(), false)
 			?: Translation(listOf(s), listOf(), s.rtfcre, false)
 

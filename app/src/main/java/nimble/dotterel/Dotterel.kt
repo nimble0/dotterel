@@ -12,11 +12,12 @@ import java.io.IOException
 
 import nimble.dotterel.machines.TouchStenoView
 import nimble.dotterel.translation.*
+import nimble.dotterel.translation.systems.IRELAND_SYSTEM
 
 class Dotterel : InputMethodService(), StrokeListener
 {
 	private var touchSteno: TouchStenoView? = null
-	private var translator = Translator()
+	private var translator = Translator(IRELAND_SYSTEM)
 
 	override fun onCreateInputView(): View
 	{
@@ -27,12 +28,14 @@ class Dotterel : InputMethodService(), StrokeListener
 
 		try
 		{
-			this.translator.dictionary = MultiDictionary(listOf(
-				JsonDictionary(this.assets.open("dictionaries/main.json"))))
+			this.translator.dictionary = MultiDictionary(
+				this.translator.system.defaultDictionaries.map({
+					JsonDictionary(this.assets.open(it))
+				}))
 		}
 		catch(e: IOException)
 		{
-			Log.i("IO", "Error reading main.json asset.");
+			Log.i("IO", "Error reading dictionaries")
 		}
 
 		return touchSteno

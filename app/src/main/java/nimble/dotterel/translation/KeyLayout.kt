@@ -13,7 +13,7 @@ class KeyLayout(
 	// eg/ "1-" = ["#", "S-"], "2-" = ["#", "T-"]
 	mappedKeys: Map<String, List<String>>)
 {
-	private data class RtfcreKey(
+	data class RtfcreKey(
 		val char: Char,
 		var keys: Long,
 		// This key isn't outputted in rtfcre when these keys are also active
@@ -32,8 +32,8 @@ class KeyLayout(
 		}
 	}
 
-	private val rtfcreKeys: List<RtfcreKey>
-	private val breakKeys: Pair<Int, Int>
+	val rtfcreKeys: List<RtfcreKey>
+	val breakKeys: Pair<Int, Int>
 
 	init
 	{
@@ -172,5 +172,20 @@ class KeyLayout(
 				+ (if(middle.isEmpty() && right.isNotEmpty()) listOf('-') else middle)
 				+ right)
 			.joinToString(separator = "")
+	}
+
+	override fun equals(other: Any?) =
+		this === other
+			|| (other is KeyLayout
+			&& this.rtfcreKeys == other.rtfcreKeys
+			&& this.breakKeys == other.breakKeys)
+
+	override fun hashCode(): Int
+	{
+		val prime = 31
+		var result = 1
+		result = prime * result + this.rtfcreKeys.hashCode()
+		result = prime * result + this.breakKeys.hashCode()
+		return result
 	}
 }

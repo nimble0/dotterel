@@ -7,26 +7,13 @@ import io.kotlintest.matchers.shouldBe
 import io.kotlintest.specs.FunSpec
 
 import nimble.dotterel.translation.*
+import nimble.dotterel.translation.systems.IRELAND_SYSTEM
 
 class TranslatorTests : FunSpec
 ({
-	val layout = KeyLayout(
-		"#1S2TK3PW4HR",
-		"5A0O*EU",
-		"6FR7PB8LG9TSDZ",
-		mapOf(
-			Pair("1-", listOf("#-", "S-")),
-			Pair("2-", listOf("#-", "T-")),
-			Pair("3-", listOf("#-", "P-")),
-			Pair("4-", listOf("#-", "H-")),
-			Pair("5-", listOf("#-", "A-")),
-			Pair("0-", listOf("#-", "O-")),
-			Pair("-6", listOf("#-", "-F")),
-			Pair("-7", listOf("#-", "-P")),
-			Pair("-8", listOf("#-", "-L")),
-			Pair("-9", listOf("#-", "-T")))
-	)
-	val translator = Translator()
+	val system = IRELAND_SYSTEM
+	val layout = system.keyLayout
+	val translator = Translator(system)
 	val dictionary = StandardDictionary()
 	translator.dictionary = dictionary
 
@@ -76,6 +63,53 @@ class TranslatorTests : FunSpec
 		translation = translator.translate(layout.parse("HROED"))
 		translation.raw shouldBe "lode"
 		translation.replaces.size shouldBe 0
+		translation.fullMatch shouldBe true
+	}
+
+	test("prefix + suffix stroke translation")
+	{
+		val testSystem = IRELAND_SYSTEM.copy(
+			prefixStrokes = listOf("#")
+		)
+
+		@Suppress("NAME_SHADOWING")
+		val translator = Translator(testSystem)
+		translator.dictionary = dictionary
+
+		dictionary["HEL"] = "hell"
+		dictionary["HEL/HROE"] = "hello"
+		dictionary["HROED"] = "lode"
+		dictionary["HEL/4E8"] = "hellolleh"
+		dictionary["#"] = "the"
+		dictionary["-D"] = "{^ed}"
+		dictionary["-G"] = "{^ing}"
+
+		var translation = translator.translate(layout.parse("HELD"))
+		translation.raw shouldBe " hell {^ed}"
+		translation.replaces.size shouldBe 0
+		translation.fullMatch shouldBe false
+
+		translation = translator.translate(layout.parse("4E8"))
+		translation.raw shouldBe "the hell "
+		translation.replaces.size shouldBe 0
+		translation.fullMatch shouldBe false
+
+		translator.apply(layout.parse("4E8"))
+		translation = translator.translate(layout.parse("HROEG"))
+		translation.raw shouldBe "the hello {^ing}"
+		translation.replaces.size shouldBe 1
+		translation.fullMatch shouldBe false
+
+		translator.apply(layout.parse("4E8"))
+		translation = translator.translate(layout.parse("HROED"))
+		translation.raw shouldBe "lode"
+		translation.replaces.size shouldBe 0
+		translation.fullMatch shouldBe true
+
+		translator.apply(layout.parse("HEL"))
+		translation = translator.translate(layout.parse("4E8"))
+		translation.raw shouldBe "hellolleh"
+		translation.replaces.size shouldBe 1
 		translation.fullMatch shouldBe true
 	}
 })
