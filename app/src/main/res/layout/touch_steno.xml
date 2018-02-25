@@ -124,7 +124,15 @@
 
 		<Space
 			style="@style/StenoKey"
-			app:layout_columnSpan="3" />
+			app:layout_columnSpan="1" />
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="#-"
+			android:text="#" />
+		<Space
+			style="@style/StenoKey"
+			app:layout_columnSpan="1" />
 		<TextView
 			android:tag="steno_key"
 			style="@style/StenoKey"

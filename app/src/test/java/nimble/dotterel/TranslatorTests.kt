@@ -10,7 +10,22 @@ import nimble.dotterel.translation.*
 
 class TranslatorTests : FunSpec
 ({
-	val layout = KeyLayout("STKPWHR", "AO*EU", "FRPBLGTSDZ")
+	val layout = KeyLayout(
+		"#1S2TK3PW4HR",
+		"5A0O*EU",
+		"6FR7PB8LG9TSDZ",
+		mapOf(
+			Pair("1-", listOf("#-", "S-")),
+			Pair("2-", listOf("#-", "T-")),
+			Pair("3-", listOf("#-", "P-")),
+			Pair("4-", listOf("#-", "H-")),
+			Pair("5-", listOf("#-", "A-")),
+			Pair("0-", listOf("#-", "O-")),
+			Pair("-6", listOf("#-", "-F")),
+			Pair("-7", listOf("#-", "-P")),
+			Pair("-8", listOf("#-", "-L")),
+			Pair("-9", listOf("#-", "-T")))
+	)
 	val translator = Translator()
 	val dictionary = StandardDictionary()
 	translator.dictionary = dictionary
