@@ -6,8 +6,26 @@ package nimble.dotterel
 import io.kotlintest.matchers.shouldBe
 import io.kotlintest.specs.FunSpec
 
+import kotlin.math.*
+
 import nimble.dotterel.translation.*
 import nimble.dotterel.translation.systems.IRELAND_SYSTEM
+
+internal fun actionsToText(actions: List<Any>): String =
+	actions.fold("", { acc, it ->
+		if(it is FormattedText)
+			acc.substring(0, max(0, acc.length - it.backspaces)) + it.text
+		else
+			acc
+	})
+
+internal fun Translator.apply(strokes: String): List<Any> =
+	strokes.split("/").fold(
+		listOf(),
+		{ acc, it -> acc + this.apply(this.system.keyLayout.parse(it)) })
+
+internal fun Translator.applyToString(strokes: String) =
+	actionsToText(this.apply(strokes))
 
 class TranslatorTests : FunSpec
 ({
@@ -111,5 +129,40 @@ class TranslatorTests : FunSpec
 		translation.raw shouldBe "hellolleh"
 		translation.replaces.size shouldBe 1
 		translation.fullMatch shouldBe true
+	}
+
+	test("bad formatting")
+	{
+		dictionary["PRE"] = "{^pre^"
+		dictionary["HEL"] = "hell"
+
+		translator.applyToString("PRE/HEL") shouldBe " hell"
+	}
+
+	test("no space formatting")
+	{
+		dictionary["PRE"] = "{^pre^}"
+		dictionary["HEL"] = "hell"
+		dictionary["-D"] = "{^ed}"
+
+		translator.applyToString("PRE/HEL/-D") shouldBe "prehelled"
+	}
+
+	test("glue formatting")
+	{
+		dictionary["HEL"] = "hell"
+		dictionary["*E"] = "{&e}"
+		dictionary["O*"] = "{&o}"
+		dictionary["-D"] = "{^ed}"
+
+		translator.applyToString("HEL/*E/O*/HEL/O*/-D") shouldBe " hell eo hell oed"
+	}
+
+	test("multiple translation parts")
+	{
+		dictionary["HEL"] = "hell"
+		dictionary["*E"] = "{^e}eee{&E}{e^}"
+
+		translator.applyToString("HEL/*E/HEL") shouldBe " helle eee E ehell"
 	}
 })

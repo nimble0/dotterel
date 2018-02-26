@@ -28,5 +28,10 @@ val IRELAND_SYSTEM = System(
 	prefixStrokes = listOf(),
 	suffixStrokes = listOf("-Z", "-D", "-S", "-G"),
 
-	defaultDictionaries = listOf("dictionaries/main.json")
+	defaultDictionaries = listOf("dictionaries/main.json"),
+
+	defaultFormatting = Formatting(
+		spaceStart = Formatting.Space.NORMAL,
+		spaceEnd = Formatting.Space.NORMAL,
+		space = " ")
 )

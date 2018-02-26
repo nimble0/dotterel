@@ -3,6 +3,8 @@
 
 package nimble.dotterel.translation
 
+import java.text.ParseException
+
 private const val TRANSLATION_HISTORY_SIZE = 100
 
 private data class Affix(val prefix: Stroke, val suffix: Stroke)
@@ -20,7 +22,31 @@ private fun permutateAffixes(prefixes: List<Stroke>, suffixes: List<Stroke>
 	return affixes
 }
 
-class Translator(system: System)
+fun format(
+	context: FormattedText,
+	actions: List<Any>): List<Any>
+{
+	@Suppress("NAME_SHADOWING")
+	var context = context
+	val output = mutableListOf<Any>()
+	for(a in actions)
+		if(a is UnformattedText)
+		{
+			val f = a.format(context)
+			output.add(f)
+			context += f
+		}
+		else
+		{
+			output.add(a)
+			if(a is FormattedText)
+				context += a
+		}
+
+	return output
+}
+
+class Translator(system: System, var log: (message: String) -> Unit = { _ -> })
 {
 	var system: System = system
 		set(v)
@@ -31,11 +57,31 @@ class Translator(system: System)
 				this.system.suffixStrokes.map({ this.system.keyLayout.parse(it) }))
 		}
 	var dictionary: Dictionary = MultiDictionary()
+	var processor = TranslationProcessor()
 
 	private var affixStrokes: List<Affix> = listOf()
-	private val history = mutableListOf<Translation>()
+	private var preHistoryFormatting: Formatting = system.defaultFormatting
+	private val history = mutableListOf<HistoryTranslation>()
 
 	init { this.system = system }
+
+	val context: FormattedText
+		get()
+		{
+			val contextStr = StringBuilder()
+			for(h in this.history)
+			{
+				contextStr.setLength(
+					Math.max(0, contextStr.length - h.replacesText.length))
+				contextStr.append(h.text)
+			}
+
+			return FormattedText(
+				0,
+				contextStr.toString(),
+				this.history.lastOrNull()?.formatting ?: this.preHistoryFormatting
+			)
+		}
 
 	private fun lookupWithAffixFolding(strokes: List<Stroke>): String?
 	{
@@ -59,7 +105,7 @@ class Translator(system: System)
 	}
 	private fun lookup(
 		strokes: List<Stroke>,
-		replaces: List<Translation>,
+		replaces: List<HistoryTranslation>,
 		fullMatch: Boolean
 	): Translation?
 	{
@@ -84,10 +130,10 @@ class Translator(system: System)
 			?: Translation(listOf(s), listOf(), s.rtfcre, false)
 
 		val strokes = mutableListOf(s)
-		val replaces = mutableListOf<Translation>()
+		val replaces = mutableListOf<HistoryTranslation>()
 		for(h in this.history.reversed())
 		{
-			strokes.addAll(0, h.strokes)
+			strokes.addAll(0, h.translation.strokes)
 			replaces.add(0, h)
 
 			if(strokes.size > this.dictionary.longestKey)
@@ -109,14 +155,24 @@ class Translator(system: System)
 		this.history.subList(
 			this.history.size - translation.replaces.size,
 			this.history.size).clear()
-		this.history.add(translation)
-		val drop = this.history.size - TRANSLATION_HISTORY_SIZE
-		if(drop > 0)
-			this.history.subList(0, drop).clear()
 
-		return listOf(FormattedText(
-			translation.replaces.joinToString(
-				separator = "", transform = { " ${it.raw}" }).length,
-			" ${translation.raw}"))
+		try
+		{
+			val context = this.context
+			val actions = format(context, this.processor.process(translation.raw))
+
+			val h = HistoryTranslation(translation, context, actions)
+			this.history.add(h)
+			val drop = this.history.size - TRANSLATION_HISTORY_SIZE
+			if(drop > 0)
+				this.history.subList(0, drop).clear()
+
+			return (listOf(h.undoReplacedAction) + actions)
+		}
+		catch(e: ParseException)
+		{
+			this.log("Error parsing translation: ${translation.raw}")
+			return listOf()
+		}
 	}
 }

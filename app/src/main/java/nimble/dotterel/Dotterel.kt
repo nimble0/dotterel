@@ -17,7 +17,9 @@ import nimble.dotterel.translation.systems.IRELAND_SYSTEM
 class Dotterel : InputMethodService(), StrokeListener
 {
 	private var touchSteno: TouchStenoView? = null
-	private var translator = Translator(IRELAND_SYSTEM)
+	private var translator = Translator(
+		IRELAND_SYSTEM,
+		log = { m -> Log.i("Steno", m) })
 
 	override fun onCreateInputView(): View
 	{

@@ -7,5 +7,6 @@ data class System(
 	val keyLayout: KeyLayout,
 	val prefixStrokes: List<String>,
 	val suffixStrokes: List<String>,
-	val defaultDictionaries: List<String>
+	val defaultDictionaries: List<String>,
+	val defaultFormatting: Formatting
 )

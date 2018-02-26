@@ -5,6 +5,6 @@ package nimble.dotterel.translation
 
 data class Translation(
 	val strokes: List<Stroke>,
-	val replaces: List<Translation>,
+	val replaces: List<HistoryTranslation>,
 	val raw: String,
 	val fullMatch: Boolean)
