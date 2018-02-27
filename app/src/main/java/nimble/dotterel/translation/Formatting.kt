@@ -7,11 +7,34 @@ data class Formatting(
 	val spaceStart: Space = Space.NORMAL,
 	// null = Carry previous spaceEnd
 	val spaceEnd: Space? = Space.NORMAL,
-	val space: String? = null)
+	val space: String? = null,
+
+	// null = Carry previous transform
+	var transform: ((
+		context: FormattedText,
+		text: UnformattedText,
+		suffix: Boolean
+	) -> UnformattedText)? = null,
+	var singleTransform: ((
+		context: FormattedText,
+		text: UnformattedText,
+		suffix: Boolean
+	) -> UnformattedText)? = null,
+	var transformState: TransformState = TransformState.NORMAL)
 {
 	enum class Space
 	{
 		NORMAL, NONE, GLUE
+	}
+
+	enum class TransformState
+	{
+		// Transform decays (main body to suffix then back to normal
+		// (and single transform resets))
+		NORMAL,
+		MAIN, // Normal transform
+		SUFFIX, // Transform suffix. Eg/ Uppercase {^ing} = ING, Capitialised {^ing} = ing
+		CARRY // Transform doesn't decay
 	}
 
 	fun noSpace(b: Formatting): Boolean =
@@ -19,15 +42,72 @@ data class Formatting(
 			|| this.spaceEnd == Space.NONE
 			|| b.spaceStart == Space.NONE)
 
+	fun suffix(b: Formatting) =
+		this.transformState == TransformState.SUFFIX && this.noSpace(b)
+
+	fun transform(b: Formatting): ((
+		context: FormattedText,
+		text: UnformattedText,
+		suffix: Boolean
+	) -> UnformattedText)? =
+		if(this.singleTransform != null
+			&& (this.transformState == TransformState.MAIN
+				|| this.transformState == TransformState.SUFFIX
+					&& this.noSpace(b)))
+			this.singleTransform
+		else
+			this.transform
+
 	fun withContext(context: Formatting): Formatting =
 		(context + this).copy(
 			spaceStart = this.spaceStart
 		)
 
-	operator fun plus(b: Formatting) =
-		Formatting(
+	operator fun plus(b: Formatting): Formatting
+	{
+		var singleTransform: ((
+			context: FormattedText,
+			text: UnformattedText,
+			suffix: Boolean
+		) -> UnformattedText)? = this.singleTransform
+		var transformState = this.transformState
+
+		when(b.transformState)
+		{
+			TransformState.CARRY -> {}
+			TransformState.NORMAL ->
+			{
+				when(this.transformState)
+				{
+					TransformState.MAIN ->
+						transformState = TransformState.SUFFIX
+					TransformState.NORMAL,
+					TransformState.SUFFIX ->
+						if(!this.noSpace(b))
+						{
+							singleTransform = null
+							transformState = TransformState.MAIN
+						}
+					TransformState.CARRY ->
+					{
+						singleTransform = null
+						transformState = TransformState.NORMAL
+					}
+				}
+			}
+			else ->
+			{
+				singleTransform = b.singleTransform
+				transformState = b.transformState
+			}
+		}
+
+		return Formatting(
 			spaceStart = this.spaceStart,
 			spaceEnd = b.spaceEnd ?: this.spaceEnd,
-			space = b.space ?: this.space
-		)
+			space = b.space ?: this.space,
+			transform = b.transform ?: this.transform,
+			singleTransform = singleTransform,
+			transformState = transformState)
+	}
 }

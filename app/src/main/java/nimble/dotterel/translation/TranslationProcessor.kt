@@ -34,9 +34,46 @@ private fun parseTranslationParts(translation: String): List<String>
 	return parts
 }
 
+private val SIMPLE_META: Map<String, List<Any>> =
+	{
+		val simpleMeta = mutableMapOf<String, List<Any>>()
+
+		val baseFormatting = Formatting(
+			spaceStart = Formatting.Space.NONE,
+			spaceEnd = null
+		)
+
+		val formattingAlias =
+			{ it: Formatting -> listOf(UnformattedText(formatting = it)) }
+
+		simpleMeta[""] = formattingAlias(baseFormatting.copy(
+			transformState = Formatting.TransformState.MAIN
+		))
+		simpleMeta["-|"] = formattingAlias(baseFormatting.copy(
+			singleTransform = ::capitialiseTransform,
+			transformState = Formatting.TransformState.MAIN
+		))
+		simpleMeta["<"] = formattingAlias(baseFormatting.copy(
+			singleTransform = ::upperCaseTransform,
+			transformState = Formatting.TransformState.MAIN
+		))
+		simpleMeta[">"] = formattingAlias(baseFormatting.copy(
+			singleTransform = ::lowerCaseTransform,
+			transformState = Formatting.TransformState.MAIN
+		))
+		val noSpaceText = formattingAlias(Formatting(
+			spaceStart = Formatting.Space.NONE,
+			spaceEnd = Formatting.Space.NONE
+		))
+		simpleMeta["^"] = noSpaceText
+		simpleMeta["^^"] = noSpaceText
+
+		simpleMeta
+	}()
+
 class TranslationProcessor
 {
-	private val simpleMeta = mutableMapOf<String, List<Any>>()
+	private val simpleMeta: MutableMap<String, List<Any>> = SIMPLE_META.toMutableMap()
 
 	private fun parseKeyCombos(keyCombosStr: String): List<Any> =
 		listOf()
@@ -68,6 +105,7 @@ class TranslationProcessor
 
 				var spaceStart = Formatting.Space.NORMAL
 				var spaceEnd = Formatting.Space.NORMAL
+				var singleTransformState = Formatting.TransformState.NORMAL
 
 				when(formattingMatch.groupValues[2])
 				{
@@ -81,7 +119,7 @@ class TranslationProcessor
 				}
 
 				if(formattingMatch.groupValues[3] == "~|")
-					;
+					singleTransformState = Formatting.TransformState.CARRY
 
 				val text = formattingMatch.groupValues[4]
 
@@ -90,7 +128,8 @@ class TranslationProcessor
 
 				val formatting = Formatting(
 					spaceStart = spaceStart,
-					spaceEnd = spaceEnd
+					spaceEnd = spaceEnd,
+					transformState = singleTransformState
 				)
 
 				return listOf(UnformattedText(0, text, formatting))

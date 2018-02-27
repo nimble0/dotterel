@@ -33,5 +33,6 @@ val IRELAND_SYSTEM = System(
 	defaultFormatting = Formatting(
 		spaceStart = Formatting.Space.NORMAL,
 		spaceEnd = Formatting.Space.NORMAL,
-		space = " ")
+		space = " ",
+		transform = ::noneTransform)
 )

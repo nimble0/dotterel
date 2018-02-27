@@ -12,6 +12,11 @@ data class UnformattedText(
 	{
 		var text = this
 
+		val suffix = context.formatting.suffix(text.formatting)
+		val transform = context.formatting.transform(text.formatting)
+		if(transform != null)
+			text = transform(context, text, suffix)
+
 		val noSpace = context.formatting.noSpace(text.formatting)
 		if(context.formatting.space != null)
 			text = text.copy(

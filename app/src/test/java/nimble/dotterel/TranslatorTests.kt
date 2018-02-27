@@ -165,4 +165,30 @@ class TranslatorTests : FunSpec
 
 		translator.applyToString("HEL/*E/HEL") shouldBe " helle eee E ehell"
 	}
+
+	test("single transform")
+	{
+		dictionary["HEL"] = "hell"
+		dictionary["-D"] = "{^ed}"
+		dictionary["-G"] = "{^ing}"
+		dictionary["KPA"] = "{-|}"
+		dictionary["KPA*L"] = "{<}"
+		dictionary["H*EL"] = "HELL"
+		dictionary["HRO*ER"] = "{>}"
+
+		translator.applyToString("KPA/HEL/-D/-G/HEL") shouldBe " Helleding hell"
+		translator.applyToString("KPA*L/HEL/-D/-G/HEL") shouldBe " HELLEDING hell"
+		translator.applyToString("HRO*ER/H*EL/-D/-G/H*EL") shouldBe " helleding HELL"
+	}
+
+	test("carry single transform")
+	{
+		dictionary["HEL"] = "hell"
+		dictionary["-D"] = "{^ed}"
+		dictionary["-G"] = "{^ing}"
+		dictionary["KPA"] = "{-|}"
+		dictionary["KW-BG"] = "{^~|,}"
+
+		translator.applyToString("KPA/KW-BG/HEL") shouldBe ", Hell"
+	}
 })
