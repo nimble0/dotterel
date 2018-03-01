@@ -6,26 +6,18 @@ package nimble.dotterel
 import io.kotlintest.matchers.shouldBe
 import io.kotlintest.specs.FunSpec
 
-import kotlin.math.*
-
 import nimble.dotterel.translation.*
 import nimble.dotterel.translation.systems.IRELAND_SYSTEM
 
-internal fun actionsToText(actions: List<Any>): String =
-	actions.fold("", { acc, it ->
-		if(it is FormattedText)
-			acc.substring(0, max(0, acc.length - it.backspaces)) + it.text
-		else
-			acc
-	})
-
-internal fun Translator.apply(strokes: String): List<Any> =
-	strokes.split("/").fold(
-		listOf(),
-		{ acc, it -> acc + this.apply(this.system.keyLayout.parse(it)) })
+internal fun Translator.apply(strokes: String): List<Any>
+{
+	for(s in strokes.split("/"))
+		this.apply(this.system.keyLayout.parse(s))
+	return this.flush()
+}
 
 internal fun Translator.applyToString(strokes: String) =
-	actionsToText(this.apply(strokes))
+	actionsToText(this.apply(strokes))?.text ?: ""
 
 class TranslatorTests : FunSpec
 ({

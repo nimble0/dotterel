@@ -46,7 +46,8 @@ class Dotterel : InputMethodService(), StrokeListener
 	override fun onStroke(stroke: Stroke)
 	{
 		val ic = this.currentInputConnection
-		for(a in this.translator.apply(stroke))
+		this.translator.apply(stroke)
+		for(a in this.translator.flush())
 			when(a)
 			{
 				is FormattedText ->

@@ -46,6 +46,15 @@ fun format(
 	return output
 }
 
+fun actionsToText(actions: List<Any>): FormattedText? =
+	@Suppress("NAME_SHADOWING")
+	actions.filterIsInstance<FormattedText>().let({ actions ->
+		if(actions.isEmpty())
+			null
+		else
+			actions.reduce({ acc, it -> acc + it})
+	})
+
 class Translator(system: System, var log: (message: String) -> Unit = { _ -> })
 {
 	var system: System = system
@@ -61,7 +70,9 @@ class Translator(system: System, var log: (message: String) -> Unit = { _ -> })
 
 	private var affixStrokes: List<Affix> = listOf()
 	private var preHistoryFormatting: Formatting = system.defaultFormatting
-	private val history = mutableListOf<HistoryTranslation>()
+	private val _history = mutableListOf<HistoryTranslation>()
+
+	private var bufferedActions = mutableListOf<Any>()
 
 	init { this.system = system }
 
@@ -69,19 +80,23 @@ class Translator(system: System, var log: (message: String) -> Unit = { _ -> })
 		get()
 		{
 			val contextStr = StringBuilder()
-			for(h in this.history)
+			for(h in this._history)
 			{
 				contextStr.setLength(
 					Math.max(0, contextStr.length - h.replacesText.length))
-				contextStr.append(h.text)
+				contextStr.append(h.text.text)
 			}
 
 			return FormattedText(
 				0,
 				contextStr.toString(),
-				this.history.lastOrNull()?.formatting ?: this.preHistoryFormatting
+				this._history.lastOrNull()?.text?.formatting
+					?: this.preHistoryFormatting
 			)
 		}
+
+	val history: List<HistoryTranslation>
+		get() = this._history
 
 	private fun lookupWithAffixFolding(strokes: List<Stroke>): String?
 	{
@@ -131,7 +146,7 @@ class Translator(system: System, var log: (message: String) -> Unit = { _ -> })
 
 		val strokes = mutableListOf(s)
 		val replaces = mutableListOf<HistoryTranslation>()
-		for(h in this.history.reversed())
+		for(h in this._history.reversed())
 		{
 			strokes.addAll(0, h.translation.strokes)
 			replaces.add(0, h)
@@ -149,30 +164,91 @@ class Translator(system: System, var log: (message: String) -> Unit = { _ -> })
 		return translation
 	}
 
-	fun apply(s: Stroke): List<Any>
+	private fun limitHistorySize()
 	{
-		val translation = this.translate(s)
-		this.history.subList(
-			this.history.size - translation.replaces.size,
-			this.history.size).clear()
+		val drop = this._history.size - TRANSLATION_HISTORY_SIZE
+		if(drop > 0)
+			this._history.subList(0, drop).clear()
+	}
 
+	fun push(t: Translation)
+	{
 		try
 		{
+			for(h in t.replaces.asReversed())
+				if(h != this._history.last())
+					throw IllegalArgumentException(
+						"Replaced translations must match translation history buffer")
+				else
+					popFull()
+
+			val actions = this.processor.process(t.raw)
+
 			val context = this.context
-			val actions = format(context, this.processor.process(translation.raw))
+			val formattedActions = format(context, actions)
+			val formattedText = actionsToText(formattedActions)
+				?: FormattedText(0, "", context.formatting)
 
-			val h = HistoryTranslation(translation, context, actions)
-			this.history.add(h)
-			val drop = this.history.size - TRANSLATION_HISTORY_SIZE
-			if(drop > 0)
-				this.history.subList(0, drop).clear()
+			this._history.add(HistoryTranslation(t, actions, context, formattedText))
+			this.bufferedActions.addAll(formattedActions)
 
-			return (listOf(h.undoReplacedAction) + actions)
+			this.limitHistorySize()
 		}
 		catch(e: ParseException)
 		{
-			this.log("Error parsing translation: ${translation.raw}")
-			return listOf()
+			this.log("Error parsing translation: ${t.raw}")
 		}
 	}
+
+	// Pop and restore replaced translations
+	fun pop(): HistoryTranslation?
+	{
+		val removed = this.popFull() ?: return null
+		for(h in removed.translation.replaces)
+			this._history.add(h)
+		this.limitHistorySize()
+		this.bufferedActions.add(removed.redoReplacedAction)
+		return removed
+	}
+
+	// Pop and don't restore replaced translations
+	fun popFull(): HistoryTranslation?
+	{
+		if(this._history.isEmpty())
+		{
+			this.preHistoryFormatting = this.system.defaultFormatting
+			return null
+		}
+
+		val removed = this._history.removeAt(this._history.lastIndex)
+		this.bufferedActions.add(removed.undoAction)
+		return removed
+	}
+
+	fun apply(s: Stroke) = this.push(this.translate(s))
+
+	fun flush(): List<Any>
+	{
+		val actions = this.bufferedActions
+		this.bufferedActions = mutableListOf()
+		return actions
+	}
+}
+
+fun Translator.popFull(count: Int): List<HistoryTranslation>
+{
+	@Suppress("NAME_SHADOWING")
+	var count = count
+	return generateSequence({ if(--count >= 0) this.popFull() else null })
+		.toList()
+		.asReversed()
+}
+
+fun Translator.pop(count: Int): List<HistoryTranslation>
+{
+	@Suppress("NAME_SHADOWING")
+	var count = count
+	return generateSequence({ if(--count >= 0) this.pop() else null })
+		.toList()
+		.asReversed()
 }

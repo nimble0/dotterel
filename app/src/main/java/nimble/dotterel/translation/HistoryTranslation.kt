@@ -3,42 +3,25 @@
 
 package nimble.dotterel.translation
 
+import kotlin.math.max
+
 class HistoryTranslation(
 	val translation: Translation,
+	val actions: List<Any>,
 	context: FormattedText,
-	val actions: List<Any>)
+	val text: FormattedText)
 {
-	val replacesText: String
-	val text: String
-	val formatting: Formatting
+	val replacesText = context.text
+		.substring(max(0, context.text.length - text.backspaces))
 
-	init
-	{
-		var actionsText: FormattedText? = null
-		for(a in actions)
-			if(a is FormattedText)
-				if(actionsText == null)
-					actionsText = a
-				else
-					actionsText += a
+	val undoable: Boolean = !(this.replacesText.isEmpty() && this.text.text.isEmpty())
 
-		if(actionsText == null)
-			actionsText = FormattedText(0, "", context.formatting)
-
-		this.replacesText = context.text.substring(
-			context.text.length - actionsText.backspaces)
-		this.text = actionsText.text
-		this.formatting = actionsText.formatting
-	}
-
-	val undoable: Boolean = !(this.replacesText.isEmpty() && this.text.isEmpty())
-
-	val undoAction = FormattedText(this.text.length, this.replacesText, Formatting())
-	val redoAction = FormattedText(this.replacesText.length, this.text, this.formatting)
+	val undoAction = FormattedText(this.text.text.length, this.replacesText)
+	val redoAction = this.text
 	val undoReplacedAction: FormattedText =
-		this.translation.replaces.fold(FormattedText(0, "", Formatting()),
+		this.translation.replaces.fold(FormattedText(),
 			{ acc, it -> acc + it.undoAction })
 	val redoReplacedAction: FormattedText =
-		this.translation.replaces.fold(FormattedText(0, "", Formatting()),
+		this.translation.replaces.fold(FormattedText(),
 			{ acc, it -> acc + it.redoAction })
 }
