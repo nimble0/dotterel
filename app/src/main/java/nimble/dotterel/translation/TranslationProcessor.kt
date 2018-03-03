@@ -71,26 +71,38 @@ private val SIMPLE_META: Map<String, List<Any>> =
 		simpleMeta
 	}()
 
+data class TranslationPart(
+	val actions: List<Any> = listOf(),
+	val replaces: List<HistoryTranslation> = listOf())
+{
+	val empty: Boolean
+		get() = actions.isEmpty() && replaces.isEmpty()
+
+	operator fun plus(b: TranslationPart): TranslationPart =
+		TranslationPart(this.actions + b.actions, b.replaces + this.replaces)
+}
+
 class TranslationProcessor
 {
 	private val simpleMeta: MutableMap<String, List<Any>> = SIMPLE_META.toMutableMap()
 
-	private fun parseKeyCombos(keyCombosStr: String): List<Any> =
-		listOf()
+	private fun parseKeyCombos(keyCombosStr: String): TranslationPart =
+		TranslationPart()
 
-	private fun parseCommand(commandStr: String): List<Any> =
-		listOf()
+	private fun parseCommand(commandStr: String): TranslationPart =
+		TranslationPart()
 
 	@Throws(ParseException::class)
-	private fun parseTranslationPart(translationPart: String): List<Any>
+	private fun parseTranslationPart(translator: Translator, part: String)
+		: TranslationPart
 	{
-		if(translationPart[0] == '{')
+		if(part[0] == '{')
 		{
-			val inner = translationPart.substring(1, translationPart.length - 1)
+			val inner = part.substring(1, part.length - 1)
 
 			val m = this.simpleMeta[inner]
 			if(m != null)
-				return m
+				return TranslationPart(m)
 
 			if(inner.isNotEmpty() && inner[0] == '#')
 				return this.parseKeyCombos(inner.substring(1))
@@ -132,17 +144,19 @@ class TranslationProcessor
 					transformState = singleTransformState
 				)
 
-				return listOf(UnformattedText(0, text, formatting))
+				return TranslationPart(listOf(UnformattedText(0, text, formatting)))
 			}
 
-			return listOf()
+			return TranslationPart()
 		}
 		else
-			return listOf(UnformattedText(0, translationPart))
+			return TranslationPart(listOf(UnformattedText(0, part)))
 	}
 
-	fun process(translation: String): List<Any> =
-		parseTranslationParts(translation)
-			.map({ this.parseTranslationPart(it) })
-			.flatten()
+	fun process(translator: Translator, translation: String): TranslationPart
+	{
+		return parseTranslationParts(translation)
+			.map({ this.parseTranslationPart(translator, it) })
+			.fold(TranslationPart(), { acc, it -> acc + it })
+	}
 }

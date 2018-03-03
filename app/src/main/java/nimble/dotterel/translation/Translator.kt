@@ -148,7 +148,7 @@ class Translator(system: System, var log: (message: String) -> Unit = { _ -> })
 		val replaces = mutableListOf<HistoryTranslation>()
 		for(h in this._history.reversed())
 		{
-			strokes.addAll(0, h.translation.strokes)
+			strokes.addAll(0, h.strokes)
 			replaces.add(0, h)
 
 			if(strokes.size > this.dictionary.longestKey)
@@ -171,6 +171,13 @@ class Translator(system: System, var log: (message: String) -> Unit = { _ -> })
 			this._history.subList(0, drop).clear()
 	}
 
+	fun push(t: HistoryTranslation)
+	{
+		this._history.add(t)
+		this.bufferedActions.addAll(t.formattedActions)
+		this.limitHistorySize()
+	}
+
 	fun push(t: Translation)
 	{
 		try
@@ -182,17 +189,13 @@ class Translator(system: System, var log: (message: String) -> Unit = { _ -> })
 				else
 					popFull()
 
-			val actions = this.processor.process(t.raw)
-
-			val context = this.context
-			val formattedActions = format(context, actions)
-			val formattedText = actionsToText(formattedActions)
-				?: FormattedText(0, "", context.formatting)
-
-			this._history.add(HistoryTranslation(t, actions, context, formattedText))
-			this.bufferedActions.addAll(formattedActions)
-
-			this.limitHistorySize()
+			val processed = this.processor.process(this, t.raw)
+			if(!processed.empty)
+				this.push(HistoryTranslation(
+					t.strokes,
+					processed.replaces + t.replaces,
+					processed.actions,
+					this.context))
 		}
 		catch(e: ParseException)
 		{
@@ -204,7 +207,7 @@ class Translator(system: System, var log: (message: String) -> Unit = { _ -> })
 	fun pop(): HistoryTranslation?
 	{
 		val removed = this.popFull() ?: return null
-		for(h in removed.translation.replaces)
+		for(h in removed.replaces)
 			this._history.add(h)
 		this.limitHistorySize()
 		this.bufferedActions.add(removed.redoReplacedAction)

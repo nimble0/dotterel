@@ -6,22 +6,25 @@ package nimble.dotterel.translation
 import kotlin.math.max
 
 class HistoryTranslation(
-	val translation: Translation,
+	val strokes: List<Stroke>,
+	val replaces: List<HistoryTranslation>,
 	val actions: List<Any>,
-	context: FormattedText,
-	val text: FormattedText)
+	context: FormattedText)
 {
+	val formattedActions = format(context, actions)
+	val text = actionsToText(formattedActions)
+		?: FormattedText(0, "", context.formatting)
 	val replacesText = context.text
-		.substring(max(0, context.text.length - text.backspaces))
+		.substring(max(0, context.text.length - this.text.backspaces))
 
 	val undoable: Boolean = !(this.replacesText.isEmpty() && this.text.text.isEmpty())
 
 	val undoAction = FormattedText(this.text.text.length, this.replacesText)
 	val redoAction = this.text
 	val undoReplacedAction: FormattedText =
-		this.translation.replaces.fold(FormattedText(),
+		this.replaces.fold(FormattedText(),
 			{ acc, it -> acc + it.undoAction })
 	val redoReplacedAction: FormattedText =
-		this.translation.replaces.fold(FormattedText(),
+		this.replaces.fold(FormattedText(),
 			{ acc, it -> acc + it.redoAction })
 }
