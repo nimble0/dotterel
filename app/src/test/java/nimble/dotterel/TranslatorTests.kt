@@ -196,6 +196,18 @@ class TranslatorTests : FunSpec
 		translator.history.last().replaces.size shouldBe 1
 	}
 
+	test("undo past history buffer")
+	{
+		dictionary["EBGS"] = "{ex^}"
+		dictionary["EBGS/TRAOEPL"] = "extreme"
+		dictionary["EBGS/TAT/EUBG"] = "ecstatic"
+		dictionary["*"] = "{RETRO:UNDO}"
+
+		val actions = translator.apply("EBGS/TAT/EUBG/*/*/TRAOEPL/*/*/*/*")
+		actions.filterIsInstance<KeyCombo>().size shouldBe 2
+		actionsToText(actions)?.text ?: "" shouldBe ""
+	}
+
 	test("repeat last stroke")
 	{
 		dictionary["HEL"] = "hell"

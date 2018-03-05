@@ -5,7 +5,6 @@ package nimble.dotterel
 
 import android.inputmethodservice.InputMethodService
 import android.util.Log
-import android.view.KeyEvent
 import android.view.View
 
 import java.io.IOException
@@ -62,7 +61,7 @@ class Dotterel : InputMethodService(), StrokeListener
 						this.endBatchEdit()
 					})
 				}
-				is KeyEvent -> ic?.sendKeyEvent(a)
+				is KeyCombo -> a.toAndroidKeyEvent()?.run({ ic?.sendKeyEvent(this) })
 				is Runnable -> a.run()
 			}
 	}

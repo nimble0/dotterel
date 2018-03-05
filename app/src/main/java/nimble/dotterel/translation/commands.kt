@@ -5,19 +5,9 @@
 
 package nimble.dotterel.translation
 
-import android.view.KeyEvent
-
 import java.util.Collections
 
-private val backspaceWord: Any
-	get() =
-		KeyEvent(
-			android.os.SystemClock.uptimeMillis(),
-			android.os.SystemClock.uptimeMillis(),
-			KeyEvent.ACTION_DOWN,
-			KeyEvent.KEYCODE_DEL,
-			0,
-			KeyEvent.META_CTRL_ON)
+private val backspaceWord = KeyCombo("backspace", Modifier.CONTROL.mask)
 
 fun List<Any>.filterTextActions() =
 	this.filter({ it is UnformattedText || it is FormattedText })

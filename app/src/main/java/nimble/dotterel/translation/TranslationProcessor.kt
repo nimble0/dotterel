@@ -103,9 +103,6 @@ class TranslationProcessor
 		this.commands["retro:toggle_asterisk"] = ::retroToggleAsterisk
 	}
 
-	private fun parseKeyCombos(keyCombosStr: String): TranslationPart =
-		TranslationPart()
-
 	private fun parseCommand(translator: Translator, commandStr: String)
 		: TranslationPart
 	{
@@ -135,7 +132,7 @@ class TranslationProcessor
 				return TranslationPart(m)
 
 			if(inner.isNotEmpty() && inner[0] == '#')
-				return this.parseKeyCombos(inner.substring(1))
+				return TranslationPart(parseKeyCombos(inner.substring(1)))
 
 			val formattingMatch = META_FORMATTING_PATTERN.matchEntire(inner)
 			if(formattingMatch != null)
