@@ -5,6 +5,8 @@ package nimble.dotterel.translation
 
 import java.text.ParseException
 
+import kotlin.math.min
+
 private val TRANSLATION_PARTS_PATTERN = Regex("\\A(?:(?:[^{}\\\\]|(?:\\\\.))+|(?:\\{(?:[^{}\\\\]|(?:\\\\.))*\\}))")
 // META_FORMATTING_PATTERN groups
 // 1 - Formatting start
@@ -38,17 +40,14 @@ private val SIMPLE_META: Map<String, List<Any>> =
 	{
 		val simpleMeta = mutableMapOf<String, List<Any>>()
 
+		val formattingAlias =
+			{ it: Formatting -> listOf(UnformattedText(formatting = it)) }
+
 		val baseFormatting = Formatting(
 			spaceStart = Formatting.Space.NONE,
 			spaceEnd = null
 		)
 
-		val formattingAlias =
-			{ it: Formatting -> listOf(UnformattedText(formatting = it)) }
-
-		simpleMeta[""] = formattingAlias(baseFormatting.copy(
-			transformState = Formatting.TransformState.MAIN
-		))
 		simpleMeta["-|"] = formattingAlias(baseFormatting.copy(
 			singleTransform = ::capitialiseTransform,
 			transformState = Formatting.TransformState.MAIN
@@ -59,6 +58,11 @@ private val SIMPLE_META: Map<String, List<Any>> =
 		))
 		simpleMeta[">"] = formattingAlias(baseFormatting.copy(
 			singleTransform = ::lowerCaseTransform,
+			transformState = Formatting.TransformState.MAIN
+		))
+
+		simpleMeta[""] = formattingAlias(Formatting(
+			spaceStart = Formatting.Space.NONE,
 			transformState = Formatting.TransformState.MAIN
 		))
 		val noSpaceText = formattingAlias(Formatting(
@@ -86,11 +90,37 @@ class TranslationProcessor
 {
 	private val simpleMeta: MutableMap<String, List<Any>> = SIMPLE_META.toMutableMap()
 
+	val commands = mutableMapOf<String, (Translator, String) -> TranslationPart>()
+
+	init
+	{
+		this.commands["retro:undo"] = ::undoStroke
+		this.commands["retro:repeat_last_stroke"] = ::repeatLastStroke
+		this.commands["retro:last_translation"] = ::lastTranslation
+		this.commands["retro:last_cluster"] = ::lastCluster
+		this.commands["retro:move_last_cluster"] = ::moveLastCluster
+		this.commands["retro:break_translation"] = ::retroBreakTranslation
+		this.commands["retro:toggle_asterisk"] = ::retroToggleAsterisk
+	}
+
 	private fun parseKeyCombos(keyCombosStr: String): TranslationPart =
 		TranslationPart()
 
-	private fun parseCommand(commandStr: String): TranslationPart =
-		TranslationPart()
+	private fun parseCommand(translator: Translator, commandStr: String)
+		: TranslationPart
+	{
+		var i = commandStr.indexOf(':')
+		i = commandStr.indexOf(':', i + 1)
+
+		if(i == -1)
+			i = commandStr.length
+
+		val name = commandStr.substring(0, i).toLowerCase()
+		val arg = commandStr.substring(min(commandStr.length, i + 1))
+
+		return this.commands[name]?.invoke(translator, arg)
+			?: TranslationPart()
+	}
 
 	@Throws(ParseException::class)
 	private fun parseTranslationPart(translator: Translator, part: String)
@@ -113,7 +143,7 @@ class TranslationProcessor
 				// If no formatting tokens, it's a command
 				if(formattingMatch.groupValues[1].isEmpty()
 					&& formattingMatch.groupValues[5].isEmpty())
-					return this.parseCommand(inner)
+					return this.parseCommand(translator, inner)
 
 				var spaceStart = Formatting.Space.NORMAL
 				var spaceEnd = Formatting.Space.NORMAL

@@ -183,4 +183,140 @@ class TranslatorTests : FunSpec
 
 		translator.applyToString("KPA/KW-BG/HEL") shouldBe ", Hell"
 	}
+
+	test("undo")
+	{
+		dictionary["EBGS"] = "{ex^}"
+		dictionary["EBGS/TRAOEPL"] = "extreme"
+		dictionary["EBGS/TAT/EUBG"] = "ecstatic"
+		dictionary["*"] = "{RETRO:UNDO}"
+
+		translator.applyToString("EBGS/TAT/EUBG/*/*/TRAOEPL") shouldBe " extreme"
+		translator.history.size shouldBe 1
+		translator.history.last().replaces.size shouldBe 1
+	}
+
+	test("repeat last stroke")
+	{
+		dictionary["HEL"] = "hell"
+		dictionary["PWOPB"] = "bon"
+		dictionary["PWOPB/PWOPB"] = "bon-bon"
+		dictionary["*"] = "{RETRO:UNDO}"
+		dictionary["#*"] = "{RETRO:REPEAT_LAST_STROKE}"
+
+		translator.applyToString("HEL/#*") shouldBe " hell hell"
+		translator.applyToString("PWOPB/#*/#*") shouldBe " bon-bon bon"
+		translator.applyToString("HEL/PWOPB/#*/#*/*/*/#*") shouldBe " hell bon-bon"
+	}
+
+	test("last translation")
+	{
+		dictionary["EBGS"] = "{ex^}"
+		dictionary["EBGS/TRAOEPL"] = "extreme{<}"
+		dictionary["TRAOEPL"] = "treatment"
+		dictionary["#*"] = "{RETRO:LAST_TRANSLATION}"
+		dictionary["PH-FP"] = "{^~|,} {RETRO:LAST_TRANSLATION}"
+		dictionary["PH-FPL"] = "{>} {RETRO:LAST_TRANSLATION} {^~|,} {RETRO:LAST_TRANSLATION}"
+
+		translator.applyToString("EBGS/#*/TRAOEPL") shouldBe " exextreatment"
+		translator.applyToString("EBGS/TRAOEPL/#*") shouldBe " extreme EXTREME"
+		translator.applyToString("EBGS/TRAOEPL/PH-FP") shouldBe " EXTREME, EXTREME"
+		translator.applyToString("EBGS/TRAOEPL/PH-FPL") shouldBe " EXTREME extreme, EXTREME"
+	}
+
+	test("last cluster")
+	{
+		dictionary["EBGS"] = "{ex^}"
+		dictionary["EBGS/TRAOEPL"] = "extreme{<}"
+		dictionary["TRAOEPL"] = "treatment"
+		dictionary["-L"] = "{^ly}"
+		dictionary["#*"] = "{RETRO:LAST_CLUSTER}"
+		dictionary["PH-FP"] = "{^~|,} {RETRO:LAST_CLUSTER}"
+		dictionary["PH-FPL"] = "{>} {RETRO:LAST_CLUSTER} {^~|,} {RETRO:LAST_CLUSTER}"
+
+		translator.applyToString("EBGS/#*/TRAOEPL") shouldBe " exextreatment"
+		translator.applyToString("EBGS/EBGS/TRAOEPL/-L/#*") shouldBe " exextremeLY exextremeLY"
+		translator.applyToString("EBGS/EBGS/TRAOEPL/-L/PH-FP") shouldBe " exextremeLY, exextremeLY"
+		translator.applyToString("EBGS/EBGS/TRAOEPL/-L/PH-FPL") shouldBe " exextremeLY exextremeLY, exextremeLY"
+	}
+
+	test("move last cluster")
+	{
+		dictionary["EBGS"] = "{ex^}"
+		dictionary["EBGS/TAT/EUBG"] = "ecstatic"
+		dictionary["TPAEUS"] = "face"
+		dictionary["-G"] = "{^ing}"
+		dictionary["PH-FP"] = "{<}{RETRO:MOVE_LAST_CLUSTER}"
+
+		translator.applyToString(
+			"EBGS/TPAEUS/PH-FP/EBGS/EBGS/TAT/EUBG/-G/PH-FP/TPAEUS"
+		) shouldBe " EXFACE EXECSTATICING face"
+	}
+
+	test("retro break translation")
+	{
+		dictionary["EBGS"] = "{ex^}"
+		dictionary["EBGS/TRAOEPL"] = "extreme"
+		dictionary["TRAOEPL"] = "treatment"
+		dictionary["TRAOEPL/TOED"] = "trematode"
+		dictionary["TPAEUS"] = "face"
+		dictionary["TOED"] = "today"
+		dictionary["-G"] = "{^ing}"
+		dictionary["PH-FP"] = "{RETRO:BREAK_TRANSLATION}"
+
+		translator.applyToString(
+			"TPAEUS/EBGS/TRAOEPL/PH-FP"
+		) shouldBe " face extreatment"
+		translator.applyToString(
+			"TPAEUS/EBGS/TRAOEPL/-G/PH-FP"
+		) shouldBe " face extreatmenting"
+		translator.applyToString(
+			"TPAEUS/EBGS/TRAOEPL/PH-FP/TOED"
+		) shouldBe " face extreatment today"
+	}
+
+	test("toggle asterisk")
+	{
+		dictionary["EBGS"] = "{ex^}"
+		dictionary["EBGS/TRAOEPL"] = "extreme"
+		dictionary["EBGS/TRAO*EPL"] = "extremely"
+		dictionary["TRAOEPL"] = "treatment"
+		dictionary["TRAOEPL/TOED"] = "trematode"
+		dictionary["TOED"] = "today"
+		dictionary["TO*ED"] = "toad"
+		dictionary["*"] = "{RETRO:UNDO}"
+		dictionary["#"] = "{RETRO:LAST_TRANSLATION}"
+		dictionary["#*"] = "{RETRO:TOGGLE_ASTERISK}"
+
+		translator.applyToString(
+			"EBGS/TRAOEPL/#*"
+		) shouldBe " extremely"
+		translator.applyToString(
+			"TRAOEPL/TO*ED/#*"
+		) shouldBe " trematode"
+		translator.applyToString(
+			"TRAOEPL/TO*ED/#*/*"
+		) shouldBe " treatment"
+		// Toggle asterisk (#*) combines with last translation (#) to
+		// replace the previous translation with another toggle asterisk
+		// translation causing "treatment" to become "TRAO*EPL".
+		translator.applyToString(
+			"TRAOEPL/#/#*"
+		) shouldBe " TRAO*EPL"
+	}
+
+	test("combination of retro commands")
+	{
+		dictionary["EBGS"] = "{ex^}"
+		dictionary["EBGS/TRAOEPL"] = "extreme"
+		dictionary["TRAOEPL"] = "treatment"
+		dictionary["#"] = "{RETRO:LAST_TRANSLATION}"
+		dictionary["AFPS"] = "{RETRO:BREAK_TRANSLATION}"
+		dictionary["TK-FPS"] = "{^}{RETRO:MOVE_LAST_CLUSTER}"
+		dictionary["PH-FP"] = "{<}{RETRO:MOVE_LAST_CLUSTER}"
+
+		translator.applyToString(
+			"EBGS/TRAOEPL/#/AFPS/TK-FPS/PH-FP"
+		) shouldBe "EXTREATMENT extreme"
+	}
 })
