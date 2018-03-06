@@ -5,6 +5,8 @@ package nimble.dotterel.translation
 
 import java.text.ParseException
 
+import kotlin.math.max
+
 private const val TRANSLATION_HISTORY_SIZE = 100
 
 private data class Affix(val prefix: Stroke, val suffix: Stroke)
@@ -55,6 +57,69 @@ fun actionsToText(actions: List<Any>): FormattedText? =
 			actions.reduce({ acc, it -> acc + it})
 	})
 
+fun joinTextActions(actions: List<Any>): List<Any>
+{
+	val actions2 = mutableListOf<Any>()
+	for(a in actions)
+	{
+		val previousAction = actions2.lastOrNull()
+		if(previousAction is FormattedText && a is FormattedText)
+			actions2[actions2.lastIndex] = previousAction + a
+		else
+			actions2.add(a)
+	}
+
+	return actions2
+}
+
+fun removeEmptyTextActions(actions: List<Any>): List<Any> =
+	actions.filterNot(
+		{ it is FormattedText && it.backspaces == 0 && it.text.isEmpty() })
+
+// Optimise text actions to not delete and output the same text
+// eg/
+// context = "work"
+// action = FormattedText(backspaces = 4, text = "working")
+// optimizedAction = FormattedText(backspaces = 0, text = "ing")
+fun optimiseTextAction(context: String, action: FormattedText): FormattedText =
+	if(action.backspaces <= context.length)
+	{
+		val deleted = context.substring(context.length - action.backspaces)
+		val common = deleted.commonPrefixWith(action.text)
+
+		FormattedText(
+			action.backspaces - common.length,
+			action.text.substring(common.length),
+			action.formatting)
+	}
+	else
+		action
+
+fun optimiseTextActions(context: String, actions: List<Any>): List<Any>
+{
+	@Suppress("NAME_SHADOWING")
+	var context = context
+
+	return actions.map({
+		if(it is FormattedText)
+			optimiseTextAction(context, it).also({
+				context = context.substring(
+					0,
+					max(0, context.length - it.backspaces)
+				) + it.text
+			})
+		else
+			it
+	})
+}
+
+fun optimiseActions(context: String, actions: List<Any>): List<Any>
+{
+	val actions2 = joinTextActions(actions)
+	val actions3 = optimiseTextActions(context, actions2)
+	return removeEmptyTextActions(actions3)
+}
+
 class Translator(system: System, var log: (message: String) -> Unit = { _ -> })
 {
 	var system: System = system
@@ -72,6 +137,7 @@ class Translator(system: System, var log: (message: String) -> Unit = { _ -> })
 	private var preHistoryFormatting: Formatting = system.defaultFormatting
 	private val _history = mutableListOf<HistoryTranslation>()
 
+	private var preBufferedContext = ""
 	private var bufferedActions = mutableListOf<Any>()
 
 	init { this.system = system }
@@ -232,8 +298,9 @@ class Translator(system: System, var log: (message: String) -> Unit = { _ -> })
 
 	fun flush(): List<Any>
 	{
-		val actions = this.bufferedActions
+		val actions = optimiseActions(this.preBufferedContext, this.bufferedActions)
 		this.bufferedActions = mutableListOf()
+		this.preBufferedContext = this.context.text
 		return actions
 	}
 }

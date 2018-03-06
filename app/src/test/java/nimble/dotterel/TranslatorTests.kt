@@ -331,4 +331,84 @@ class TranslatorTests : FunSpec
 			"EBGS/TRAOEPL/#/AFPS/TK-FPS/PH-FP"
 		) shouldBe "EXTREATMENT extreme"
 	}
+
+	test("optimise text actions")
+	{
+		val actions = mutableListOf<Any>(
+			FormattedText(8, "optimising"),
+			FormattedText(14, " deleted"),
+			FormattedText(25, " new context"),
+			FormattedText(12, " newish context")
+		)
+
+		optimiseTextActions(" some context to optimise", actions) shouldBe listOf<Any>(
+			FormattedText(1, "ing"),
+			FormattedText(13, "deleted"),
+			FormattedText(25, " new context"),
+			FormattedText(8, "ish context")
+		)
+	}
+
+	test("remove empty text actions")
+	{
+		removeEmptyTextActions(listOf(
+			FormattedText(0, ""),
+			FormattedText(4, ""),
+			KeyCombo( "a", 0),
+			FormattedText(0, ""),
+			FormattedText(0, "hello"),
+			KeyCombo( "b", 0),
+			FormattedText(0, "")
+		)) shouldBe listOf(
+			FormattedText(4, ""),
+			KeyCombo( "a", 0),
+			FormattedText(0, "hello"),
+			KeyCombo( "b", 0)
+		)
+	}
+
+	test("join text actions")
+	{
+		val formatting = Formatting(transformState = Formatting.TransformState.MAIN)
+
+		joinTextActions(listOf(
+			FormattedText(0, "start", formatting),
+			FormattedText(4, "ing", formatting),
+			KeyCombo( "a", 0),
+			FormattedText(3, "middle", formatting),
+			FormattedText(1, "hello", formatting),
+			KeyCombo( "b", 0),
+			FormattedText(0, "end", formatting)
+		)) shouldBe listOf(
+			FormattedText(0, "sing", formatting),
+			KeyCombo( "a", 0),
+			FormattedText(3, "middlhello", formatting),
+			KeyCombo( "b", 0),
+			FormattedText(0, "end", formatting)
+		)
+	}
+
+	test("optimise actions")
+	{
+		dictionary["EBGS"] = "{ex^}"
+		dictionary["EBGS/TRAOEPL"] = "extreme"
+		dictionary["EBGS/TAT/EUBG"] = "ecstatic"
+		dictionary["TRAOEPL"] = "treatment"
+		dictionary["KPA"] = "{-|}"
+		dictionary["KPA*"] = "{-|}{^}"
+		dictionary["TK-LS"] = "{^}"
+		dictionary["R-R"] = "{#Return}{-|}{^}"
+		dictionary["*"] = "{RETRO:UNDO}"
+
+		var actions = translator.apply("KPA/EBGS/TRAOEPL")
+		actions.size shouldBe 1
+
+		actions = translator.apply("KPA/TK-LS/KPA*/*/TAT/EUBG")
+		actions.size shouldBe 1
+		actionsToText(actions)?.text shouldBe "cstatic"
+
+		actions = translator.apply("R-R/*/*/TRAOEPL/KPA")
+		actions.size shouldBe 2
+		actionsToText(actions)?.text shouldBe "xtreme"
+	}
 })
