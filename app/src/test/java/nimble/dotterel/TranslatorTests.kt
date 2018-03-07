@@ -242,6 +242,7 @@ class TranslatorTests : FunSpec
 		dictionary["EBGS/TRAOEPL"] = "extreme{<}"
 		dictionary["TRAOEPL"] = "treatment"
 		dictionary["-L"] = "{^ly}"
+		dictionary["STPH-R"] = "{#left}"
 		dictionary["#*"] = "{RETRO:LAST_CLUSTER}"
 		dictionary["PH-FP"] = "{^~|,} {RETRO:LAST_CLUSTER}"
 		dictionary["PH-FPL"] = "{>} {RETRO:LAST_CLUSTER} {^~|,} {RETRO:LAST_CLUSTER}"
@@ -250,6 +251,7 @@ class TranslatorTests : FunSpec
 		translator.applyToString("EBGS/EBGS/TRAOEPL/-L/#*") shouldBe " exextremeLY exextremeLY"
 		translator.applyToString("EBGS/EBGS/TRAOEPL/-L/PH-FP") shouldBe " exextremeLY, exextremeLY"
 		translator.applyToString("EBGS/EBGS/TRAOEPL/-L/PH-FPL") shouldBe " exextremeLY exextremeLY, exextremeLY"
+		translator.applyToString("EBGS/STPH-R/#*/#*") shouldBe " ex"
 	}
 
 	test("move last cluster")

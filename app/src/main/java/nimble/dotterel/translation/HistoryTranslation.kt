@@ -12,12 +12,21 @@ class HistoryTranslation(
 	context: FormattedText)
 {
 	val formattedActions = format(context, actions)
-	val text = actionsToText(formattedActions)
-		?: FormattedText(0, "", context.formatting)
-	val replacesText = context.text
-		.substring(max(0, context.text.length - this.text.backspaces))
+	val text: FormattedText
+	val replacesText: String
 
-	val undoable: Boolean = !(this.replacesText.isEmpty() && this.text.text.isEmpty())
+	val hasText: Boolean
+	val undoable: Boolean
+
+	init
+	{
+		val combinedTextAction = actionsToText(formattedActions)
+		this.hasText = combinedTextAction != null
+		this.text = combinedTextAction ?: FormattedText(0, "", context.formatting)
+		this.replacesText = context.text
+			.substring(max(0, context.text.length - this.text.backspaces))
+		this.undoable = !(this.replacesText.isEmpty() && this.text.text.isEmpty())
+	}
 
 	val undoAction = FormattedText(this.text.text.length, this.replacesText)
 	val redoAction = this.text

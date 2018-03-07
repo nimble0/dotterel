@@ -66,7 +66,7 @@ fun lastClusterSize(translator: Translator): Int
 		a = if(iter.hasNext()) iter.next() else null
 		++i
 	}
-	while(a != null && a.text.formatting.noSpace(b.text.formatting))
+	while(a != null && b.hasText && a.text.formatting.noSpace(b.text.formatting))
 
 	return i
 }
