@@ -4,26 +4,35 @@
 package nimble.dotterel.translation.systems
 
 import nimble.dotterel.translation.*
+import nimble.dotterel.translation.Orthography.Replacement
 
 val IRELAND_LAYOUT = KeyLayout(
 	"#1S2TK3PW4HR",
 	"5A0O*EU",
 	"6FR7PB8LG9TSDZ",
 	mapOf(
-	Pair("1-", listOf("#-", "S-")),
-	Pair("2-", listOf("#-", "T-")),
-	Pair("3-", listOf("#-", "P-")),
-	Pair("4-", listOf("#-", "H-")),
-	Pair("5-", listOf("#-", "A-")),
-	Pair("0-", listOf("#-", "O-")),
-	Pair("-6", listOf("#-", "-F")),
-	Pair("-7", listOf("#-", "-P")),
-	Pair("-8", listOf("#-", "-L")),
-	Pair("-9", listOf("#-", "-T")))
+		Pair("1-", listOf("#-", "S-")),
+		Pair("2-", listOf("#-", "T-")),
+		Pair("3-", listOf("#-", "P-")),
+		Pair("4-", listOf("#-", "H-")),
+		Pair("5-", listOf("#-", "A-")),
+		Pair("0-", listOf("#-", "O-")),
+		Pair("-6", listOf("#-", "-F")),
+		Pair("-7", listOf("#-", "-P")),
+		Pair("-8", listOf("#-", "-L")),
+		Pair("-9", listOf("#-", "-T")))
 )
+
+val ENGLISH_ORTHOGRAPHY = Orthography(listOf(
+	Replacement(Regex("(?<=[bcdfghjklmnpqrstvwxz] ?)y\uffffs"), "ies"),
+	Replacement(Regex("(?<=s|sh|x|z|zh ?)\uffffs"), "es"),
+	Replacement(Regex("ie\uffffing"), "ying")
+))
 
 val IRELAND_SYSTEM = System(
 	keyLayout = IRELAND_LAYOUT,
+
+	orthography = ENGLISH_ORTHOGRAPHY,
 
 	prefixStrokes = listOf(),
 	suffixStrokes = listOf("-Z", "-D", "-S", "-G"),
@@ -36,5 +45,6 @@ val IRELAND_SYSTEM = System(
 		spaceStart = Formatting.Space.NORMAL,
 		spaceEnd = Formatting.Space.NORMAL,
 		space = " ",
+		orthography = null,
 		transform = ::noneTransform)
 )

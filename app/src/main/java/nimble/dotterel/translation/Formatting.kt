@@ -9,6 +9,12 @@ data class Formatting(
 	val spaceEnd: Space? = Space.NORMAL,
 	val space: String? = null,
 
+	// null = Carry previous orthography
+	val orthography: Orthography? = null,
+	val orthographyStart: Boolean = true,
+	// null = Carry previous orthographyEnd
+	val orthographyEnd: Boolean? = true,
+
 	// null = Carry previous transform
 	var transform: ((
 		context: FormattedText,
@@ -42,6 +48,13 @@ data class Formatting(
 			|| this.spaceEnd == Space.NONE
 			|| b.spaceStart == Space.NONE)
 
+	fun orthography(b: Formatting): Orthography? =
+		if(this.orthographyEnd == true && b.orthographyStart &&
+			(b.orthography == null || this.orthography == b.orthography))
+			this.orthography
+		else
+			null
+
 	fun suffix(b: Formatting) =
 		this.transformState == TransformState.SUFFIX && this.noSpace(b)
 
@@ -60,7 +73,8 @@ data class Formatting(
 
 	fun withContext(context: Formatting): Formatting =
 		(context + this).copy(
-			spaceStart = this.spaceStart
+			spaceStart = this.spaceStart,
+			orthographyStart = this.orthographyStart
 		)
 
 	operator fun plus(b: Formatting): Formatting
@@ -106,6 +120,9 @@ data class Formatting(
 			spaceStart = this.spaceStart,
 			spaceEnd = b.spaceEnd ?: this.spaceEnd,
 			space = b.space ?: this.space,
+			orthography = b.orthography ?: this.orthography,
+			orthographyStart = this.orthographyStart,
+			orthographyEnd = b.orthographyEnd,
 			transform = b.transform ?: this.transform,
 			singleTransform = singleTransform,
 			transformState = transformState)

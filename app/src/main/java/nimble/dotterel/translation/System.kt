@@ -5,6 +5,7 @@ package nimble.dotterel.translation
 
 data class System(
 	val keyLayout: KeyLayout,
+	val orthography: Orthography,
 	val prefixStrokes: List<String>,
 	val suffixStrokes: List<String>,
 	val defaultDictionaries: List<String>,

@@ -122,4 +122,139 @@ class FormattingTests : FunSpec
 		(FormattedText(10, "context") + FormattedText(12, "text"))
 			.backspaces shouldBe 15
 	}
+
+	test("orthography")
+	{
+		val orthography = Orthography(listOf(
+			Orthography.Replacement(Regex("(?<=[bcdfghjklmnpqrstvwxz] ?)y\uffffs"), "ies"),
+			Orthography.Replacement(Regex("(?<=s|sh|x|z|zh ?)\uffffs"), "es"),
+			Orthography.Replacement(Regex("ie\uffffing"), "ying")
+		))
+
+		run {
+			val context = FormattedText(
+				0,
+				"context",
+				Formatting(orthography = orthography))
+			val a = UnformattedText(
+				0,
+				"ing",
+				Formatting(spaceStart = Formatting.Space.NONE)
+			).format(context)
+
+			a.backspaces shouldBe 0
+			a.text shouldBe "ing"
+		}
+
+		run {
+			val context = FormattedText(
+				0,
+				"deny",
+				Formatting(orthography = orthography))
+			val a = UnformattedText(
+				0,
+				"s",
+				Formatting(spaceStart = Formatting.Space.NONE)
+			).format(context)
+
+			a.backspaces shouldBe 1
+			a.text shouldBe "ies"
+		}
+
+		run {
+			val context = FormattedText(
+				0,
+				"lie",
+				Formatting(orthography = orthography))
+			val a = UnformattedText(
+				0,
+				"ing",
+				Formatting(spaceStart = Formatting.Space.NONE)
+			).format(context)
+
+			a.backspaces shouldBe 2
+			a.text shouldBe "ying"
+		}
+
+		run {
+			val context = FormattedText(
+				0,
+				"brush",
+				Formatting(orthography = orthography))
+			val a = UnformattedText(
+				0,
+				"s",
+				Formatting(spaceStart = Formatting.Space.NONE)
+			).format(context)
+
+			a.backspaces shouldBe 0
+			a.text shouldBe "es"
+		}
+
+		run {
+			val context = FormattedText(
+				0,
+				"deny",
+				Formatting(orthography = orthography, orthographyStart = false))
+			val a = UnformattedText(
+				0,
+				"s",
+				Formatting(spaceStart = Formatting.Space.NONE, orthographyEnd = false)
+			).format(context)
+
+			a.backspaces shouldBe 1
+			a.text shouldBe "ies"
+		}
+
+		run {
+			val context = FormattedText(
+				0,
+				"deny",
+				Formatting(orthography = orthography, orthographyEnd = false))
+			val a = UnformattedText(
+				0,
+				"s",
+				Formatting(spaceStart = Formatting.Space.NONE)
+			).format(context)
+
+			a.backspaces shouldBe 0
+			a.text shouldBe "s"
+		}
+
+		run {
+			val context = FormattedText(
+				0,
+				"deny",
+				Formatting(orthography = orthography))
+			val a = UnformattedText(
+				0,
+				"s",
+				Formatting(spaceStart = Formatting.Space.NONE, orthographyStart = false)
+			).format(context)
+
+			a.backspaces shouldBe 0
+			a.text shouldBe "s"
+		}
+
+		run {
+			val orthography2 = Orthography(listOf(
+				Orthography.Replacement(Regex("(?<=[bcdfghjklmnpqrstvwxz] ?)y\uffffs"), "ies")))
+
+			val context = FormattedText(
+				0,
+				"deny",
+				Formatting(orthography = orthography))
+			val a = UnformattedText(
+				0,
+				"s",
+				Formatting(
+					spaceStart = Formatting.Space.NONE,
+					orthography = orthography2,
+					orthographyStart = false)
+			).format(context)
+
+			a.backspaces shouldBe 0
+			a.text shouldBe "s"
+		}
+	}
 })

@@ -411,4 +411,28 @@ class TranslatorTests : FunSpec
 		actions.size shouldBe 2
 		actionsToText(actions)?.text shouldBe "xtreme"
 	}
+
+	test("orthography")
+	{
+		dictionary["TKOEUPB"] = "deny"
+		dictionary["-S"] = "{^s}"
+		dictionary["TK*"] = "{&d}"
+		dictionary["*E"] = "{&e}"
+		dictionary["TPH*"] = "{&n}"
+		dictionary["KWR*"] = "{&y}"
+		dictionary["S*"] = "{&s}"
+		dictionary["TK-LS"] = "{^^}"
+		dictionary["S"] = "is"
+		dictionary["SO"] = "so"
+		dictionary["KPA*"] = "{^}{-|}"
+
+		translator.applyToString("TKOEUPB/-S") shouldBe " denies"
+		translator.applyToString("TKOEUPB/TK-LS/-S") shouldBe " denys"
+		translator.applyToString("TK*/*E/TPH*/KWR*/-S") shouldBe " denies"
+		translator.applyToString("TK*/*E/TPH*/KWR*/TK-LS/-S") shouldBe " denys"
+		translator.applyToString("TK*/*E/TPH*/TK-LS/KWR*/-S") shouldBe " denies"
+		translator.applyToString("TK*/*E/TPH*/KWR*/S*") shouldBe " denys"
+		translator.applyToString("S/SO") shouldBe " is so"
+		translator.applyToString("TKOEUPB/KPA*/SO") shouldBe " denySo"
+	}
 })

@@ -45,29 +45,31 @@ private val SIMPLE_META: Map<String, List<Any>> =
 
 		val baseFormatting = Formatting(
 			spaceStart = Formatting.Space.NONE,
-			spaceEnd = null
+			spaceEnd = null,
+			orthographyEnd = null,
+			transformState = Formatting.TransformState.MAIN
 		)
 
 		simpleMeta["-|"] = formattingAlias(baseFormatting.copy(
-			singleTransform = ::capitialiseTransform,
-			transformState = Formatting.TransformState.MAIN
+			singleTransform = ::capitialiseTransform
 		))
 		simpleMeta["<"] = formattingAlias(baseFormatting.copy(
-			singleTransform = ::upperCaseTransform,
-			transformState = Formatting.TransformState.MAIN
+			singleTransform = ::upperCaseTransform
 		))
 		simpleMeta[">"] = formattingAlias(baseFormatting.copy(
-			singleTransform = ::lowerCaseTransform,
-			transformState = Formatting.TransformState.MAIN
+			singleTransform = ::lowerCaseTransform
 		))
 
 		simpleMeta[""] = formattingAlias(Formatting(
 			spaceStart = Formatting.Space.NONE,
+			orthography = NULL_ORTHOGRAPHY,
 			transformState = Formatting.TransformState.MAIN
 		))
 		val noSpaceText = formattingAlias(Formatting(
 			spaceStart = Formatting.Space.NONE,
-			spaceEnd = Formatting.Space.NONE
+			spaceEnd = Formatting.Space.NONE,
+			orthographyStart = false,
+			orthographyEnd = false
 		))
 		simpleMeta["^"] = noSpaceText
 		simpleMeta["^^"] = noSpaceText
@@ -144,6 +146,8 @@ class TranslationProcessor
 
 				var spaceStart = Formatting.Space.NORMAL
 				var spaceEnd = Formatting.Space.NORMAL
+				var orthographyStart = true
+				var orthographyEnd = true
 				var singleTransformState = Formatting.TransformState.NORMAL
 
 				when(formattingMatch.groupValues[2])
@@ -154,6 +158,7 @@ class TranslationProcessor
 					{
 						spaceStart = Formatting.Space.GLUE
 						spaceEnd = Formatting.Space.GLUE
+						orthographyStart = false
 					}
 				}
 
@@ -168,6 +173,9 @@ class TranslationProcessor
 				val formatting = Formatting(
 					spaceStart = spaceStart,
 					spaceEnd = spaceEnd,
+					orthography = translator.system.orthography,
+					orthographyStart = orthographyStart,
+					orthographyEnd = orthographyEnd,
 					transformState = singleTransformState
 				)
 
@@ -177,7 +185,10 @@ class TranslationProcessor
 			return TranslationPart()
 		}
 		else
-			return TranslationPart(listOf(UnformattedText(0, part)))
+			return TranslationPart(listOf(UnformattedText(
+				0,
+				part,
+				Formatting(orthography = translator.system.orthography))))
 	}
 
 	fun process(translator: Translator, translation: String): TranslationPart
