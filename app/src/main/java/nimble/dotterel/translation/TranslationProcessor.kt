@@ -36,46 +36,50 @@ private fun parseTranslationParts(translation: String): List<String>
 	return parts
 }
 
-private val SIMPLE_META: Map<String, List<Any>> =
-	{
-		val simpleMeta = mutableMapOf<String, List<Any>>()
+sealed class AliasTranslation
+class Actions(val actions: List<Any>) : AliasTranslation()
+class TranslationString(val string: String) : AliasTranslation()
 
-		val formattingAlias =
-			{ it: Formatting -> listOf(UnformattedText(formatting = it)) }
+private val BASE_ALIASES: Map<String, Actions> =
+{
+	val baseAliases = mutableMapOf<String, Actions>()
 
-		val baseFormatting = Formatting(
-			spaceStart = Formatting.Space.NONE,
-			spaceEnd = null,
-			orthographyEnd = null,
-			transformState = Formatting.TransformState.MAIN
-		)
+	val formattingAlias =
+		{ it: Formatting -> Actions(listOf(UnformattedText(formatting = it))) }
 
-		simpleMeta["-|"] = formattingAlias(baseFormatting.copy(
-			singleTransform = ::capitialiseTransform
-		))
-		simpleMeta["<"] = formattingAlias(baseFormatting.copy(
-			singleTransform = ::upperCaseTransform
-		))
-		simpleMeta[">"] = formattingAlias(baseFormatting.copy(
-			singleTransform = ::lowerCaseTransform
-		))
+	val baseFormatting = Formatting(
+		spaceStart = Formatting.Space.NONE,
+		spaceEnd = null,
+		orthographyEnd = null,
+		transformState = Formatting.TransformState.MAIN
+	)
 
-		simpleMeta[""] = formattingAlias(Formatting(
-			spaceStart = Formatting.Space.NONE,
-			orthography = NULL_ORTHOGRAPHY,
-			transformState = Formatting.TransformState.MAIN
-		))
-		val noSpaceText = formattingAlias(Formatting(
-			spaceStart = Formatting.Space.NONE,
-			spaceEnd = Formatting.Space.NONE,
-			orthographyStart = false,
-			orthographyEnd = false
-		))
-		simpleMeta["^"] = noSpaceText
-		simpleMeta["^^"] = noSpaceText
+	baseAliases["-|"] = formattingAlias(baseFormatting.copy(
+		singleTransform = ::capitialiseTransform
+	))
+	baseAliases["<"] = formattingAlias(baseFormatting.copy(
+		singleTransform = ::upperCaseTransform
+	))
+	baseAliases[">"] = formattingAlias(baseFormatting.copy(
+		singleTransform = ::lowerCaseTransform
+	))
 
-		simpleMeta
-	}()
+	baseAliases[""] = formattingAlias(Formatting(
+		spaceStart = Formatting.Space.NONE,
+		orthography = NULL_ORTHOGRAPHY,
+		transformState = Formatting.TransformState.MAIN
+	))
+	val noSpaceText = formattingAlias(Formatting(
+		spaceStart = Formatting.Space.NONE,
+		spaceEnd = Formatting.Space.NONE,
+		orthographyStart = false,
+		orthographyEnd = false
+	))
+	baseAliases["^"] = noSpaceText
+	baseAliases["^^"] = noSpaceText
+
+	baseAliases
+}()
 
 data class TranslationPart(
 	val actions: List<Any> = listOf(),
@@ -90,19 +94,17 @@ data class TranslationPart(
 
 class TranslationProcessor
 {
-	private val simpleMeta: MutableMap<String, List<Any>> = SIMPLE_META.toMutableMap()
-
 	val commands = mutableMapOf<String, (Translator, String) -> TranslationPart>()
+	val aliases: MutableMap<String, AliasTranslation> = BASE_ALIASES.toMutableMap()
 
-	init
+	fun resetCommands()
 	{
-		this.commands["retro:undo"] = ::undoStroke
-		this.commands["retro:repeat_last_stroke"] = ::repeatLastStroke
-		this.commands["retro:last_translation"] = ::lastTranslation
-		this.commands["retro:last_cluster"] = ::lastCluster
-		this.commands["retro:move_last_cluster"] = ::moveLastCluster
-		this.commands["retro:break_translation"] = ::retroBreakTranslation
-		this.commands["retro:toggle_asterisk"] = ::retroToggleAsterisk
+		this.commands.clear()
+	}
+	fun resetAliases()
+	{
+		this.aliases.clear()
+		this.aliases.putAll(BASE_ALIASES)
 	}
 
 	private fun parseCommand(translator: Translator, commandStr: String)
@@ -129,9 +131,12 @@ class TranslationProcessor
 		{
 			val inner = part.substring(1, part.length - 1)
 
-			val m = this.simpleMeta[inner]
-			if(m != null)
-				return TranslationPart(m)
+			val a = this.aliases[inner]
+			when(a)
+			{
+				is Actions -> return TranslationPart(a.actions)
+				is TranslationString -> return this.process(translator, a.string)
+			}
 
 			if(inner.isNotEmpty() && inner[0] == '#')
 				return TranslationPart(parseKeyCombos(inner.substring(1)))

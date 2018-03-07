@@ -129,6 +129,13 @@ class Translator(system: System, var log: (message: String) -> Unit = { _ -> })
 			this.affixStrokes = permutateAffixes(
 				this.system.prefixStrokes.map({ this.system.keyLayout.parse(it) }),
 				this.system.suffixStrokes.map({ this.system.keyLayout.parse(it) }))
+
+			this.processor.resetCommands()
+			this.processor.resetAliases()
+			this.processor.commands.putAll(this.system.commands.map(
+				{ Pair(it.key.toLowerCase(), it.value) }))
+			this.processor.aliases.putAll(this.system.aliases.map(
+				{ Pair(it.key, TranslationString(it.value)) }))
 		}
 	var dictionary: Dictionary = MultiDictionary()
 	var processor = TranslationProcessor()

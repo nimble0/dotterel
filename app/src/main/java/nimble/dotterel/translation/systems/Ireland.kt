@@ -34,6 +34,34 @@ val IRELAND_SYSTEM = System(
 
 	orthography = ENGLISH_ORTHOGRAPHY,
 
+	commands = mapOf(
+		Pair("RETRO:UNDO", ::undoStroke),
+
+		Pair("RETRO:REPEAT_LAST_STROKE", ::repeatLastStroke),
+		Pair("RETRO:LAST_TRANSLATION", ::lastTranslation),
+		Pair("RETRO:LAST_CLUSTER", ::lastCluster),
+		Pair("RETRO:MOVE_LAST_CLUSTER", ::moveLastCluster),
+		Pair("RETRO:BREAK_TRANSLATION", ::retroBreakTranslation),
+		Pair("RETRO:TOGGLE_ASTERISK", ::retroToggleAsterisk)
+	),
+
+	aliases = mapOf(
+		Pair(".", "{^.}{-|}"),
+		Pair("?", "{^?}{-|}"),
+		Pair("!", "{^!}{-|}"),
+		Pair(",", "{^~|,}"),
+		Pair(";", "{^~|;}"),
+		Pair(":", "{^~|:}"),
+
+		Pair("*>", "{>}{RETRO:MOVE_LAST_CLUSTER}"),
+		Pair("*<", "{<}{RETRO:MOVE_LAST_CLUSTER}"),
+		Pair("*-|", "{-|}{RETRO:MOVE_LAST_CLUSTER}"),
+		Pair("*+", "{RETRO:REPEAT_LAST_STROKE}"),
+		Pair("*", "{RETRO:TOGGLE_ASTERISK}"),
+		Pair("*?", "{RETRO:BREAK_TRANSLATION}"),
+		Pair("*!", "{^}{RETRO:MOVE_LAST_CLUSTER}")
+	),
+
 	prefixStrokes = listOf(),
 	suffixStrokes = listOf("-Z", "-D", "-S", "-G"),
 

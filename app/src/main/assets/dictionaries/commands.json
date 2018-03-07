@@ -1,9 +1,9 @@
 {
 "*": "{RETRO:UNDO}",
 "#": "{RETRO:LAST_TRANSLATION}",
-"#*": "{RETRO:TOGGLE_ASTERISK}",
-"TK-FPS": "{^}{RETRO:MOVE_LAST_CLUSTER}",
-"AFPS": "{RETRO:BREAK_TRANSLATION}",
+"#*": "{*}",
+"TK-FPS": "{*!}",
+"AFPS": "{*?}",
 
 "KHR*BG": "{#Control_L(k)}",
 "KHR*F": "{#Control_L(v)}",
