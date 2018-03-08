@@ -40,46 +40,25 @@ sealed class AliasTranslation
 class Actions(val actions: List<Any>) : AliasTranslation()
 class TranslationString(val string: String) : AliasTranslation()
 
-private val BASE_ALIASES: Map<String, Actions> =
-{
-	val baseAliases = mutableMapOf<String, Actions>()
-
-	val formattingAlias =
-		{ it: Formatting -> Actions(listOf(UnformattedText(formatting = it))) }
-
-	val baseFormatting = Formatting(
-		spaceStart = Formatting.Space.NONE,
-		spaceEnd = null,
-		orthographyEnd = null,
-		transformState = Formatting.TransformState.MAIN
-	)
-
-	baseAliases["-|"] = formattingAlias(baseFormatting.copy(
-		singleTransform = ::capitialiseTransform
-	))
-	baseAliases["<"] = formattingAlias(baseFormatting.copy(
-		singleTransform = ::upperCaseTransform
-	))
-	baseAliases[">"] = formattingAlias(baseFormatting.copy(
-		singleTransform = ::lowerCaseTransform
-	))
-
-	baseAliases[""] = formattingAlias(Formatting(
+private val BASE_ALIASES = mapOf(
+	Pair("", Actions(listOf(UnformattedText(formatting = Formatting(
 		spaceStart = Formatting.Space.NONE,
 		orthography = NULL_ORTHOGRAPHY,
 		transformState = Formatting.TransformState.MAIN
-	))
-	val noSpaceText = formattingAlias(Formatting(
+	))))),
+	Pair("^", Actions(listOf(UnformattedText(formatting = Formatting(
 		spaceStart = Formatting.Space.NONE,
 		spaceEnd = Formatting.Space.NONE,
 		orthographyStart = false,
 		orthographyEnd = false
-	))
-	baseAliases["^"] = noSpaceText
-	baseAliases["^^"] = noSpaceText
-
-	baseAliases
-}()
+	))))),
+	Pair("^^", Actions(listOf(UnformattedText(formatting = Formatting(
+		spaceStart = Formatting.Space.NONE,
+		spaceEnd = Formatting.Space.NONE,
+		orthographyStart = false,
+		orthographyEnd = false
+	)))))
+)
 
 data class TranslationPart(
 	val actions: List<Any> = listOf(),
@@ -94,9 +73,16 @@ data class TranslationPart(
 
 class TranslationProcessor
 {
+	val transforms = mutableMapOf<
+		String,
+		(FormattedText, UnformattedText, Boolean) -> UnformattedText>()
 	val commands = mutableMapOf<String, (Translator, String) -> TranslationPart>()
 	val aliases: MutableMap<String, AliasTranslation> = BASE_ALIASES.toMutableMap()
 
+	fun resetTransforms()
+	{
+		this.transforms.clear()
+	}
 	fun resetCommands()
 	{
 		this.commands.clear()

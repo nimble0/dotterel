@@ -130,8 +130,10 @@ class Translator(system: System, var log: (message: String) -> Unit = { _ -> })
 				this.system.prefixStrokes.map({ this.system.keyLayout.parse(it) }),
 				this.system.suffixStrokes.map({ this.system.keyLayout.parse(it) }))
 
+			this.processor.resetTransforms()
 			this.processor.resetCommands()
 			this.processor.resetAliases()
+			this.processor.transforms.putAll(this.system.transforms)
 			this.processor.commands.putAll(this.system.commands.map(
 				{ Pair(it.key.toLowerCase(), it.value) }))
 			this.processor.aliases.putAll(this.system.aliases.map(

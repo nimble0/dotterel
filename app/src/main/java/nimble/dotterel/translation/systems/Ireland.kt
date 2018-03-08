@@ -34,8 +34,17 @@ val IRELAND_SYSTEM = System(
 
 	orthography = ENGLISH_ORTHOGRAPHY,
 
+	transforms = mapOf(
+		Pair("NONE", ::noneTransform),
+		Pair("CAPITALISE", ::capitialiseTransform),
+		Pair("UPPERCASE", ::upperCaseTransform),
+		Pair("LOWERCASE", ::lowerCaseTransform)
+	),
+
 	commands = mapOf(
 		Pair("RETRO:UNDO", ::undoStroke),
+		Pair("MODE:TRANSFORM", ::transform),
+		Pair("MODE:SINGLE_TRANSFORM", ::singleTransform),
 
 		Pair("RETRO:REPEAT_LAST_STROKE", ::repeatLastStroke),
 		Pair("RETRO:LAST_TRANSLATION", ::lastTranslation),
@@ -46,6 +55,10 @@ val IRELAND_SYSTEM = System(
 	),
 
 	aliases = mapOf(
+		Pair("-|", "{MODE:SINGLE_TRANSFORM:CAPITALISE}"),
+		Pair("<", "{MODE:SINGLE_TRANSFORM:UPPERCASE}"),
+		Pair(">", "{MODE:SINGLE_TRANSFORM:LOWERCASE}"),
+
 		Pair(".", "{^.}{-|}"),
 		Pair("?", "{^?}{-|}"),
 		Pair("!", "{^!}{-|}"),

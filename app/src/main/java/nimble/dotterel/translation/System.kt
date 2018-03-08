@@ -6,6 +6,9 @@ package nimble.dotterel.translation
 data class System(
 	val keyLayout: KeyLayout,
 	val orthography: Orthography,
+	val transforms: Map<
+		String,
+		(FormattedText, UnformattedText, Boolean) -> UnformattedText>,
 	val commands: Map<String, (Translator, String) -> TranslationPart>,
 	val aliases: Map<String, String>,
 	val prefixStrokes: List<String>,

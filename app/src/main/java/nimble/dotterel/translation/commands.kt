@@ -36,6 +36,26 @@ fun undoStroke(translator: Translator, arg: String)
 	return TranslationPart()
 }
 
+fun transform(translator: Translator, arg: String) =
+	TranslationPart(listOf(UnformattedText(
+		formatting = Formatting(
+			spaceStart = Formatting.Space.NONE,
+			spaceEnd = null,
+			orthographyEnd = null,
+			transform = translator.processor.transforms[arg],
+			transformState = Formatting.TransformState.MAIN
+		))))
+
+fun singleTransform(translator: Translator, arg: String) =
+	TranslationPart(listOf(UnformattedText(
+		formatting = Formatting(
+			spaceStart = Formatting.Space.NONE,
+			spaceEnd = null,
+			orthographyEnd = null,
+			singleTransform = translator.processor.transforms[arg],
+			transformState = Formatting.TransformState.MAIN
+		))))
+
 fun repeatLastStroke(translator: Translator, arg: String)
 	: TranslationPart
 {
