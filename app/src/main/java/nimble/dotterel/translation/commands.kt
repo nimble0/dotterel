@@ -56,6 +56,28 @@ fun singleTransform(translator: Translator, arg: String) =
 			transformState = Formatting.TransformState.MAIN
 		))))
 
+fun resetTransform(translator: Translator, arg: String) =
+	TranslationPart(listOf(UnformattedText(formatting = Formatting(
+		spaceStart = Formatting.Space.NONE,
+		spaceEnd = null,
+		orthographyEnd = null,
+		transform = translator.system.defaultFormatting.transform))))
+
+fun setSpace(translator: Translator, arg: String) =
+	TranslationPart(listOf(UnformattedText(formatting = Formatting(
+		spaceStart = Formatting.Space.NONE,
+		spaceEnd = null,
+		space = arg,
+		orthographyEnd = null))))
+
+fun resetSpace(translator: Translator, arg: String) =
+	TranslationPart(listOf(UnformattedText(formatting = Formatting(
+		spaceStart = Formatting.Space.NONE,
+		spaceEnd = null,
+		space = translator.system.defaultFormatting.space,
+		orthographyEnd = null))))
+
+
 fun repeatLastStroke(translator: Translator, arg: String)
 	: TranslationPart
 {

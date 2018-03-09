@@ -38,7 +38,8 @@ val IRELAND_SYSTEM = System(
 		Pair("NONE", ::noneTransform),
 		Pair("CAPITALISE", ::capitialiseTransform),
 		Pair("UPPERCASE", ::upperCaseTransform),
-		Pair("LOWERCASE", ::lowerCaseTransform)
+		Pair("LOWERCASE", ::lowerCaseTransform),
+		Pair("TITLECASE", ::titleCaseTransform)
 	),
 
 	commands = mapOf(
@@ -51,7 +52,11 @@ val IRELAND_SYSTEM = System(
 		Pair("RETRO:LAST_CLUSTER", ::lastCluster),
 		Pair("RETRO:MOVE_LAST_CLUSTER", ::moveLastCluster),
 		Pair("RETRO:BREAK_TRANSLATION", ::retroBreakTranslation),
-		Pair("RETRO:TOGGLE_ASTERISK", ::retroToggleAsterisk)
+		Pair("RETRO:TOGGLE_ASTERISK", ::retroToggleAsterisk),
+
+		Pair("MODE:SET_SPACE", ::setSpace),
+		Pair("MODE:RESET_CASE", ::resetTransform),
+		Pair("MODE:RESET_SPACE", ::resetSpace)
 	),
 
 	aliases = mapOf(
@@ -72,7 +77,14 @@ val IRELAND_SYSTEM = System(
 		Pair("*+", "{RETRO:REPEAT_LAST_STROKE}"),
 		Pair("*", "{RETRO:TOGGLE_ASTERISK}"),
 		Pair("*?", "{RETRO:BREAK_TRANSLATION}"),
-		Pair("*!", "{^}{RETRO:MOVE_LAST_CLUSTER}")
+		Pair("*!", "{^}{RETRO:MOVE_LAST_CLUSTER}"),
+
+		Pair("MODE:RESET", "{MODE:RESET_CASE}{MODE:RESET_SPACE}"),
+		Pair("MODE:CAPS", "{MODE:TRANSFORM:UPPERCASE}"),
+		Pair("MODE:LOWER", "{MODE:TRANSFORM:LOWERCASE}"),
+		Pair("MODE:TITLE", "{MODE:TRANSFORM:TITLECASE}"),
+		Pair("MODE:CAMEL", "{MODE:TRANSFORM:TITLECASE}{MODE:SET_SPACE:}{^}"),
+		Pair("MODE:SNAKE", "{MODE:SET_SPACE:_}")
 	),
 
 	prefixStrokes = listOf(),

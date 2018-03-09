@@ -27,3 +27,17 @@ fun lowerCaseTransform(
 	suffix: Boolean
 ) =
 	text.copy(text = text.text.toLowerCase())
+
+private val CAMEL_PATTERN = Regex("((?<=  ?).)")
+
+fun titleCaseTransform(
+	context: FormattedText,
+	text: UnformattedText,
+	suffix: Boolean
+) =
+	text.copy(
+		text = text.text
+			.replace(
+				regex = CAMEL_PATTERN,
+				transform = { it.value.toUpperCase() })
+			.let({ if(!suffix) it.capitalize() else it }))

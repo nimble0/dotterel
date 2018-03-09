@@ -437,4 +437,20 @@ class TranslatorTests : FunSpec
 		translator.applyToString("S/SO") shouldBe " is so"
 		translator.applyToString("TKOEUPB/KPA*/SO") shouldBe " denySo"
 	}
+
+	test("modes")
+	{
+		dictionary["HEL"] = "hell"
+		dictionary["HEL/HROE"] = "hello"
+		dictionary["HROE"] = "low"
+		dictionary["-G"] = "{^ing}"
+		dictionary["KA*PS"] = "{MODE:CAPS}"
+		dictionary["KPH*L"] = "{MODE:CAMEL}"
+		dictionary["T*LT"] = "{MODE:TITLE}"
+		dictionary["R*PLD"] = "{MODE:RESET}"
+
+		translator.applyToString(
+			"HEL/KA*PS/HROE/HEL/-G/KPH*L/HEL/HROE/-G/HEL/R*PLD/HROE/T*LT/HEL/HROE"
+		) shouldBe " hell LOW HELLINGhelloingHell low Hello"
+	}
 })
