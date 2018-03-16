@@ -13,12 +13,41 @@ import nimble.dotterel.machines.TouchStenoView
 import nimble.dotterel.translation.*
 import nimble.dotterel.translation.systems.IRELAND_SYSTEM
 
+val CODE_ASSETS = mapOf(
+	Pair("dictionaries/Numbers", NumbersDictionary())
+)
+
 class Dotterel : InputMethodService(), StrokeListener
 {
 	private var touchSteno: TouchStenoView? = null
 	private var translator = Translator(
 		IRELAND_SYSTEM,
 		log = { m -> Log.i("Steno", m) })
+
+	fun getDictionary(path: String): Dictionary?
+	{
+		try
+		{
+			val type = path.substringBefore("://")
+			val name = path.substringAfter("://")
+			return when(type)
+			{
+				"asset" -> JsonDictionary(this.assets.open(name))
+				"code" -> CODE_ASSETS[name] as Dictionary
+				else -> null
+			}
+		}
+		catch(e: IOException)
+		{
+			Log.i("IO", "Error reading dictionary $path")
+			return null
+		}
+		catch(e: ClassCastException)
+		{
+			Log.i("Type", "$path is not of type Dictionary")
+			return null
+		}
+	}
 
 	override fun onCreateInputView(): View
 	{
@@ -27,17 +56,9 @@ class Dotterel : InputMethodService(), StrokeListener
 		this.touchSteno = touchSteno
 		touchSteno.strokeListener = this
 
-		try
-		{
-			this.translator.dictionary = MultiDictionary(
-				this.translator.system.defaultDictionaries.map({
-					JsonDictionary(this.assets.open(it))
-				}))
-		}
-		catch(e: IOException)
-		{
-			Log.i("IO", "Error reading dictionaries")
-		}
+		this.translator.dictionary = MultiDictionary(
+			this.translator.system.defaultDictionaries
+				.mapNotNull({ this.getDictionary(it) }))
 
 		return touchSteno
 	}

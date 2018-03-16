@@ -8,52 +8,9 @@ import io.kotlintest.specs.FunSpec
 
 import nimble.dotterel.translation.KeyLayout
 import nimble.dotterel.translation.NumbersDictionary
-import nimble.dotterel.translation.StandardDictionary
 
-class StenoDictionaryTests : FunSpec
+class NumbersDictionaryTests : FunSpec
 ({
-	test("StandardDictionary.longestKey")
-	{
-		val dictionary = StandardDictionary()
-
-		dictionary.longestKey shouldBe 0
-
-		dictionary["HEL"] = "hell"
-		dictionary.longestKey shouldBe 1
-
-		dictionary["EBGS/TAT/EUBG"] = "ecstatic"
-		dictionary.longestKey shouldBe 3
-
-		dictionary["HEL/LOE"] = "hello"
-		dictionary["TPHO/W-R"] = "nowhere"
-		dictionary.longestKey shouldBe 3
-
-		dictionary.remove("EBGS/TAT/EUBG")
-		dictionary.longestKey shouldBe 2
-
-		dictionary.remove("HEL")
-		dictionary.longestKey shouldBe 2
-
-		dictionary.remove("TPHO/W-R")
-		dictionary.longestKey shouldBe 2
-
-		dictionary["HEL/LOE"] = "hello"
-		dictionary.remove("HEL/LOE")
-		dictionary.longestKey shouldBe 0
-	}
-
-	test("StandardDictionary.get")
-	{
-		val dictionary = StandardDictionary()
-
-		dictionary["HEL"] = "hell"
-		dictionary["HEL/LOE"] = "hello"
-		dictionary["HEL"] shouldBe "hell"
-		dictionary["HEL/LOE"] shouldBe "hello"
-
-		dictionary["HEL/LOE"] = "hell low"
-		dictionary["HEL/LOE"] shouldBe "hell low"
-	}
 
 	test("numbers")
 	{
@@ -81,5 +38,7 @@ class StenoDictionaryTests : FunSpec
 		dictionary[layout.parse(listOf("1234506789"))] shouldBe "{&1234506789}"
 		dictionary[layout.parse(listOf("K08"))] shouldBe null
 		dictionary[layout.parse(listOf("0*8"))] shouldBe null
+		dictionary[layout.parse(listOf(""))] shouldBe null
+		dictionary[layout.parse(listOf("TPH-"))] shouldBe null
 	}
 })
