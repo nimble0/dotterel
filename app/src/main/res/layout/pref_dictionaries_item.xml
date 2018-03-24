@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This file is part of Dotterel which is released under GPL-2.0-or-later. -->
+<!-- See file <LICENSE.txt> or go to <http://www.gnu.org/licenses/> for full license details. -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="horizontal"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	style="@style/DictionaryPreferenceItem">
+
+	<nimble.dotterel.Grabber android:id="@+id/grabber"
+		android:layout_width="50dp"
+		android:layout_height="50dp"
+		android:gravity="center"
+		android:background="@color/tint"/>
+
+	<TextView android:id="@+id/path"
+		android:orientation="horizontal"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:padding="10dp"
+		android:gravity="start|center_vertical" />
+
+</LinearLayout>

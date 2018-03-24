@@ -35,6 +35,7 @@ dependencies {
 	implementation 'com.android.support:support-vector-drawable:26.1.0'
 	implementation 'com.android.support:gridlayout-v7:26.1.0'
 	implementation 'com.android.support.constraint:constraint-layout:1.0.2'
+	implementation 'com.beust:klaxon:2.1.14'
 	testImplementation 'io.kotlintest:kotlintest:2.0.7'
 	androidTestImplementation 'com.android.support.test:runner:1.0.1'
 	androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'

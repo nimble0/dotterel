@@ -22,4 +22,10 @@
 		<item name="layout_rowWeight">1</item>
 	</style>
 
+	<style name="DictionaryPreferenceItem">
+		<item name="android:gravity">center</item>
+		<item name="android:foreground">@drawable/highlighted</item>
+		<item name="android:background">@drawable/selected</item>
+	</style>
+
 </resources>

@@ -8,7 +8,6 @@ import android.content.Context
 import android.support.constraint.ConstraintLayout
 import android.util.AttributeSet
 import android.view.MotionEvent
-import android.view.View
 import android.widget.TextView
 
 import nimble.dotterel.StrokeListener
@@ -17,16 +16,6 @@ import nimble.dotterel.translation.systems.IRELAND_LAYOUT
 import nimble.dotterel.util.*
 
 import kotlin.math.*
-
-val View.position: Vector2
-	get()
-	{
-		val p = IntArray(2)
-		this.getLocationOnScreen(p)
-		return Vector2(p[0].toFloat(), p[1].toFloat())
-	}
-val View.size: Vector2
-	get() = Vector2(this.width.toFloat(), this.height.toFloat())
 
 private const val APPLY_STROKE_DISTANCE = 100f
 private const val SIZE_MULTIPLIER = 30f

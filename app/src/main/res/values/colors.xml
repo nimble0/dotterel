@@ -12,4 +12,8 @@
 	<color name="selectedStenoKey">#45B</color>
 	<color name="selectedStenoBorder">#555</color>
 	<color name="stenoKeyText">#AAA</color>
+
+	<color name="tint">#EEE</color>
+	<color name="selected">#4BF</color>
+	<color name="highlighted">#07F</color>
 </resources>
