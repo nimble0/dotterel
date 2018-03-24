@@ -109,6 +109,7 @@ class Dotterel : InputMethodService(), StrokeListener
 			as TouchStenoView
 		this.touchSteno = touchSteno
 		touchSteno.strokeListener = this
+		touchSteno.translator = this.translator
 
 		return touchSteno
 	}

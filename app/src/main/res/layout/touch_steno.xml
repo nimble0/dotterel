@@ -8,6 +8,33 @@
 	android:layout_width="match_parent"
 	android:layout_height="match_parent">
 
+	<LinearLayout
+		android:layout_width="0dp"
+		android:layout_height="wrap_content"
+		app:layout_constraintStart_toStartOf="parent"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintBottom_toTopOf="@+id/keys"
+		android:background="@color/stenoKey">
+
+		<!-- Align the preview with the asterisk key, not the centre. -->
+		<Button android:id="@+id/translation_preview"
+			android:layout_width="0dp"
+			android:layout_weight="10"
+			android:layout_height="wrap_content"
+			android:minHeight="0dp"
+			android:padding="5dp"
+			android:background="@color/stenoKey"
+			android:textColor="@color/stenoKeyText"
+			android:textSize="20sp"
+			android:gravity="center"
+			android:textAllCaps="false" />
+		<Space
+			android:layout_width="0dp"
+			android:layout_weight="1"
+			android:layout_height="wrap_content" />
+
+	</LinearLayout>
+
 	<android.support.v7.widget.GridLayout android:id="@+id/keys"
 		android:layout_width="0dp"
 		android:layout_height="0dp"

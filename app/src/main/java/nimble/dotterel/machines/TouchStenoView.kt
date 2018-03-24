@@ -10,9 +10,11 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.widget.TextView
 
+import nimble.dotterel.R
 import nimble.dotterel.StrokeListener
 import nimble.dotterel.translation.Stroke
 import nimble.dotterel.translation.systems.IRELAND_LAYOUT
+import nimble.dotterel.translation.Translator
 import nimble.dotterel.util.*
 
 import kotlin.math.*
@@ -23,9 +25,11 @@ private const val SIZE_MULTIPLIER = 30f
 class TouchStenoView(context: Context, attributes: AttributeSet) :
 	ConstraintLayout(context, attributes)
 {
+	private var translationPreview: TextView? = null
 	private var keys = listOf<TextView>()
 	val keyLayout = IRELAND_LAYOUT
 	var strokeListener: StrokeListener? = null
+	var translator: Translator? = null
 
 	private val touches = mutableMapOf<Int, Touch>()
 
@@ -77,16 +81,36 @@ class TouchStenoView(context: Context, attributes: AttributeSet) :
 			keys.add(key)
 		}
 		this.keys = keys
+
+		this.translationPreview = this.findViewById(R.id.translation_preview)
+		this.translationPreview?.setOnClickListener({ this.applyStroke() })
+	}
+
+	@SuppressLint("SetTextI18n")
+	private fun updatePreview()
+	{
+		val stroke = this.stroke
+		if(stroke.keys == 0L)
+			this.translationPreview?.text = ""
+		else
+		{
+			val rtfcre = stroke.rtfcre
+			val translation = this.translator?.translate(stroke)?.raw ?: ""
+			this.translationPreview?.text = "$rtfcre : ${translation.trim()}"
+		}
 	}
 
 	private fun keyAt(p: Vector2): TextView? = this.keys.find(
 		{ (this.position + p) in Box(it.position, it.position + it.size) })
 
-	private fun setKeysNear(p: Vector2, radius: Float, select: Boolean) =
+	private fun setKeysNear(p: Vector2, radius: Float, select: Boolean)
+	{
 		this.keys
 			.filter({ (this.position + p) in
 				RoundedBox(it.position, it.position + it.size, radius) })
 			.forEach({ it.isSelected = select })
+		this.updatePreview()
+	}
 
 	private fun setKeysNear(touch: Touch)
 	{
@@ -107,6 +131,7 @@ class TouchStenoView(context: Context, attributes: AttributeSet) :
 		this.touches.clear()
 		for(key in this.keys)
 			key.isSelected = false
+		this.updatePreview()
 	}
 
 	@SuppressLint("ClickableViewAccessibility")
