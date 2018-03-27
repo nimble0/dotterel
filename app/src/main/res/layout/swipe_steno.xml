@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This file is part of Dotterel which is released under GPL-2.0-or-later. -->
+<!-- See file <LICENSE.txt> or go to <http://www.gnu.org/licenses/> for full license details. -->
+
+<nimble.dotterel.machines.SwipeStenoView
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent">
+
+	<LinearLayout
+		android:layout_width="0dp"
+		android:layout_height="wrap_content"
+		app:layout_constraintStart_toStartOf="parent"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintBottom_toTopOf="@+id/keys"
+		android:background="@color/stenoKey">
+
+		<!-- Align the preview between the number key and the asterisk key, not the centre. -->
+		<Button android:id="@+id/translation_preview"
+			android:layout_width="0dp"
+			android:layout_weight="12"
+			android:layout_height="wrap_content"
+			android:minHeight="0dp"
+			android:padding="5dp"
+			android:background="@color/stenoKey"
+			android:textColor="@color/stenoKeyText"
+			android:textSize="20sp"
+			android:gravity="center"
+			android:textAllCaps="false" />
+		<Space
+			android:layout_width="0dp"
+			android:layout_weight="1"
+			android:layout_height="wrap_content" />
+
+	</LinearLayout>
+
+	<android.support.v7.widget.GridLayout android:id="@+id/keys"
+		style="@style/SwipeStenoKeyboard"
+		android:layout_width="0dp"
+		android:layout_height="0dp"
+		app:layout_constraintHeight_min="130dp"
+		app:layout_constraintStart_toStartOf="parent"
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintBottom_toBottomOf="parent"
+		app:columnCount="13">
+
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="S-"
+			android:text="S"
+			app:layout_rowSpan="6"
+			app:layout_rowWeight="6" />
+
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="T-"
+			android:text="T" />
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="P-"
+			android:text="P" />
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="H-"
+			android:text="H" />
+
+		<TextView
+			android:tag="steno_key"
+			style="@style/SpecialStenoKey"
+			android:hint="#-"
+			android:text="#"
+			app:layout_columnSpan="2"
+			app:layout_columnWeight="2" />
+		<TextView
+			android:tag="steno_key"
+			style="@style/SpecialStenoKey"
+			android:hint="*"
+			android:text="*"
+			app:layout_columnSpan="2"
+			app:layout_columnWeight="2" />
+
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="-F"
+			android:text="F" />
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="-P"
+			android:text="P" />
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="-L"
+			android:text="L" />
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="-T"
+			android:text="T" />
+
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="-D"
+			android:text="D"
+			app:layout_rowSpan="3"
+			app:layout_rowWeight="3" />
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="-Z"
+			android:text="Z"
+			app:layout_column="12"
+			app:layout_row="3"
+			app:layout_rowSpan="3"
+			app:layout_rowWeight="3" />
+
+		<Space
+			app:layout_column="1"
+			app:layout_row="1"
+			app:layout_columnSpan="11"
+			app:layout_columnWeight="11"
+			app:layout_rowSpan="4"
+			app:layout_rowWeight="4" />
+
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="K-"
+			android:text="K" />
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="W-"
+			android:text="W" />
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="R-"
+			android:text="R" />
+
+		<TextView
+			android:tag="steno_key"
+			style="@style/SpecialStenoKey"
+			android:hint="A-"
+			android:text="A" />
+		<TextView
+			android:tag="steno_key"
+			style="@style/SpecialStenoKey"
+			android:hint="O-"
+			android:text="O" />
+		<TextView
+			android:tag="steno_key"
+			style="@style/SpecialStenoKey"
+			android:hint="-E"
+			android:text="E" />
+		<TextView
+			android:tag="steno_key"
+			style="@style/SpecialStenoKey"
+			android:hint="-U"
+			android:text="U" />
+
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="-R"
+			android:text="R" />
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="-B"
+			android:text="B" />
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="-G"
+			android:text="G" />
+		<TextView
+			android:tag="steno_key"
+			style="@style/StenoKey"
+			android:hint="-S"
+			android:text="S" />
+
+	</android.support.v7.widget.GridLayout>
+
+</nimble.dotterel.machines.SwipeStenoView>

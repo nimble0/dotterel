@@ -8,4 +8,8 @@
 		<item name="layout_constraintDimensionRatio">H,11:2.3</item>
 	</style>
 
+	<style name="SwipeStenoKeyboard">
+		<item name="layout_constraintDimensionRatio">H,11:2.5</item>
+	</style>
+
 </resources>

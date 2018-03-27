@@ -22,6 +22,11 @@
 		<item name="layout_rowWeight">1</item>
 	</style>
 
+	<style name="SpecialStenoKey" parent="StenoKey">
+		<item name="android:textColor">@color/specialStenoKeyText</item>
+		<item name="android:background">@drawable/special_steno_key</item>
+	</style>
+
 	<style name="DictionaryPreferenceItem">
 		<item name="android:gravity">center</item>
 		<item name="android:foreground">@drawable/highlighted</item>

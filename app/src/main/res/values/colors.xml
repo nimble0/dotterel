@@ -13,6 +13,12 @@
 	<color name="selectedStenoBorder">#555</color>
 	<color name="stenoKeyText">#AAA</color>
 
+	<color name="specialStenoKey">#060</color>
+	<color name="specialStenoKeyBorder">#090</color>
+	<color name="specialSelectedStenoKey">#4B5</color>
+	<color name="specialSelectedStenoBorder">#7A8</color>
+	<color name="specialStenoKeyText">#AAA</color>
+
 	<color name="tint">#EEE</color>
 	<color name="selected">#4BF</color>
 	<color name="highlighted">#07F</color>

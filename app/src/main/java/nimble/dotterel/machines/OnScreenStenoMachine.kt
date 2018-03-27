@@ -17,7 +17,9 @@ import nimble.dotterel.util.*
 
 val ON_SCREEN_MACHINE_STYLES = mapOf(
 	Pair("Touch",
-		mapOf(Pair(IRELAND_LAYOUT, R.layout.touch_steno)))
+		mapOf(Pair(IRELAND_LAYOUT, R.layout.touch_steno))),
+	Pair("Swipe",
+		mapOf(Pair(IRELAND_LAYOUT, R.layout.swipe_steno)))
 )
 
 class OnScreenStenoMachine(private val app: Dotterel) :
