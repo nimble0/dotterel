@@ -6,6 +6,11 @@ import android.os.Build
 import android.os.Bundle
 import android.preference.PreferenceActivity
 import android.preference.PreferenceFragment
+import android.preference.PreferenceManager
+
+val PREFERENCE_RESOURCES = listOf(
+	R.xml.pref_machines
+)
 
 class DotterelSettings : AppCompatPreferenceActivity()
 {
@@ -13,6 +18,9 @@ class DotterelSettings : AppCompatPreferenceActivity()
 	{
 		super.onCreate(savedInstanceState)
 		this.supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
+		for(resource in PREFERENCE_RESOURCES)
+			PreferenceManager.setDefaultValues(this, resource, true)
 	}
 
 	override fun onIsMultiPane(): Boolean =
@@ -26,4 +34,5 @@ class DotterelSettings : AppCompatPreferenceActivity()
 	override fun isValidFragment(fragmentName: String): Boolean =
 		fragmentName == PreferenceFragment::class.java.name
 			|| fragmentName == DictionariesPreferenceFragment::class.java.name
+			|| fragmentName == MachinesPreferenceFragment::class.java.name
 }

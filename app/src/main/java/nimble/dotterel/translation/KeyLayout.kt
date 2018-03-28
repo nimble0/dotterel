@@ -5,6 +5,8 @@ package nimble.dotterel.translation
 
 import kotlin.math.*
 
+val EMPTY_KEY_LAYOUT = KeyLayout("", "", "", mapOf())
+
 class KeyLayout(
 	leftKeys: String,
 	breakKeys: String,

@@ -13,5 +13,8 @@
 	<string name="pref_disable">Disable</string>
 	<string name="pref_delete">Delete</string>
 
+	<string name="pref_header_machines">Machines</string>
+	<string name="pref_machine_on_screen_style">On screen machine style</string>
+
 	<string-array name="empty" />
 </resources>

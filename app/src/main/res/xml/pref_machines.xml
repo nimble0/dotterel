@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This file is part of Dotterel which is released under GPL-2.0-or-later. -->
+<!-- See file <LICENSE.txt> or go to <http://www.gnu.org/licenses/> for full license details. -->
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+	<PreferenceCategory android:key="hidden">
+		<CheckBoxPreference
+			android:defaultValue="true"
+			android:key="machine/On Screen" />
+	</PreferenceCategory>
+
+	<ListPreference
+		android:defaultValue="Touch"
+		android:entries="@array/empty"
+		android:entryValues="@array/empty"
+		android:key="machine/On Screen/style"
+		android:negativeButtonText="@null"
+		android:positiveButtonText="@null"
+		android:title="@string/pref_machine_on_screen_style" />
+
+</PreferenceScreen>

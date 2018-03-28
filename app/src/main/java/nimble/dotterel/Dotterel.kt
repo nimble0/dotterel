@@ -6,12 +6,13 @@ package nimble.dotterel
 import android.content.SharedPreferences
 import android.inputmethodservice.InputMethodService
 import android.net.Uri
+import android.preference.PreferenceManager
 import android.util.Log
 import android.view.View
 
 import java.io.IOException
 
-import nimble.dotterel.machines.TouchStenoView
+import nimble.dotterel.machines.*
 import nimble.dotterel.translation.*
 import nimble.dotterel.translation.systems.IRELAND_SYSTEM
 import nimble.dotterel.util.BiMap
@@ -24,19 +25,45 @@ val CODE_ASSETS = mapOf(
 	Pair("dictionaries/Numbers", NumbersDictionary())
 )
 
-class Dotterel : InputMethodService(), StrokeListener
+val MACHINES = mapOf(
+	Pair("On Screen", OnScreenStenoMachine.Factory())
+)
+
+class Dotterel : InputMethodService(), StenoMachine.Listener
 {
+	interface EditorListener
+	{
+		fun setInputView(v: View?)
+	}
+
 	var preferences: SharedPreferences? = null
 		private set
 
-	private var touchSteno: TouchStenoView? = null
-	private var translator = Translator(
+	var translator = Translator(
 		IRELAND_SYSTEM,
 		log = { m -> Log.i("Steno", m) })
 
 	val systemName: String get() =
 		SYSTEMS.inverted[this.translator.system]
 			?: throw IllegalStateException("System missing from systems map")
+
+	private val machines = mutableMapOf<String, StenoMachine>()
+
+	private var viewCreated = false
+	var viewId: Int? = null
+		set(v)
+		{
+			field = v
+			if(this.viewCreated)
+			{
+				val view = v?.let({ this.layoutInflater.inflate(it, null) })
+				for(l in this.editorListeners)
+					l.setInputView(view)
+
+				// Not allowed to pass null to setInputView
+				this.setInputView(view ?: View(this.applicationContext))
+			}
+		}
 
 	private fun getDictionary(path: String): Dictionary?
 	{
@@ -84,10 +111,53 @@ class Dotterel : InputMethodService(), StrokeListener
 			dictionaries.mapNotNull({ this.getDictionary(it) }))
 	}
 
+	private fun addMachine(name: String)
+	{
+		if(name !in this.machines)
+		{
+			val machineFactory = MACHINES[name] ?: return
+			this.machines[name] = machineFactory
+				.makeStenoMachine(this)
+				.also({
+					it.keyLayout = this.translator.system.keyLayout
+					it.strokeListener = this
+				})
+		}
+	}
+	private fun removeMachine(name: String)
+	{
+		val machine = this.machines[name]
+		if(machine != null)
+		{
+			machine.close()
+			if(machine is EditorListener)
+				this.removeEditorListener(machine)
+			this.machines.remove(name)
+		}
+	}
+	private fun loadMachines()
+	{
+		for(m in MACHINES)
+		{
+			if(this.preferences?.getBoolean("machine/${m.key}", false) == true)
+				this.addMachine(m.key)
+			else
+				this.removeMachine(m.key)
+		}
+	}
+
 	private fun onPreferenceChanged(preferences: SharedPreferences, key: String)
 	{
-		if(key == "system/${this.systemName}/dictionaries")
-			this.loadDictionaries()
+		when
+		{
+			key == "system/${this.systemName}/dictionaries" ->
+				this.loadDictionaries()
+			key.substring(0, "machine/".length) == "machine/" ->
+				this.loadMachines()
+		}
+
+		for(m in this.machines)
+			m.value.preferenceChanged(preferences, key)
 	}
 	private val preferenceListener = SharedPreferences.OnSharedPreferenceChangeListener({
 		preferences, key -> this.onPreferenceChanged(preferences, key) })
@@ -96,28 +166,31 @@ class Dotterel : InputMethodService(), StrokeListener
 	{
 		super.onCreate()
 
+		for(resource in PREFERENCE_RESOURCES)
+			PreferenceManager.setDefaultValues(this, resource, true)
 		this.preferences = android.preference.PreferenceManager
 			.getDefaultSharedPreferences(this)
-		this.preferences?.registerOnSharedPreferenceChangeListener(this.preferenceListener)
+		this.preferences?.registerOnSharedPreferenceChangeListener(
+			this.preferenceListener)
 
 		this.loadDictionaries()
+		this.loadMachines()
 	}
 
-	override fun onCreateInputView(): View
+	override fun onCreateInputView(): View?
 	{
-		val touchSteno = layoutInflater.inflate(R.layout.touch_steno, null)
-			as TouchStenoView
-		this.touchSteno = touchSteno
-		touchSteno.strokeListener = this
-		touchSteno.translator = this.translator
-
-		return touchSteno
+		this.viewCreated = true
+		val view = this.viewId?.let({ this.layoutInflater.inflate(it, null) })
+		for(l in this.editorListeners)
+			l.setInputView(view)
+		return view
 	}
 
-	override fun onStroke(stroke: Stroke)
+	override fun changeStroke(s: Stroke) {}
+	override fun applyStroke(s: Stroke)
 	{
 		val ic = this.currentInputConnection
-		this.translator.apply(stroke)
+		this.translator.apply(s)
 		for(a in this.translator.flush())
 			when(a)
 			{
@@ -137,4 +210,8 @@ class Dotterel : InputMethodService(), StrokeListener
 				is Runnable -> a.run()
 			}
 	}
+
+	private val editorListeners = mutableListOf<EditorListener>()
+	fun addEditorListener(l: EditorListener) = this.editorListeners.add(l).let({ Unit })
+	fun removeEditorListener(l: EditorListener) = this.editorListeners.remove(l).let({ Unit })
 }

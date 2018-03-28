@@ -5,16 +5,10 @@ package nimble.dotterel.machines
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.support.constraint.ConstraintLayout
 import android.util.AttributeSet
 import android.view.MotionEvent
-import android.widget.TextView
 
-import nimble.dotterel.R
-import nimble.dotterel.StrokeListener
-import nimble.dotterel.translation.Stroke
 import nimble.dotterel.translation.systems.IRELAND_LAYOUT
-import nimble.dotterel.translation.Translator
 import nimble.dotterel.util.*
 
 import kotlin.math.*
@@ -23,20 +17,11 @@ private const val APPLY_STROKE_DISTANCE = 100f
 private const val SIZE_MULTIPLIER = 30f
 
 class TouchStenoView(context: Context, attributes: AttributeSet) :
-	ConstraintLayout(context, attributes)
+	StenoView(context, attributes)
 {
-	private var translationPreview: TextView? = null
-	private var keys = listOf<TextView>()
-	val keyLayout = IRELAND_LAYOUT
-	var strokeListener: StrokeListener? = null
-	var translator: Translator? = null
+	override val keyLayout = IRELAND_LAYOUT
 
 	private val touches = mutableMapOf<Int, Touch>()
-
-	private val stroke: Stroke
-		get() = this.keyLayout.parseKeys(this.keys
-			.filter({ it.isSelected })
-			.map({ it.hint as String }))
 
 	private class Touch(
 		val start: Vector2,
@@ -71,37 +56,8 @@ class TouchStenoView(context: Context, attributes: AttributeSet) :
 	override fun onFinishInflate()
 	{
 		super.onFinishInflate()
-
-		val keys = mutableListOf<TextView>()
-		while(true)
-		{
-			val key = this.findViewWithTag<TextView>("steno_key") ?: break
-
-			key.tag = null
-			keys.add(key)
-		}
-		this.keys = keys
-
-		this.translationPreview = this.findViewById(R.id.translation_preview)
 		this.translationPreview?.setOnClickListener({ this.applyStroke() })
 	}
-
-	@SuppressLint("SetTextI18n")
-	private fun updatePreview()
-	{
-		val stroke = this.stroke
-		if(stroke.keys == 0L)
-			this.translationPreview?.text = ""
-		else
-		{
-			val rtfcre = stroke.rtfcre
-			val translation = this.translator?.translate(stroke)?.raw ?: ""
-			this.translationPreview?.text = "$rtfcre : ${translation.trim()}"
-		}
-	}
-
-	private fun keyAt(p: Vector2): TextView? = this.keys.find(
-		{ (this.position + p) in Box(it.position, it.position + it.size) })
 
 	private fun setKeysNear(p: Vector2, radius: Float, select: Boolean)
 	{
@@ -121,17 +77,10 @@ class TouchStenoView(context: Context, attributes: AttributeSet) :
 				touch.action)
 	}
 
-	private fun applyStroke()
+	override fun applyStroke()
 	{
-		if(this.stroke.keys == 0L)
-			return
-
-		this.strokeListener?.onStroke(this.stroke)
-
+		super.applyStroke()
 		this.touches.clear()
-		for(key in this.keys)
-			key.isSelected = false
-		this.updatePreview()
 	}
 
 	@SuppressLint("ClickableViewAccessibility")

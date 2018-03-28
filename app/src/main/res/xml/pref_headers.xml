@@ -7,5 +7,8 @@
 	<header
 		android:fragment="nimble.dotterel.DictionariesPreferenceFragment"
 		android:title="@string/pref_header_dictionaries" />
+	<header
+		android:fragment="nimble.dotterel.MachinesPreferenceFragment"
+		android:title="@string/pref_header_machines" />
 
 </preference-headers>
