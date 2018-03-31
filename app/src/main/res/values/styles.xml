@@ -33,4 +33,9 @@
 		<item name="android:background">@drawable/selected</item>
 	</style>
 
+	<style name="KeyMappingKey">
+		<item name="android:gravity">center</item>
+		<item name="android:background">@drawable/key_mapping_key</item>
+	</style>
+
 </resources>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This file is part of Dotterel which is released under GPL-2.0-or-later. -->
+<!-- See file <LICENSE.txt> or go to <http://www.gnu.org/licenses/> for full license details. -->
+
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:orientation="horizontal"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent">
+
+	<TextView
+		android:layout_width="0dp"
+		android:layout_height="wrap_content"
+		android:padding="10dp"
+		tools:ignore="Suspicious0dp" />
+
+	<TextView android:id="@+id/steno_key"
+		android:layout_width="50sp"
+		android:layout_height="match_parent"
+		android:padding="10dp"
+		android:gravity="center"
+		android:background="@color/tint" />
+
+	<nimble.dotterel.FlowLayout android:id="@+id/keyboard_keys"
+		android:layout_width="0dp"
+		android:layout_height="wrap_content"
+		android:layout_weight="1"
+		android:padding="2dp" />
+
+	<Button android:id="@+id/add_keyboard_key"
+		android:layout_width="wrap_content"
+		android:layout_height="match_parent"
+		android:minWidth="0dp"
+		android:minHeight="0dp"
+		android:padding="10dp"
+		android:focusable="true"
+		android:focusableInTouchMode="true"
+		android:gravity="center"
+		android:text="@string/pref_add"
+		android:background="@color/tint" />
+
+</LinearLayout>

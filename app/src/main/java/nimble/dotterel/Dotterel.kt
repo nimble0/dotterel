@@ -8,14 +8,20 @@ import android.inputmethodservice.InputMethodService
 import android.net.Uri
 import android.preference.PreferenceManager
 import android.util.Log
+import android.view.KeyEvent
 import android.view.View
 
 import java.io.IOException
 
 import nimble.dotterel.machines.*
 import nimble.dotterel.translation.*
+import nimble.dotterel.translation.systems.IRELAND_LAYOUT
 import nimble.dotterel.translation.systems.IRELAND_SYSTEM
 import nimble.dotterel.util.BiMap
+
+val KEY_LAYOUTS = BiMap(mapOf(
+	Pair("Ireland", IRELAND_LAYOUT)
+))
 
 val SYSTEMS = BiMap(mapOf(
 	Pair("Ireland", IRELAND_SYSTEM)
@@ -26,7 +32,8 @@ val CODE_ASSETS = mapOf(
 )
 
 val MACHINES = mapOf(
-	Pair("On Screen", OnScreenStenoMachine.Factory())
+	Pair("On Screen", OnScreenStenoMachine.Factory()),
+	Pair("NKRO", NkroStenoMachine.Factory())
 )
 
 class Dotterel : InputMethodService(), StenoMachine.Listener
@@ -34,6 +41,12 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 	interface EditorListener
 	{
 		fun setInputView(v: View?)
+	}
+
+	interface KeyListener
+	{
+		fun keyDown(e: KeyEvent): Boolean
+		fun keyUp(e: KeyEvent): Boolean
 	}
 
 	var preferences: SharedPreferences? = null
@@ -132,6 +145,8 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 			machine.close()
 			if(machine is EditorListener)
 				this.removeEditorListener(machine)
+			if(machine is KeyListener)
+				this.removeKeyListener(machine)
 			this.machines.remove(name)
 		}
 	}
@@ -214,4 +229,25 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 	private val editorListeners = mutableListOf<EditorListener>()
 	fun addEditorListener(l: EditorListener) = this.editorListeners.add(l).let({ Unit })
 	fun removeEditorListener(l: EditorListener) = this.editorListeners.remove(l).let({ Unit })
+
+	override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean
+	{
+		for(l in this.keyListeners)
+			if(l.keyDown(event))
+				return true
+
+		return false
+	}
+	override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean
+	{
+		for(l in this.keyListeners)
+			if(l.keyUp(event))
+				return true
+
+		return false
+	}
+
+	private val keyListeners = mutableListOf<KeyListener>()
+	fun addKeyListener(l: KeyListener) = this.keyListeners.add(l).let({ Unit })
+	fun removeKeyListener(l: KeyListener) = this.keyListeners.remove(l).let({ Unit })
 }
