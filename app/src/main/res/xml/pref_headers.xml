@@ -10,5 +10,8 @@
 	<header
 		android:fragment="nimble.dotterel.MachinesPreferenceFragment"
 		android:title="@string/pref_header_machines" />
+	<header
+		android:fragment="nimble.dotterel.AboutFragment"
+		android:title="@string/pref_header_about" />
 
 </preference-headers>

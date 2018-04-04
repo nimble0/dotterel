@@ -12,6 +12,10 @@
 		<item name="colorAccent">@color/colorAccent</item>
 	</style>
 
+	<style name="AboutTheme">
+		<item name="android:textSize">20sp</item>
+	</style>
+
 	<style name="StenoKey">
 		<item name="android:gravity">center</item>
 		<item name="android:textSize">20sp</item>

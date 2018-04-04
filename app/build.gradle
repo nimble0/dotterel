@@ -15,6 +15,9 @@ android {
 		testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 		vectorDrawables.useSupportLibrary= true
 	}
+	applicationVariants.all { variant ->
+		variant.resValue "string", "version_name", variant.versionName
+	}
 	buildTypes {
 		release {
 			minifyEnabled false

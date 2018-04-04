@@ -35,4 +35,5 @@ class DotterelSettings : AppCompatPreferenceActivity()
 		fragmentName == PreferenceFragment::class.java.name
 			|| fragmentName == DictionariesPreferenceFragment::class.java.name
 			|| fragmentName == MachinesPreferenceFragment::class.java.name
+			|| fragmentName == AboutFragment::class.java.name
 }
