@@ -82,6 +82,7 @@ class ReorderableListView(context: Context, attributes: AttributeSet)
 				super.setAdapter(this._adapter)
 			}
 		}
+	var actionMode: ActionMode? = null
 
 	var allowDragging = true
 	private var dragI: Int? = null

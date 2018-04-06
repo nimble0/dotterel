@@ -145,12 +145,14 @@ private class DictionariesPreferenceModalListener(
 	{
 		mode.menuInflater.inflate(R.menu.dictionaries_preference_menu, menu)
 		this.list.allowDragging = false
+		this.list.actionMode = mode
 		return true
 	}
 
 	override fun onDestroyActionMode(mode: ActionMode)
 	{
 		this.list.allowDragging = true
+		this.list.actionMode = null
 	}
 
 	override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean = false
@@ -196,6 +198,7 @@ class DictionariesPreferenceFragment : PreferenceFragment()
 
 		view.findViewById<Button>(R.id.reset_dictionaries).setOnClickListener({
 			this.reset()
+			this.view?.actionMode?.finish()
 		})
 
 		return view
@@ -218,6 +221,12 @@ class DictionariesPreferenceFragment : PreferenceFragment()
 	{
 		this.save()
 		super.onPause()
+	}
+
+	override fun onDestroyView()
+	{
+		this.view?.actionMode?.finish()
+		super.onDestroyView()
 	}
 
 	private fun chooseDictionaryFile()
