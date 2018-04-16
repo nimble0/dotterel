@@ -12,52 +12,110 @@ import android.view.View
 
 import com.eclipsesource.json.JsonObject
 
+import kotlin.math.min
+
 import nimble.dotterel.R
 import nimble.dotterel.util.*
+import nimble.dotterel.util.ui.boundingBox
 import nimble.dotterel.util.ui.position
-import nimble.dotterel.util.ui.size
 
-import kotlin.math.*
+private fun MotionEvent.getTouchLine(i: Int): List<Pair<Vector2, Float>>
+{
+	val touchLine = mutableListOf<Pair<Vector2, Float>>()
+	for(h in 0 until this.historySize)
+		touchLine.add(Pair(
+			Vector2(this.getHistoricalX(i, h), this.getHistoricalY(i, h)),
+			this.getHistoricalPressure(i, h)))
+	touchLine.add(Pair(
+		Vector2(this.getX(i), this.getY(i)),
+		this.getPressure(i)))
 
-private const val APPLY_STROKE_DISTANCE = 100f
+	return touchLine
+}
+
+private fun findKeyIntersections(
+	line: LinearLine,
+	keys: Set<View>
+): List<Pair<View, Pair<Float, Float>>>
+{
+	val lineBoundingBox = line.boundingBox
+	return keys.filter({ lineBoundingBox.overlaps(it.boundingBox) })
+		.mapNotNull({ key -> line.intersect(key.boundingBox)?.let({ Pair(key, it) }) })
+		.sortedWith(compareBy({ it.second.first }, { it.second.second }))
+		.filterNot({ it.second.second < 0f })
+}
+
+private fun activateKeysOnLine(line: LinearLine, keys: Set<View>, activate: Boolean): Float
+{
+	val keyIntersections = findKeyIntersections(line, keys)
+
+	var lineEnd = 0f
+	for(key in keyIntersections)
+	{
+		if(key.second.first <= lineEnd + 1e-4f)
+		{
+			key.first.isSelected = activate
+			lineEnd = key.second.second
+		}
+		else
+			break
+	}
+
+	return if(keyIntersections.isEmpty()) 1f else lineEnd
+}
+
+private const val CIRCULAR_ITERATIONS = 12
 
 class TouchStenoView(context: Context, attributes: AttributeSet) :
 	StenoView(context, attributes)
 {
-	private val touches = mutableMapOf<Int, Touch>()
-
 	private class Touch(
-		val start: Vector2,
-		val keyPress: Boolean,
-		val action: Boolean,
-		size: Float)
+		var position: Vector2,
+		var radius: Float,
+		var activate: Boolean,
+		val keys: Set<View>)
 	{
-		var largestSize: Float = size
-			private set
-		var largestDistance2: Float = 0f
-			private set
-
-		fun process(e: MotionEvent, i: Int)
+		init
 		{
-			for(h in 0 until e.historySize)
-			{
-				val p = Vector2(e.getHistoricalX(i, h), e.getHistoricalY(i, h))
-				this.largestSize = max(
-					this.largestSize,
-					e.getHistoricalPressure(i, h))
-				this.largestDistance2 = max(
-					this.largestDistance2,
-					(this.start - p).length2)
-			}
+			this.keys
+				.filter({ this.position in it.boundingBox })
+				.forEach({ it.isSelected = this.activate })
+			this.activateNearKeys()
+		}
 
-			val p = Vector2(e.getX(i), e.getY(i))
-			this.largestSize = max(this.largestSize, e.getSize(i))
-			this.largestDistance2 = max(this.largestDistance2, (start - p).length2)
+		private fun activateNearKeys()
+		{
+			for(i in 0 until CIRCULAR_ITERATIONS)
+			{
+				val angle = (i * 2 * Math.PI / CIRCULAR_ITERATIONS).toFloat()
+				activateKeysOnLine(
+					LinearLine(this.position, this.position + Vector2(this.radius, 0f).rotate(angle)),
+					this.keys,
+					this.activate)
+			}
+		}
+
+		fun update(position: Vector2, radius: Float): Boolean
+		{
+			val line = LinearLine(this.position, position)
+			val lineEnd = min(1f, activateKeysOnLine(
+				line,
+				this.keys,
+				this.activate))
+
+			this.position = line.lerp(lineEnd)
+			this.radius = radius
+
+			this.activateNearKeys()
+
+			return lineEnd < 1f
 		}
 	}
 
 	private var minTouchRadius = 0f
 	private var maxTouchRadius = 20f
+
+	private val touches = mutableMapOf<Int, Touch>()
 
 	override fun setConfig(config: JsonObject, systemConfig: JsonObject)
 	{
@@ -80,24 +138,6 @@ class TouchStenoView(context: Context, attributes: AttributeSet) :
 		this.translationPreview?.setOnClickListener({ this.applyStroke() })
 	}
 
-	private fun setKeysNear(p: Vector2, radius: Float, select: Boolean)
-	{
-		this.keys
-			.filter({ (this.position + p) in
-				RoundedBox(it.position, it.position + it.size, radius) })
-			.forEach({ it.isSelected = select })
-		this.changeStroke()
-	}
-
-	private fun setKeysNear(touch: Touch)
-	{
-		if(touch.keyPress)
-			setKeysNear(
-				touch.start,
-				lerp(this.minTouchRadius, this.maxTouchRadius, touch.largestSize),
-				touch.action)
-	}
-
 	override fun applyStroke()
 	{
 		super.applyStroke()
@@ -115,40 +155,51 @@ class TouchStenoView(context: Context, attributes: AttributeSet) :
 			{
 				val p = Vector2(e.getX(actionI), e.getY(actionI))
 				val key = this.keyAt(p)
-				val touch = Touch(
-					p,
-					// Touch doesn't activate or deactivate keys if no key is
-					// directly hit, but it can apply the stroke.
-					key != null,
-					key != null && !key.isSelected,
-					e.getSize(actionI))
-				this.touches[pointerId] = touch
-				this.setKeysNear(touch)
-			}
-			MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP ->
-			{
-				this.touches.remove(pointerId)
-				this.performClick()
+				if(key != null)
+				{
+					this.touches[pointerId] = Touch(
+						this.position + p,
+						lerp(
+							this.minTouchRadius,
+							this.maxTouchRadius,
+							e.getPressure(actionI)),
+						!key.isSelected,
+						this.keys.toSet())
+					this.changeStroke()
+				}
 			}
 			MotionEvent.ACTION_MOVE ->
 			{
-				var applyStroke = false
 				for(i in 0 until e.pointerCount)
 				{
 					val touch = this.touches[e.getPointerId(i)] ?: continue
+					for(p in e.getTouchLine(i))
+					{
+						val position = this.position + p.first
+						val radius = lerp(
+							this.minTouchRadius,
+							this.maxTouchRadius,
+							e.getPressure(actionI))
 
-					val pressure = touch.largestSize
-					touch.process(e, i)
-					if(touch.largestSize > pressure)
-						this.setKeysNear(touch)
-
-					if(touch.largestDistance2
-						> APPLY_STROKE_DISTANCE * APPLY_STROKE_DISTANCE)
-						applyStroke = true
+						if(touch.update(position, radius))
+						{
+							this.applyStroke()
+							break
+						}
+					}
 				}
-
-				if(applyStroke)
+				this.changeStroke()
+			}
+			MotionEvent.ACTION_UP,
+			MotionEvent.ACTION_POINTER_UP,
+			MotionEvent.ACTION_CANCEL,
+			MotionEvent.ACTION_OUTSIDE ->
+			{
+				val p = Vector2(e.getX(actionI), e.getY(actionI))
+				if(this.touches[e.getPointerId(actionI)] != null && this.keyAt(p) == null)
 					this.applyStroke()
+
+				this.touches.remove(pointerId)
 			}
 		}
 

@@ -27,13 +27,6 @@ class GeometryTests : FunSpec
 		(Vector2(-5f, -5f) in box) shouldBe true
 		(Vector2(5f, 5f) in box) shouldBe true
 		(Vector2(6f, 5f) in box) shouldBe false
-
-		val roundedBox = RoundedBox(Vector2(-5f, -5f), Vector2(5f, 5f), 2f)
-
-		(Vector2(-7f, 5f) in roundedBox) shouldBe true
-		(Vector2(5f, 7f) in roundedBox) shouldBe true
-		(Vector2(-7f, 7f) in roundedBox) shouldBe false
-		(Vector2(-6f, 6f) in roundedBox) shouldBe true
 	}
 
 	test("box overlaps")

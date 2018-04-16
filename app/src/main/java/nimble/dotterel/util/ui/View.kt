@@ -5,6 +5,7 @@ package nimble.dotterel.util.ui
 
 import android.view.View
 
+import nimble.dotterel.util.Box
 import nimble.dotterel.util.Vector2
 
 val View.position: Vector2
@@ -16,3 +17,5 @@ val View.position: Vector2
 	}
 val View.size: Vector2
 	get() = Vector2(this.width.toFloat(), this.height.toFloat())
+val View.boundingBox: Box
+	get() = Box(this.position, this.position + this.size)
