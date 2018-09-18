@@ -242,7 +242,18 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 	override fun changeStroke(s: Stroke) {}
 	override fun applyStroke(s: Stroke)
 	{
-		this.translator.apply(s)
+		val privateImeOptions = (this.currentInputEditorInfo.privateImeOptions ?: "")
+			.split(",")
+			.map({
+				val parts = it.split("=")
+				Pair(parts[0], parts.getOrNull(1))
+			})
+			.toMap()
+
+		if(privateImeOptions["nimble.dotterel.rawSteno"] == "true")
+			this.translator.applyRaw(s)
+		else
+			this.translator.apply(s)
 		for(a in this.translator.flush())
 			when(a)
 			{

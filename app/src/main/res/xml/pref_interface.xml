@@ -17,6 +17,14 @@
 			<extra android:name="key" android:value="opacity" />
 		</SeekBarPreference>
 
+		<SeekBarPreference
+			android:title="Add Translation opacity"
+			android:defaultValue="100">
+			<extra android:name="store_type" android:value="json_preference" />
+			<extra android:name="store_path" android:value="tool/addTranslation" />
+			<extra android:name="key" android:value="opacity" />
+		</SeekBarPreference>
+
 	</PreferenceCategory>
 
 </androidx.preference.PreferenceScreen>

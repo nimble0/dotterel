@@ -26,7 +26,8 @@ private val ANDROID_COMMANDS = mapOf(
 	Pair("IME:SWITCH_NEXT", runnableCommand(::switchNextIme)),
 	Pair("IME:SWITCH", runnableCommand(::switchIme)),
 	Pair("IME:SHOW_PICKER", runnableCommand(::showImePicker)),
-	Pair("PLOVER:LOOKUP", runnableCommand(::lookupTranslation))
+	Pair("PLOVER:LOOKUP", runnableCommand(::lookupTranslation)),
+	Pair("PLOVER:ADD_TRANSLATION", runnableCommand(::addTranslation))
 ).mapKeys({ CaseInsensitiveString(it.key) })
 
 class AndroidSystemResources(private val context: Context) : SystemResources
