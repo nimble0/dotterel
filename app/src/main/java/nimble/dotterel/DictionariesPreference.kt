@@ -14,7 +14,7 @@ import android.view.*
 import android.widget.*
 import android.widget.AbsListView.*
 
-import com.beust.klaxon.*
+import com.eclipsesource.json.*
 
 import java.io.IOException
 
@@ -70,30 +70,35 @@ private fun checkAccessible(context: Context, path: String): Boolean
 	}
 }
 
-fun List<DictionaryItem>.toJson(): String
+fun List<DictionaryItem>.toJson(): JsonArray
 {
-	val values = this
-	return json({
-		array(values.map({
-			obj(
-				"name" to it.name,
-				"enabled" to it.enabled
-			)
+	val json = JsonArray()
+	for(item in this)
+		json.add(JsonObject().also({
+			it.add("name", item.name)
+			it.add("enabled", item.enabled)
 		}))
-	}).toJsonString()
+	return json
 }
 
 fun dictionaryListFromJson(key: String, json: String): List<DictionaryItem>
 {
 	try
 	{
-		return Klaxon().parseArray(json) ?: listOf()
+		val dictionaryList = mutableListOf<DictionaryItem>()
+		for(item in Json.parse(json).asArray())
+			dictionaryList.add(item.asObject().let({
+				DictionaryItem(
+					it.get("name").asString(),
+					it.get("enabled").asBoolean())
+			}))
+		return dictionaryList
 	}
-	catch(e: KlaxonException)
+	catch(e: com.eclipsesource.json.ParseException)
 	{
 		Log.e("Preferences", "Preference $key has badly formed JSON")
 	}
-	catch(e: IllegalStateException)
+	catch(e: java.lang.UnsupportedOperationException)
 	{
 		Log.e("Preferences", "Invalid type found while reading preference $key")
 	}
@@ -350,6 +355,7 @@ class DictionariesPreferenceFragment : PreferenceFragment()
 		val defaultDictionaries = system.defaultDictionaries
 			.map({ DictionaryItem(it, true) })
 			.toJson()
+			.toString()
 
 		this.load(defaultDictionaries)
 	}
@@ -369,7 +375,7 @@ class DictionariesPreferenceFragment : PreferenceFragment()
 		if(value != null)
 			PreferenceManager.getDefaultSharedPreferences(this.activity)
 				.edit()
-				.putString(this.key, value)
+				.putString(this.key, value.toString())
 				.apply()
 	}
 

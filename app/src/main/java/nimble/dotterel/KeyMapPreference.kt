@@ -11,24 +11,20 @@ import android.util.Log
 import android.view.*
 import android.widget.*
 
-import com.beust.klaxon.*
-
-import java.io.IOException
-import java.io.StringReader
+import com.eclipsesource.json.*
 
 import nimble.dotterel.translation.KeyLayout
 import nimble.dotterel.translation.systems.IRELAND_LAYOUT
+import nimble.dotterel.util.*
 
 data class KeyMapping(val stenoKey: String, val keyboardKeys: MutableList<String>)
 
-fun List<KeyMapping>.toJson(): String
+fun List<KeyMapping>.toJson(): JsonObject
 {
-	val values = this
-	return json({
-		obj(*values.map({
-			it.stenoKey to JsonArray(it.keyboardKeys)
-		}).toTypedArray())
-	}).toJsonString()
+	val json = JsonObject()
+	for(mapping in this)
+		json.add(mapping.stenoKey, mapping.keyboardKeys.toJson())
+	return json
 }
 
 fun keyMapFromJson(key: String, json: String): Map<String, List<String>>
@@ -36,31 +32,15 @@ fun keyMapFromJson(key: String, json: String): Map<String, List<String>>
 	try
 	{
 		val keyMap = mutableMapOf<String, List<String>>()
-		JsonReader(StringReader(json)).use(
-			{ reader ->
-				reader.beginObject()
-				{
-					while(reader.hasNext())
-					{
-						val stenoKey = reader.nextName()
-						val keyboardKeys = mutableListOf<String>()
-						reader.beginArray()
-						{
-							while(reader.hasNext())
-								keyboardKeys.add(reader.nextString())
-						}
-						keyMap[stenoKey] = keyboardKeys
-					}
-				}
-			})
-
+		for(mapping in Json.parse(json).asObject())
+			keyMap[mapping.name] = mapping.value.asArray().map({ it.asString() })
 		return keyMap
 	}
-	catch(e: KlaxonException)
+	catch(e: com.eclipsesource.json.ParseException)
 	{
 		Log.e("Preferences", "Preference $key has badly formed JSON")
 	}
-	catch(e: IllegalStateException)
+	catch(e: java.lang.UnsupportedOperationException)
 	{
 		Log.e("Preferences", "Invalid type found while reading preference $key")
 	}
@@ -213,7 +193,7 @@ class KeyMapPreference(context: Context, attributes: AttributeSet) :
 			this.save()
 	}
 
-	fun save() = this.persistString(this.items.toJson())
+	fun save() = this.persistString(this.items.toJson().toString())
 
 	fun load(value: String)
 	{

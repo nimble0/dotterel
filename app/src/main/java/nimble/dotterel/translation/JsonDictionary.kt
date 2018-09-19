@@ -3,20 +3,15 @@
 
 package nimble.dotterel.translation
 
-import android.util.JsonReader
+import com.eclipsesource.json.Json
 
 import java.io.InputStream
-import java.io.InputStreamReader
 
 class JsonDictionary(input: InputStream) : StandardDictionary()
 {
 	init
 	{
-		JsonReader(InputStreamReader(input, "UTF-8")).use({
-			it.beginObject()
-			while(it.hasNext())
-				this[it.nextName()] = it.nextString()
-			it.endObject()
-		})
+		for(entry in Json.parse(input.reader()).asObject())
+			this[entry.name] = entry.value.asString()
 	}
 }
