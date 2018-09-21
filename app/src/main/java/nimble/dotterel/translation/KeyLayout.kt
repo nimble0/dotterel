@@ -3,19 +3,21 @@
 
 package nimble.dotterel.translation
 
+import com.eclipsesource.json.JsonObject
+
 import kotlin.math.*
 
-val EMPTY_KEY_LAYOUT = KeyLayout("", "", "", mapOf())
+import nimble.dotterel.util.toJson
 
-class KeyLayout(
-	leftKeys: String,
-	breakKeys: String,
-	rightKeys: String,
+val EMPTY_KEY_LAYOUT = KeyLayout("", mapOf())
+
+data class KeyLayout(
+	val keysString: String,
 	// Keys that represent combinations of other keys
 	// eg/ "1-" = ["#", "S-"], "2-" = ["#", "T-"]
-	mappedKeys: Map<String, List<String>>)
+	val mappedKeys: Map<String, List<String>> = mapOf())
 {
-	data class RtfcreKey(
+	data class Key(
 		val char: Char,
 		var keys: Long,
 		// This key isn't outputted in rtfcre when these keys are also active
@@ -34,97 +36,118 @@ class KeyLayout(
 		}
 	}
 
-	val rtfcreKeys: List<RtfcreKey>
+	val keys: List<Key>
 	val breakKeys: Pair<Int, Int>
 
 	init
 	{
-		val rtfcreKeys = mutableListOf<RtfcreKey>()
+		var keyI = 0
+		fun toRtfcreKey(key: Char, keyString: String) =
+			if(keyString in mappedKeys)
+				Key(key, 0L, 0L, false)
+			else
+				Key(key, 1L shl keyI++, 0L, true)
 
-		fun parseKeys(keys: String, startKeyI: Int, side: Boolean): Int
-		{
-			var keyI = startKeyI
-			for(key in keys)
-			{
-				val keyStr = (if(side) "-" else "") + key + (if(!side) "-" else "")
-				if(keyStr in mappedKeys)
-					rtfcreKeys.add(RtfcreKey(key, 0L, 0L, false))
-				else
-					rtfcreKeys.add(RtfcreKey(key, 1L shl keyI++, 0L, true))
-			}
+		val keySections = keysString.split('-')
 
-			return keyI
-		}
+		if(keySections.size > 3)
+			throw(IllegalArgumentException("keysString cannot contain more than 2 hyphens"))
 
-		var keyI = parseKeys(leftKeys, 0, false)
-		keyI = parseKeys(breakKeys, keyI, false)
-		parseKeys(rightKeys, keyI, true)
+		val leftKeys = keySections[0].map({ toRtfcreKey(it, "$it-") })
+		val breakKeys = keySections.getOrNull(1)
+			?.map({ toRtfcreKey(it, "$it") }) ?: listOf()
+		val rightKeys = keySections.getOrNull(2)
+			?.map({ toRtfcreKey(it, "-$it") }) ?: listOf()
 
-		this.rtfcreKeys = rtfcreKeys
-		this.breakKeys = Pair(leftKeys.length, leftKeys.length + breakKeys.length)
+		this.keys = leftKeys + breakKeys + rightKeys
+		this.breakKeys = Pair(leftKeys.size, leftKeys.size + breakKeys.size)
 
 		for(mappedKey in mappedKeys)
 		{
 			val i = this.findKey(mappedKey.key)
-			var combinationKey = mappedKey.value.fold(
+			if(i == -1)
+				throw(IllegalArgumentException("mappedKeys contains key not in keysString"))
+			val combinationKey = mappedKey.value.fold(
 				0L,
 				{ acc, it -> acc or this.parseKey(it) })
-			this.rtfcreKeys[i].keys = combinationKey
+			this.keys[i].keys = combinationKey
 
-			for(key in this.rtfcreKeys)
+			for(key in this.keys)
 				key.excludeConflictingKeys(combinationKey)
 		}
 	}
 
-	fun parse(strokeStr: String): Stroke
+	val sections: List<List<Key>> get() =
+		listOf(this.keys.subList(0, this.breakKeys.first),
+			this.keys.subList(this.breakKeys.first, this.breakKeys.second),
+			this.keys.subList(this.breakKeys.second, this.keys.size))
+
+	// All keys that aren't combinations of other keys
+	val pureKeysString: String get() =
+		this.sections.map({ keys ->
+			keys.mapNotNull({ if(it.pure) it.char else null }).joinToString("")
+		}).joinToString("-")
+
+	val pureKeysList: List<String> get()
+	{
+		val keySections = this.sections.map({ keys ->
+			keys.mapNotNull({ if(it.pure) it.char.toString() else null })
+		})
+
+		return (keySections[0].map({ "$it-" })
+			+ keySections[1]
+			+ keySections[2].map({ "-$it" }))
+	}
+
+	fun parse(strokeString: String): Stroke
 	{
 		var strokeKeys: Long = 0
 
 		var strokeKeyI = 0
 		var keyI = 0
 		var keyEnd = this.breakKeys.second
-		while(strokeKeyI < strokeStr.length && keyI < keyEnd)
+		while(strokeKeyI < strokeString.length && keyI < keyEnd)
 		{
-			if(strokeStr[strokeKeyI] == this.rtfcreKeys[keyI].char)
+			if(strokeString[strokeKeyI] == this.keys[keyI].char)
 			{
 				++strokeKeyI
-				strokeKeys = strokeKeys or this.rtfcreKeys[keyI].keys
+				strokeKeys = strokeKeys or this.keys[keyI].keys
 
 				// Only allow right side keys after break key
 				if(keyI >= this.breakKeys.first && keyI < this.breakKeys.second)
-					keyEnd = this.rtfcreKeys.size
+					keyEnd = this.keys.size
 			}
-			else if(strokeStr[strokeKeyI] == '-' && keyI < this.breakKeys.second)
+			else if(strokeString[strokeKeyI] == '-' && keyI < this.breakKeys.second)
 			{
 				++strokeKeyI
 				keyI = max(keyI, this.breakKeys.first)
-				keyEnd = this.rtfcreKeys.size
+				keyEnd = this.keys.size
 			}
 
 			++keyI
 		}
 
 		// Bad stroke_string (excludeKeys ordered properly or invalid keys
-		if(strokeKeyI < strokeStr.length)
+		if(strokeKeyI < strokeString.length)
 			strokeKeys = 0
 
 		return Stroke(this, strokeKeys)
 	}
 
-	fun parse(strokeStrs: List<String>): List<Stroke> =
-		strokeStrs.map({ this.parse(it) })
+	fun parse(strokeStrings: List<String>): List<Stroke> =
+		strokeStrings.map({ this.parse(it) })
 
 	private fun findKey(key: String): Int
 	{
 		return when
 		{
 			key.length == 1 || (key.length == 2 && key[1] == '-') ->
-				this.rtfcreKeys.subList(0, breakKeys.second)
+				this.keys.subList(0, breakKeys.second)
 					.indexOfFirst({ it.char == key[0] })
 			key.length == 2 && key[0] == '-' ->
 			{
-				val i = this.rtfcreKeys
-					.subList(breakKeys.first, this.rtfcreKeys.size)
+				val i = this.keys
+					.subList(breakKeys.first, this.keys.size)
 					.indexOfFirst({ it.char == key[1] })
 				i + if(i != -1) breakKeys.first else 0
 			}
@@ -133,7 +156,7 @@ class KeyLayout(
 		}
 	}
 	private fun parseKey(key: String): Long =
-		this.rtfcreKeys.getOrNull(this.findKey(key))?.keys ?: 0L
+		this.keys.getOrNull(this.findKey(key))?.keys ?: 0L
 
 	fun parseKeys(keys: List<String>): Stroke
 	{
@@ -145,7 +168,7 @@ class KeyLayout(
 	}
 
 	fun pureKeysString(keys: Long): String =
-		this.rtfcreKeys.joinToString(separator = "", transform =
+		this.keys.joinToString(separator = "", transform =
 		{
 			if(it.pure && it.keys and keys != 0L)
 				it.char.toString()
@@ -157,37 +180,32 @@ class KeyLayout(
 
 	fun rtfcre(keys: Long): String
 	{
-		var left = this.rtfcreKeys
-			.subList(0, breakKeys.first)
-			.filter({ it.test(keys) })
-			.map({ it.char })
-		var middle = this.rtfcreKeys
-			.subList(breakKeys.first, breakKeys.second)
-			.filter({ it.test(keys) })
-			.map({ it.char })
-		var right = this.rtfcreKeys
-			.subList(breakKeys.second, this.rtfcreKeys.size)
-			.filter({ it.test(keys) })
-			.map({ it.char })
+		val sections = this.sections.map({
+			it.filter({ it.test(keys) }).map({ it.char }).joinToString("")
+		})
+		val needDivider = sections[1].isEmpty() && sections[2].isNotEmpty()
 
-		return (left
-				+ (if(middle.isEmpty() && right.isNotEmpty()) listOf('-') else middle)
-				+ right)
-			.joinToString(separator = "")
+		return (sections[0]
+			+ (if(needDivider) "-" else sections[1])
+			+ sections[2])
 	}
 
-	override fun equals(other: Any?) =
-		this === other
-			|| (other is KeyLayout
-			&& this.rtfcreKeys == other.rtfcreKeys
-			&& this.breakKeys == other.breakKeys)
+	constructor(json: JsonObject) :
+		this(
+			keysString = json.getString("keysString", ""),
+			mappedKeys = json.get("mappedKeys")?.asObject()?.let({ map ->
+				val mappedKeys = mutableMapOf<String, List<String>>()
+				for(kv in map)
+					mappedKeys[kv.name] = kv.value.asArray().map({ it.asString() })
+				mappedKeys.toMap()
+			}) ?: mapOf()
+		)
 
-	override fun hashCode(): Int
-	{
-		val prime = 31
-		var result = 1
-		result = prime * result + this.rtfcreKeys.hashCode()
-		result = prime * result + this.breakKeys.hashCode()
-		return result
-	}
+	fun toJson() = JsonObject().also({ jsonKeyLayout ->
+			jsonKeyLayout.set("keysString", this.keysString)
+			jsonKeyLayout.set("mappedKeys", JsonObject().also({ jsonMappedKeys ->
+				for((key, mapped) in this.mappedKeys)
+					jsonMappedKeys.add(key, mapped.toJson())
+			}))
+		})
 }

@@ -132,23 +132,11 @@ class KeyMapAdapter(context: Context, items: MutableList<KeyMapping>) :
 class KeyMapPreference(context: Context, attributes: AttributeSet) :
 	DialogPreference(context, attributes)
 {
-	var keyLayout: KeyLayout = IRELAND_LAYOUT
+	var keyLayout: KeyLayout = KeyLayout("", mapOf())
 		set(v)
 		{
 			field = v
-
-			val items = mutableListOf<KeyMapping>()
-			for((i, k) in v.rtfcreKeys.withIndex())
-				if(k.pure)
-				{
-					val keyString = (
-						(if(i >= v.breakKeys.second) "-" else "")
-							+ k.char.toString ()
-							+ (if(i < v.breakKeys.first) "-" else ""))
-
-					items.add(KeyMapping(keyString, mutableListOf()))
-				}
-			this._items = items
+			items = v.pureKeysList.map({ KeyMapping(it, mutableListOf()) })
 		}
 	private var _items: List<KeyMapping> = listOf()
 	var items: List<KeyMapping>

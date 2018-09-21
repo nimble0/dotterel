@@ -15,9 +15,7 @@ class NumbersDictionaryTests : FunSpec
 	test("numbers")
 	{
 		val layout = KeyLayout(
-			"#1S2TK3PW4HR",
-			"5A0O*EU",
-			"6FR7PB8LG9TSDZ",
+			"#1S2TK3PW4HR-5A0O*EU-6FR7PB8LG9TSDZ",
 			mapOf(
 				Pair("1-", listOf("#-", "S-")),
 				Pair("2-", listOf("#-", "T-")),
