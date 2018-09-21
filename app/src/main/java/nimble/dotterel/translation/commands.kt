@@ -65,16 +65,16 @@ fun resetTransform(translator: Translator, arg: String) =
 
 fun setSpace(translator: Translator, arg: String) =
 	TranslationPart(listOf(UnformattedText(formatting = Formatting(
+		space = arg,
 		spaceStart = Formatting.Space.NONE,
 		spaceEnd = null,
-		space = arg,
 		orthographyEnd = null))))
 
 fun resetSpace(translator: Translator, arg: String) =
 	TranslationPart(listOf(UnformattedText(formatting = Formatting(
+		space = translator.system.defaultFormatting.space,
 		spaceStart = Formatting.Space.NONE,
 		spaceEnd = null,
-		space = translator.system.defaultFormatting.space,
 		orthographyEnd = null))))
 
 

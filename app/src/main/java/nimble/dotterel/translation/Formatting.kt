@@ -4,10 +4,10 @@
 package nimble.dotterel.translation
 
 data class Formatting(
+	val space: String? = null,
 	val spaceStart: Space = Space.NORMAL,
 	// null = Carry previous spaceEnd
 	val spaceEnd: Space? = Space.NORMAL,
-	val space: String? = null,
 
 	// null = Carry previous orthography
 	val orthography: Orthography? = null,
@@ -117,9 +117,9 @@ data class Formatting(
 		}
 
 		return Formatting(
+			space = b.space ?: this.space,
 			spaceStart = this.spaceStart,
 			spaceEnd = b.spaceEnd ?: this.spaceEnd,
-			space = b.space ?: this.space,
 			orthography = b.orthography ?: this.orthography,
 			orthographyStart = this.orthographyStart,
 			orthographyEnd = b.orthographyEnd,
