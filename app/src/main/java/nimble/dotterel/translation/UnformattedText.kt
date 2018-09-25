@@ -17,7 +17,7 @@ data class UnformattedText(
 			context.text.length - text.backspaces)
 		var noSpace = context.formatting.noSpace(text.formatting)
 		val orthography = context.formatting.orthography(text.formatting)
-			?.apply(contextStr, (if(noSpace) "" else " ") + text.text)
+			?.match(contextStr, (if(noSpace) "" else " ") + text.text)
 		if(orthography != null)
 			text = UnformattedText(
 				text.backspaces + orthography.backspaces,

@@ -5,7 +5,7 @@ package nimble.dotterel.translation.systems
 
 import nimble.dotterel.*
 import nimble.dotterel.translation.*
-import nimble.dotterel.translation.Orthography.Replacement
+import nimble.dotterel.translation.RegexOrthography.Replacement
 
 val IRELAND_LAYOUT = KeyLayout(
 	"#1S2TK3PW4HR-5A0O*EU-6FR7PB8LG9TSDZ",
@@ -22,7 +22,7 @@ val IRELAND_LAYOUT = KeyLayout(
 		Pair("-9", listOf("#-", "-T")))
 )
 
-val ENGLISH_ORTHOGRAPHY = Orthography(listOf(
+val ENGLISH_ORTHOGRAPHY = RegexOrthography(mutableListOf(
 	Replacement(Regex("(?<=[bcdfghjklmnpqrstvwxz] ?)y\uffffs"), "ies"),
 	Replacement(Regex("(?<=s|sh|x|z|zh ?)\uffffs"), "es"),
 	Replacement(Regex("ie\uffffing"), "ying")

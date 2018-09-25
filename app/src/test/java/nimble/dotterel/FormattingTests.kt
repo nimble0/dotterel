@@ -125,10 +125,10 @@ class FormattingTests : FunSpec
 
 	test("orthography")
 	{
-		val orthography = Orthography(listOf(
-			Orthography.Replacement(Regex("(?<=[bcdfghjklmnpqrstvwxz] ?)y\uffffs"), "ies"),
-			Orthography.Replacement(Regex("(?<=s|sh|x|z|zh ?)\uffffs"), "es"),
-			Orthography.Replacement(Regex("ie\uffffing"), "ying")
+		val orthography = RegexOrthography(mutableListOf(
+			RegexOrthography.Replacement(Regex("(?<=[bcdfghjklmnpqrstvwxz] ?)y\uffffs"), "ies"),
+			RegexOrthography.Replacement(Regex("(?<=s|sh|x|z|zh ?)\uffffs"), "es"),
+			RegexOrthography.Replacement(Regex("ie\uffffing"), "ying")
 		))
 
 		run {
@@ -237,8 +237,10 @@ class FormattingTests : FunSpec
 		}
 
 		run {
-			val orthography2 = Orthography(listOf(
-				Orthography.Replacement(Regex("(?<=[bcdfghjklmnpqrstvwxz] ?)y\uffffs"), "ies")))
+			val orthography2 = RegexOrthography(mutableListOf(
+				RegexOrthography.Replacement(
+					Regex("(?<=[bcdfghjklmnpqrstvwxz] ?)y\uffffs"),
+					"ies")))
 
 			val context = FormattedText(
 				0,
