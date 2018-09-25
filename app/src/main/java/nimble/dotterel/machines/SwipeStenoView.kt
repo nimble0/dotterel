@@ -29,7 +29,7 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.widget.TextView
 
-import nimble.dotterel.translation.systems.IRELAND_LAYOUT
+import nimble.dotterel.translation.KeyLayout
 import nimble.dotterel.util.Vector2
 
 private fun MotionEvent.getTouchLine(i: Int): List<Vector2>
@@ -45,7 +45,7 @@ private fun MotionEvent.getTouchLine(i: Int): List<Vector2>
 class SwipeStenoView(context: Context, attributes: AttributeSet) :
 	StenoView(context, attributes)
 {
-	override val keyLayout = IRELAND_LAYOUT
+	override val keyLayout = KeyLayout("#STKPWHR-AO*EU-FRPBLGTSDZ")
 
 	private val touches = mutableMapOf<Int, Vector2>()
 
@@ -96,7 +96,7 @@ class SwipeStenoView(context: Context, attributes: AttributeSet) :
 
 					this.touches[e.getPointerId(i)] = Vector2(e.getX(i), e.getY(i))
 				}
-				this.updatePreview()
+				this.changeStroke()
 			}
 			MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP ->
 			{

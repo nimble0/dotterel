@@ -36,7 +36,7 @@ class NkroStenoMachine(private val app: Dotterel) :
 	}
 
 	private val keyMapPreferenceKey
-		get() = "machine/NKRO/key_map/${KEY_LAYOUTS.inverted[this.keyLayout]}"
+		get() = "machine/NKRO/key_map/${this.keyLayout.pureKeysString}"
 
 	private fun updateKeyMap()
 	{

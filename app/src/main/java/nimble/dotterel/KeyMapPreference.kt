@@ -15,7 +15,6 @@ import androidx.preference.*
 import com.eclipsesource.json.*
 
 import nimble.dotterel.translation.KeyLayout
-import nimble.dotterel.translation.systems.IRELAND_LAYOUT
 import nimble.dotterel.util.*
 import nimble.dotterel.util.DialogPreference
 
@@ -149,7 +148,7 @@ class KeyMapPreference(context: Context, attributes: AttributeSet) :
 
 	override val dialogFragment get() = KeyMapPreferenceFragment()
 
-	init { this.keyLayout = IRELAND_LAYOUT }
+	init { this.keyLayout = KeyLayout("#STKPWHR-AO*EU-FRPBLGTSDZ") }
 
 	override fun getDialogLayoutResource(): Int = R.layout.pref_key_map
 

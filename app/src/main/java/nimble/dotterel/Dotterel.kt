@@ -17,13 +17,8 @@ import java.io.IOException
 
 import nimble.dotterel.machines.*
 import nimble.dotterel.translation.*
-import nimble.dotterel.translation.systems.IRELAND_LAYOUT
 import nimble.dotterel.translation.systems.IRELAND_SYSTEM
 import nimble.dotterel.util.BiMap
-
-val KEY_LAYOUTS = BiMap(mapOf(
-	Pair("Ireland", IRELAND_LAYOUT)
-))
 
 val SYSTEMS = BiMap(mapOf(
 	Pair("Ireland", IRELAND_SYSTEM)

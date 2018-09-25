@@ -13,14 +13,13 @@ import androidx.constraintlayout.widget.ConstraintLayout
 
 import nimble.dotterel.*
 import nimble.dotterel.translation.*
-import nimble.dotterel.translation.systems.IRELAND_LAYOUT
 import nimble.dotterel.util.*
 
 val ON_SCREEN_MACHINE_STYLES = mapOf(
 	Pair("Touch",
-		mapOf(Pair(IRELAND_LAYOUT, R.layout.touch_steno))),
+		mapOf(Pair("#STKPWHR-AO*EU-FRPBLGTSDZ", R.layout.touch_steno))),
 	Pair("Swipe",
-		mapOf(Pair(IRELAND_LAYOUT, R.layout.swipe_steno)))
+		mapOf(Pair("#STKPWHR-AO*EU-FRPBLGTSDZ", R.layout.swipe_steno)))
 )
 
 class OnScreenStenoMachine(private val app: Dotterel) :
@@ -43,7 +42,7 @@ class OnScreenStenoMachine(private val app: Dotterel) :
 	private fun updateStyle()
 	{
 		val style = this.app.preferences?.getString("machine/On Screen/style", null)
-		val viewId = ON_SCREEN_MACHINE_STYLES[style]?.get(this.keyLayout)
+		val viewId = ON_SCREEN_MACHINE_STYLES[style]?.get(this.keyLayout.pureKeysString)
 		if(viewId == null)
 		{
 			val m = "On Screen machine style $style does not support the current key layout"
@@ -73,6 +72,7 @@ class OnScreenStenoMachine(private val app: Dotterel) :
 	{
 		if(v is StenoView)
 		{
+			v.outputKeyLayout = this.keyLayout
 			v.strokeListener = this
 			v.translator = this.app.translator
 		}
@@ -85,6 +85,7 @@ abstract class StenoView(context: Context, attributes: AttributeSet) :
 	protected var translationPreview: TextView? = null
 	protected var keys = listOf<TextView>()
 	abstract val keyLayout: KeyLayout
+	var outputKeyLayout: KeyLayout = KeyLayout("")
 	var strokeListener: StenoMachine.Listener? = null
 	var translator: Translator? = null
 
@@ -111,15 +112,14 @@ abstract class StenoView(context: Context, attributes: AttributeSet) :
 	}
 
 	@SuppressLint("SetTextI18n")
-	protected open fun updatePreview()
+	protected open fun updatePreview(s: Stroke)
 	{
-		val stroke = this.stroke
-		if(stroke.keys == 0L)
+		if(s.keys == 0L)
 			this.translationPreview?.text = ""
 		else
 		{
-			val rtfcre = stroke.rtfcre
-			val translation = this.translator?.translate(stroke)?.raw ?: ""
+			val rtfcre = s.rtfcre
+			val translation = this.translator?.translate(s)?.raw ?: ""
 			this.translationPreview?.text = "$rtfcre : ${translation.trim()}"
 		}
 	}
@@ -127,15 +127,22 @@ abstract class StenoView(context: Context, attributes: AttributeSet) :
 	protected open fun keyAt(p: Vector2): TextView? = this.keys.find(
 		{ (this.position + p) in Box(it.position, it.position + it.size) })
 
+	protected open fun changeStroke()
+	{
+		val stroke = Stroke(this.outputKeyLayout, this.stroke.keys)
+		this.strokeListener?.changeStroke(stroke)
+		this.updatePreview(stroke)
+	}
+
 	protected open fun applyStroke()
 	{
 		if(this.stroke.keys == 0L)
 			return
 
-		this.strokeListener?.applyStroke(this.stroke)
+		this.strokeListener?.applyStroke(Stroke(this.outputKeyLayout, this.stroke.keys))
 
 		for(key in this.keys)
 			key.isSelected = false
-		this.updatePreview()
+		this.updatePreview(Stroke(this.outputKeyLayout, this.stroke.keys))
 	}
 }
