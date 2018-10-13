@@ -12,6 +12,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.*
 import androidx.preference.PreferenceFragmentCompat
 
+import java.io.File
+
+import nimble.dotterel.util.bindSummaryToValue
+import nimble.dotterel.util.flatten
+
 val PREFERENCE_RESOURCES = listOf(
 	R.xml.pref_machines
 )
@@ -64,7 +69,9 @@ class DotterelSettings :
 	): Boolean
 	{
 		val fragment = this.supportFragmentManager.fragmentFactory
-			.instantiate(this.classLoader, preference.fragment, preference.extras)
+			.instantiate(this.classLoader, preference.fragment, null)
+		fragment.arguments = preference.extras
+		(fragment as? PreferenceFragment)?.preference = preference
 		this.supportFragmentManager
 			.beginTransaction()
 			.replace(R.id.preference_screen, fragment)
@@ -76,17 +83,25 @@ class DotterelSettings :
 		return true
 	}
 
-	override fun onBackPressed()
+	fun exitFragment()
 	{
 		super.onBackPressed()
 
 		val count = this.supportFragmentManager.backStackEntryCount
 		this.supportActionBar?.title = if(count == 0)
-				this.rootTitle
-			else
-				this.supportFragmentManager
-					.getBackStackEntryAt(count - 1)
-					.name
+			this.rootTitle
+		else
+			this.supportFragmentManager
+				.getBackStackEntryAt(count - 1)
+				.name
+	}
+
+	override fun onBackPressed()
+	{
+		val fragment = this.supportFragmentManager
+			.findFragmentById(R.id.preference_screen)
+		if((fragment as? FragmentExitListener)?.onExit({ this.exitFragment() }) != false)
+			this.exitFragment()
 	}
 
 	override fun onOptionsItemSelected(item: MenuItem): Boolean
@@ -109,5 +124,49 @@ class SettingsFragment : PreferenceFragmentCompat()
 	override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?)
 	{
 		this.addPreferencesFromResource(R.xml.pref_root)
+
+		this.preferenceScreen
+			.flatten()
+			.filter({ it.extras.getBoolean("bindSummaryToValue") })
+			.forEach({ it.bindSummaryToValue() })
+
+		(this.findPreference("system") as ListPreference).also({ preference ->
+			val currentPreferenceChangeListener = preference.onPreferenceChangeListener
+			preference.onPreferenceChangeListener = Preference.OnPreferenceChangeListener()
+			{ p, v ->
+				currentPreferenceChangeListener?.onPreferenceChange(p, v)
+				bindSystemPreferencesToActiveSystem(this)
+				true
+			}
+		})
+	}
+
+	private fun updateSystemsList()
+	{
+		val systems = File(this.requireContext().filesDir, "systems")
+			.listFiles()
+			?.filter({ it.isFile && it.extension == "json" })
+			?.sorted()
+			?: listOf()
+		(this.findPreference("system") as ListPreference).also({ preference ->
+			preference.entries = systems.map({ it.nameWithoutExtension }).toTypedArray()
+			preference.entryValues = systems.map({ it.absolutePath }).toTypedArray()
+
+			// Update preference to reflect changes to underlying SharedPreferences value
+			val value = this.preferenceManager.sharedPreferences
+				.getString(preference.key, null)
+			preference.onPreferenceChangeListener?.onPreferenceChange(
+				preference,
+				value)
+		})
+
+		bindSystemPreferencesToActiveSystem(this)
+	}
+
+	override fun onResume()
+	{
+		super.onResume()
+
+		this.updateSystemsList()
 	}
 }

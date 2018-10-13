@@ -38,6 +38,18 @@ interface DotterelRunnable
 	}
 }
 
+fun reloadSystem(sharedPreferences: SharedPreferences, system: String)
+{
+	if(system != sharedPreferences.getString("system", null))
+		return
+
+	val current = sharedPreferences.getBoolean("reloadSystem", false)
+	sharedPreferences
+		.edit()
+		.putBoolean("reloadSystem", !current)
+		.apply()
+}
+
 class Dotterel : InputMethodService(), StenoMachine.Listener
 {
 	interface EditorListener
@@ -58,6 +70,10 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 		NULL_SYSTEM,
 		log = { m -> Log.e("Dotterel Translation", m) })
 
+	private val systemManager = SystemManager(
+		AndroidSystemResources(this),
+		log = { m -> Log.e("Dotterel", m) })
+
 	private val machines = mutableMapOf<String, StenoMachine>()
 
 	private var viewCreated = false
@@ -75,6 +91,32 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 				this.setInputView(view ?: View(this.applicationContext))
 			}
 		}
+
+	private fun loadSystem()
+	{
+		val system = this.preferences?.getString("system", null)
+		this.loadSystem(system)
+	}
+
+	fun setSystem(system: String?)
+	{
+		this.preferences?.edit()?.putString("system", system)?.apply()
+		this.loadSystem(system)
+	}
+
+	private fun loadSystem(name: String?)
+	{
+		Log.i("Dotterel", "Load system $name")
+
+		val system = if(name == null)
+			NULL_SYSTEM
+		else
+			this.systemManager.openSystem(name) ?: return
+
+		this.translator.system = system
+		for(machine in this.machines.keys)
+			this.configureMachine(machine)
+	}
 
 	private fun configureMachine(machine: String)
 	{
@@ -142,6 +184,8 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 	{
 		when
 		{
+			key == "system" || key == "reloadSystem" ->
+				this.loadSystem()
 			key.startsWith("machine/") ->
 			{
 				val machine = key.substring("machine/".length)
@@ -169,9 +213,12 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 			PreferenceManager.setDefaultValues(this, resource, true)
 		this.preferences = PreferenceManager
 			.getDefaultSharedPreferences(this)
+		// Preference listener stored as member variable because
+		// SharedPreferences holds listeners with weak pointers.
 		this.preferences?.registerOnSharedPreferenceChangeListener(
 			this.preferenceListener)
 
+		this.loadSystem()
 		this.loadMachines()
 	}
 

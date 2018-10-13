@@ -5,6 +5,7 @@ package nimble.dotterel.util
 
 import androidx.preference.ListPreference
 import androidx.preference.Preference
+import androidx.preference.PreferenceGroup
 import androidx.preference.PreferenceManager
 
 private val bindPreferenceSummaryToValueListener =
@@ -35,3 +36,13 @@ fun Preference.bindSummaryToValue()
 	}
 	bindPreferenceSummaryToValueListener.onPreferenceChange(this, value)
 }
+
+val PreferenceGroup.preferences: List<Preference>
+	get() = (0 until this.preferenceCount)
+		.map({ this.getPreference(it) })
+
+fun Preference.flatten(): List<Preference> =
+	if(this is PreferenceGroup)
+		this.preferences.flatMap({ it.flatten() })
+	else
+		listOf(this)

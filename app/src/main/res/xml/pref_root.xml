@@ -6,12 +6,24 @@
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	android:title="Settings">
 
+	<ListPreference
+		android:key="system"
+		android:title="Active system">
+		<extra android:name="bindSummaryToValue" android:value="true" />
+	</ListPreference>
+
 	<Preference
 		android:fragment="nimble.dotterel.DictionariesPreferenceFragment"
 		android:title="@string/pref_dictionaries" />
+
+	<Preference
+		android:fragment="nimble.dotterel.SystemsPreferenceFragment"
+		android:title="@string/pref_systems" />
+
 	<Preference
 		android:fragment="nimble.dotterel.MachinesPreferenceFragment"
 		android:title="@string/pref_machines" />
+
 	<Preference
 		android:fragment="nimble.dotterel.AboutFragment"
 		android:title="@string/pref_about" />
