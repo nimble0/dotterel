@@ -212,7 +212,7 @@ private class DictionariesPreferenceModalListener(
 
 	override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean
 	{
-		mode.menuInflater.inflate(R.menu.dictionaries_preference_menu, menu)
+		mode.menuInflater.inflate(R.menu.dictionaries_preference, menu)
 		this.list.allowDragging = false
 		this.list.actionMode = mode
 		return true

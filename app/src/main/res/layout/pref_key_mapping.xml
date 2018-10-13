@@ -37,7 +37,7 @@
 		android:focusable="true"
 		android:focusableInTouchMode="true"
 		android:gravity="center"
-		android:text="@string/pref_add"
+		android:text="@string/add"
 		android:background="@color/tint" />
 
 </LinearLayout>

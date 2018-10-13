@@ -8,16 +8,16 @@
 	<item
 		android:id="@+id/list_enable"
 		app:showAsAction="ifRoom|withText"
-		android:title="@string/pref_enable" />
+		android:title="@string/enable" />
 
 	<item
 		android:id="@+id/list_disable"
 		app:showAsAction="ifRoom|withText"
-		android:title="@string/pref_disable" />
+		android:title="@string/disable" />
 
 	<item
 		android:id="@+id/list_delete"
 		app:showAsAction="ifRoom|withText"
-		android:title="@string/pref_delete" />
+		android:title="@string/delete" />
 
 </menu>
