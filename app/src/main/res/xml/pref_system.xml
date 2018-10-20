@@ -5,6 +5,13 @@
 <androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
 	<Preference
+		android:title="@string/pref_dictionaries"
+		android:fragment="nimble.dotterel.DictionariesPreferenceFragment">
+		<extra android:name="store_type" android:value="json_file" />
+		<extra android:name="key" android:value="dictionaries" />
+	</Preference>
+
+	<Preference
 		android:title="@string/pref_systems_json"
 		android:fragment="nimble.dotterel.EditTextFragment">
 		<extra android:name="store_type" android:value="text_file" />

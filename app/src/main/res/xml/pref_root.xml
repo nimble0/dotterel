@@ -14,7 +14,11 @@
 
 	<Preference
 		android:fragment="nimble.dotterel.DictionariesPreferenceFragment"
-		android:title="@string/pref_dictionaries" />
+		android:title="@string/pref_dictionaries">
+		<extra android:name="type" android:value="system" />
+		<extra android:name="store_type" android:value="json_file" />
+		<extra android:name="key" android:value="dictionaries" />
+	</Preference>
 
 	<Preference
 		android:fragment="nimble.dotterel.SystemsPreferenceFragment"
