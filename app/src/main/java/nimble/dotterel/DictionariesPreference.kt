@@ -50,22 +50,22 @@ private fun checkAccessible(context: Context, path: String): Boolean
 	}
 	catch(e: IOException)
 	{
-		Log.i("IO", "Error reading dictionary $path")
+		Log.w("Dotterel", "Error reading dictionary $path")
 		return false
 	}
 	catch(e: SecurityException)
 	{
-		Log.i("IO", "Permission denied reading dictionary $path")
+		Log.w("Dotterel", "Permission denied reading dictionary $path")
 		return false
 	}
 	catch(e: java.lang.IllegalStateException)
 	{
-		Log.i("Dictionary", "$path is not a valid JSON dictionary")
+		Log.w("Dotterel", "$path is not a valid JSON dictionary")
 		return false
 	}
 	catch(e: ClassCastException)
 	{
-		Log.i("Type", "$path is not of type Dictionary")
+		Log.w("Dotterel", "$path is not of type Dictionary")
 		return false
 	}
 }
@@ -96,11 +96,11 @@ fun dictionaryListFromJson(key: String, json: String): List<DictionaryItem>
 	}
 	catch(e: com.eclipsesource.json.ParseException)
 	{
-		Log.e("Preferences", "Preference $key has badly formed JSON")
+		Log.e("Dotterel", "Preference $key has badly formed JSON")
 	}
 	catch(e: java.lang.UnsupportedOperationException)
 	{
-		Log.e("Preferences", "Invalid type found while reading preference $key")
+		Log.e("Dotterel", "Invalid type found while reading preference $key")
 	}
 
 	return listOf()

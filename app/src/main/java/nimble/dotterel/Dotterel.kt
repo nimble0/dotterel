@@ -55,7 +55,7 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 
 	var translator = Translator(
 		IRELAND_SYSTEM,
-		log = { m -> Log.i("Steno", m) })
+		log = { m -> Log.e("Dotterel Translation", m) })
 
 	val systemName: String get() =
 		SYSTEMS.inverted[this.translator.system]
@@ -104,29 +104,26 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 		}
 		catch(e: IOException)
 		{
-			error("Error reading dictionary $path")
-			return null
+			error("IO error reading dictionary $path")
 		}
 		catch(e: SecurityException)
 		{
 			error("Permission denied reading dictionary $path")
-			return null
 		}
 		catch(e: com.eclipsesource.json.ParseException)
 		{
 			error("$path is not a valid JSON dictionary")
-			return null
 		}
 		catch(e: java.lang.UnsupportedOperationException)
 		{
 			error("$path is not a valid JSON dictionary")
-			return null
 		}
 		catch(e: ClassCastException)
 		{
 			error("$path is not of type Dictionary")
-			return null
 		}
+
+		return null
 	}
 
 	private fun loadDictionaries()

@@ -38,11 +38,11 @@ fun keyMapFromJson(key: String, json: String): Map<String, List<String>>
 	}
 	catch(e: com.eclipsesource.json.ParseException)
 	{
-		Log.e("Preferences", "Preference $key has badly formed JSON")
+		Log.e("Dotterel", "Preference $key has badly formed JSON")
 	}
 	catch(e: java.lang.UnsupportedOperationException)
 	{
-		Log.e("Preferences", "Invalid type found while reading preference $key")
+		Log.e("Dotterel", "Invalid type found while reading preference $key")
 	}
 
 	return mapOf()
