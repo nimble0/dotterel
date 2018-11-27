@@ -107,32 +107,18 @@ fun optimiseActions(context: String, actions: List<Any>): List<Any>
 	return removeEmptyTextActions(actions3)
 }
 
-class Translator(system: System, var log: (message: String) -> Unit = { _ -> })
+class Translator(
+	var system: System,
+	var log: (message: String) -> Unit = {})
 {
-	var system: System = system
-		set(v)
-		{
-			field = v
-
-			this.processor.resetTransforms()
-			this.processor.resetCommands()
-			this.processor.resetAliases()
-			this.processor.transforms.putAll(this.system.transforms)
-			this.processor.commands.putAll(this.system.commands.map(
-				{ Pair(it.key.toLowerCase(), it.value) }))
-			this.processor.aliases.putAll(this.system.aliases.map(
-				{ Pair(it.key, TranslationString(it.value)) }))
-		}
 	var dictionary: Dictionary = MultiDictionary()
-	var processor = TranslationProcessor()
+	val processor = TranslationProcessor(this)
 
 	private var preHistoryFormatting: Formatting = system.defaultFormatting
 	private val _history = mutableListOf<HistoryTranslation>()
 
 	private var preBufferedContext = ""
 	private var bufferedActions = mutableListOf<Any>()
-
-	init { this.system = system }
 
 	val context: FormattedText
 		get()
@@ -257,7 +243,7 @@ class Translator(system: System, var log: (message: String) -> Unit = { _ -> })
 				else
 					this.popFull()
 
-			val processed = this.processor.process(this, t.raw)
+			val processed = this.processor.process(t.raw)
 			if(!processed.empty)
 				this.push(HistoryTranslation(
 					t.strokes,

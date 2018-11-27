@@ -43,7 +43,7 @@ fun transform(translator: Translator, arg: String) =
 			spaceStart = Formatting.Space.NONE,
 			spaceEnd = null,
 			orthographyEnd = null,
-			transform = translator.processor.transforms[arg],
+			transform = translator.system.transforms[arg.toLowerCase()],
 			transformState = Formatting.TransformState.MAIN
 		))))
 
@@ -53,7 +53,7 @@ fun singleTransform(translator: Translator, arg: String) =
 			spaceStart = Formatting.Space.NONE,
 			spaceEnd = null,
 			orthographyEnd = null,
-			singleTransform = translator.processor.transforms[arg],
+			singleTransform = translator.system.transforms[arg.toLowerCase()],
 			transformState = Formatting.TransformState.MAIN
 		))))
 
@@ -168,7 +168,6 @@ fun retroBreakTranslation(translator: Translator, arg: String)
 	// tailAction = "land"
 	// headActions = "swiz er"
 	val tailAction = translator.processor.process(
-		translator,
 		translator.dictionary[listOf(lastStroke)] ?: lastStroke.rtfcre)
 	val headActions = TranslationPart(
 		lastTranslation.replaces.flatMap({

@@ -34,35 +34,35 @@ val IRELAND_SYSTEM = System(
 	orthography = ENGLISH_ORTHOGRAPHY,
 
 	transforms = mapOf(
-		Pair("NONE", ::noneTransform),
-		Pair("CAPITALISE", ::capitaliseTransform),
-		Pair("UNCAPITALISE", ::uncapitaliseTransform),
-		Pair("UPPERCASE", ::upperCaseTransform),
-		Pair("LOWERCASE", ::lowerCaseTransform),
-		Pair("TITLECASE", ::titleCaseTransform)
+		Pair("none", ::noneTransform),
+		Pair("capitalise", ::capitaliseTransform),
+		Pair("uncapitalise", ::uncapitaliseTransform),
+		Pair("uppercase", ::upperCaseTransform),
+		Pair("lowercase", ::lowerCaseTransform),
+		Pair("titlecase", ::titleCaseTransform)
 	),
 
 	commands = mapOf(
-		Pair("RETRO:UNDO", ::undoStroke),
-		Pair("MODE:TRANSFORM", ::transform),
-		Pair("MODE:SINGLE_TRANSFORM", ::singleTransform),
+		Pair("retro:undo", ::undoStroke),
+		Pair("mode:transform", ::transform),
+		Pair("mode:single_transform", ::singleTransform),
 
-		Pair("RETRO:REPEAT_LAST_STROKE", ::repeatLastStroke),
-		Pair("RETRO:LAST_TRANSLATION", ::lastTranslation),
-		Pair("RETRO:LAST_CLUSTER", ::lastCluster),
-		Pair("RETRO:MOVE_LAST_CLUSTER", ::moveLastCluster),
-		Pair("RETRO:BREAK_TRANSLATION", ::retroBreakTranslation),
-		Pair("RETRO:TOGGLE_ASTERISK", ::retroToggleAsterisk),
+		Pair("retro:repeat_last_stroke", ::repeatLastStroke),
+		Pair("retro:last_translation", ::lastTranslation),
+		Pair("retro:last_cluster", ::lastCluster),
+		Pair("retro:move_last_cluster", ::moveLastCluster),
+		Pair("retro:break_translation", ::retroBreakTranslation),
+		Pair("retro:toggle_asterisk", ::retroToggleAsterisk),
 
-		Pair("MODE:SET_SPACE", ::setSpace),
-		Pair("MODE:RESET_CASE", ::resetTransform),
-		Pair("MODE:RESET_SPACE", ::resetSpace),
+		Pair("mode:set_space", ::setSpace),
+		Pair("mode:reset_case", ::resetTransform),
+		Pair("mode:reset_space", ::resetSpace),
 
-		Pair("IME:EDITOR_ACTION", ::editorAction),
-		Pair("IME:SWITCH_PREVIOUS", ::switchPreviousIme),
-		Pair("IME:SWITCH_NEXT", ::switchNextIme),
-		Pair("IME:SWITCH", ::switchIme),
-		Pair("IME:SHOW_PICKER", ::showImePicker)
+		Pair("ime:editor_action", ::editorAction),
+		Pair("ime:switch_previous", ::switchPreviousIme),
+		Pair("ime:switch_next", ::switchNextIme),
+		Pair("ime:switch", ::switchIme),
+		Pair("ime:show_picker", ::showImePicker)
 	),
 
 	aliases = mapOf(
