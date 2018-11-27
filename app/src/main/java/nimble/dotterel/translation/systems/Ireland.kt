@@ -94,7 +94,7 @@ val IRELAND_SYSTEM = System(
 	),
 
 	prefixStrokes = listOf(),
-	suffixStrokes = listOf("-Z", "-D", "-S", "-G"),
+	suffixStrokes = IRELAND_LAYOUT.parse(listOf("-Z", "-D", "-S", "-G")),
 
 	defaultDictionaries = listOf(
 		"asset://dictionaries/main.json",

@@ -31,7 +31,8 @@ fun undoStroke(translator: Translator, arg: String)
 			listOf(),
 			listOf(),
 			Collections.nCopies(count, backspaceWord),
-			translator.context))
+			translator.context,
+			false))
 
 	return TranslationPart()
 }

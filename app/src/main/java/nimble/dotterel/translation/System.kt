@@ -11,8 +11,8 @@ data class System(
 		(FormattedText, UnformattedText, Boolean) -> UnformattedText>,
 	val commands: Map<String, (Translator, String) -> TranslationPart>,
 	val aliases: Map<String, String>,
-	val prefixStrokes: List<String>,
-	val suffixStrokes: List<String>,
+	val prefixStrokes: List<Stroke>,
+	val suffixStrokes: List<Stroke>,
 	val defaultDictionaries: List<String>,
 	val defaultFormatting: Formatting
 )

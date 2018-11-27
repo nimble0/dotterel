@@ -12,7 +12,7 @@ class NumbersDictionary : Dictionary
 			return null
 
 		val s = k[0]
-		if(s.keys == 0L)
+		if(s.isEmpty)
 			return null
 
 		val numbers = (

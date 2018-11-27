@@ -114,7 +114,7 @@ abstract class StenoView(context: Context, attributes: AttributeSet) :
 	@SuppressLint("SetTextI18n")
 	protected open fun updatePreview(s: Stroke)
 	{
-		if(s.keys == 0L)
+		if(s.isEmpty)
 			this.translationPreview?.text = ""
 		else
 		{
@@ -136,7 +136,7 @@ abstract class StenoView(context: Context, attributes: AttributeSet) :
 
 	protected open fun applyStroke()
 	{
-		if(this.stroke.keys == 0L)
+		if(this.stroke.isEmpty)
 			return
 
 		this.strokeListener?.applyStroke(Stroke(this.outputKeyLayout, this.stroke.keys))

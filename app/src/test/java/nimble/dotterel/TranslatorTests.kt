@@ -37,13 +37,13 @@ class TranslatorTests : FunSpec
 		var translation = translator.translate(layout.parse("HEL"))
 		translation.raw shouldBe "hell"
 		translation.replaces.size shouldBe 0
-		translation.fullMatch shouldBe true
+		translation.isUntranslate shouldBe false
 		translator.apply(layout.parse("HEL"))
 
 		translation = translator.translate(layout.parse("HROE"))
 		translation.raw shouldBe "hello"
 		translation.replaces.size shouldBe 1
-		translation.fullMatch shouldBe true
+		translation.isUntranslate shouldBe false
 		translator.apply(layout.parse("HROE"))
 
 		translation = translator.translate(layout.parse("THR"))
@@ -54,7 +54,7 @@ class TranslatorTests : FunSpec
 		translation = translator.translate(layout.parse("PWEU"))
 		translation.raw shouldBe "PWEU"
 		translation.replaces.size shouldBe 0
-		translation.fullMatch shouldBe false
+		translation.isUntranslate shouldBe true
 	}
 
 	test("suffix stroke translation")
@@ -65,21 +65,65 @@ class TranslatorTests : FunSpec
 		dictionary["-D"] = "{^ed}"
 
 		var translation = translator.translate(layout.parse("HELD"))
-		translation.raw shouldBe " hell {^ed}"
+		translation.raw shouldBe "hell {^ed}"
 		translation.replaces.size shouldBe 0
-		translation.fullMatch shouldBe false
+		translation.hasSuffix shouldBe true
 
 		translator.apply(layout.parse("HEL"))
 		translation = translator.translate(layout.parse("HROED"))
 		translation.raw shouldBe "lode"
 		translation.replaces.size shouldBe 0
-		translation.fullMatch shouldBe true
+		translation.hasSuffix shouldBe false
+	}
+
+	test("prefix stroke translation")
+	{
+		val testSystem = IRELAND_SYSTEM.copy(
+			prefixStrokes = layout.parse(listOf("#", "#S"))
+		)
+
+		@Suppress("NAME_SHADOWING")
+		val translator = Translator(testSystem)
+		translator.dictionary = dictionary
+
+		dictionary["HEL"] = "hell"
+		dictionary["HEL/HROE"] = "hello"
+		dictionary["HROED"] = "lode"
+		dictionary["HROED/-D"] = "loaded"
+		dictionary["SHROED"] = "slowed"
+		dictionary["SER"] = "certificate"
+		dictionary["ER/KWRA"] = "era"
+		dictionary["#"] = "the"
+		dictionary["1"] = "a"
+
+		var translation = translator.translate(layout.parse("#SER"))
+		translation.raw shouldBe "the certificate"
+		translation.replaces.size shouldBe 0
+		translation.hasPrefix shouldBe true
+
+		translator.apply(layout.parse("#SER"))
+		translation = translator.translate(layout.parse("KWRA"))
+		translation.raw shouldBe "a era"
+		translation.replaces.size shouldBe 1
+		translation.hasPrefix shouldBe true
+
+		translator.apply(layout.parse("KWRA"))
+		translation = translator.translate(layout.parse("SHROED"))
+		translation.raw shouldBe "slowed"
+		translation.replaces.size shouldBe 0
+		translation.hasPrefix shouldBe false
+
+		translator.apply(layout.parse("SHROED"))
+		translation = translator.translate(layout.parse("-D"))
+		translation.raw shouldBe "-D"
+		translation.replaces.size shouldBe 0
+		translation.isUntranslate shouldBe true
 	}
 
 	test("prefix + suffix stroke translation")
 	{
 		val testSystem = IRELAND_SYSTEM.copy(
-			prefixStrokes = listOf("#")
+			prefixStrokes = layout.parse(listOf("#"))
 		)
 
 		@Suppress("NAME_SHADOWING")
@@ -95,32 +139,37 @@ class TranslatorTests : FunSpec
 		dictionary["-G"] = "{^ing}"
 
 		var translation = translator.translate(layout.parse("HELD"))
-		translation.raw shouldBe " hell {^ed}"
+		translation.raw shouldBe "hell {^ed}"
 		translation.replaces.size shouldBe 0
-		translation.fullMatch shouldBe false
+		translation.hasPrefix shouldBe false
+		translation.hasSuffix shouldBe true
 
 		translation = translator.translate(layout.parse("4E8"))
-		translation.raw shouldBe "the hell "
+		translation.raw shouldBe "the hell"
 		translation.replaces.size shouldBe 0
-		translation.fullMatch shouldBe false
+		translation.hasPrefix shouldBe true
+		translation.hasSuffix shouldBe false
 
 		translator.apply(layout.parse("4E8"))
 		translation = translator.translate(layout.parse("HROEG"))
 		translation.raw shouldBe "the hello {^ing}"
 		translation.replaces.size shouldBe 1
-		translation.fullMatch shouldBe false
+		translation.hasPrefix shouldBe true
+		translation.hasSuffix shouldBe true
 
 		translator.apply(layout.parse("4E8"))
 		translation = translator.translate(layout.parse("HROED"))
 		translation.raw shouldBe "lode"
 		translation.replaces.size shouldBe 0
-		translation.fullMatch shouldBe true
+		translation.hasPrefix shouldBe false
+		translation.hasSuffix shouldBe false
 
 		translator.apply(layout.parse("HEL"))
 		translation = translator.translate(layout.parse("4E8"))
 		translation.raw shouldBe "hellolleh"
 		translation.replaces.size shouldBe 1
-		translation.fullMatch shouldBe true
+		translation.hasPrefix shouldBe false
+		translation.hasSuffix shouldBe false
 	}
 
 	test("bad formatting")

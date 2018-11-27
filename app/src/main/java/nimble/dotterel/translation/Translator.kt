@@ -7,22 +7,9 @@ import java.text.ParseException
 
 import kotlin.math.max
 
+import nimble.dotterel.util.product
+
 private const val TRANSLATION_HISTORY_SIZE = 100
-
-private data class Affix(val prefix: Stroke, val suffix: Stroke)
-
-private fun permutateAffixes(prefixes: List<Stroke>, suffixes: List<Stroke>
-): List<Affix>
-{
-	val affixes = mutableListOf<Affix>()
-	affixes.addAll(prefixes.map({ Affix(it, Stroke(it.layout, 0)) }))
-	affixes.addAll(suffixes.map({ Affix(Stroke(it.layout, 0), it) }))
-	for(s in prefixes)
-		for(s2 in suffixes)
-			affixes.add(Affix(s, s2))
-
-	return affixes
-}
 
 fun format(
 	context: FormattedText,
@@ -126,9 +113,6 @@ class Translator(system: System, var log: (message: String) -> Unit = { _ -> })
 		set(v)
 		{
 			field = v
-			this.affixStrokes = permutateAffixes(
-				this.system.prefixStrokes.map({ this.system.keyLayout.parse(it) }),
-				this.system.suffixStrokes.map({ this.system.keyLayout.parse(it) }))
 
 			this.processor.resetTransforms()
 			this.processor.resetCommands()
@@ -142,7 +126,6 @@ class Translator(system: System, var log: (message: String) -> Unit = { _ -> })
 	var dictionary: Dictionary = MultiDictionary()
 	var processor = TranslationProcessor()
 
-	private var affixStrokes: List<Affix> = listOf()
 	private var preHistoryFormatting: Formatting = system.defaultFormatting
 	private val _history = mutableListOf<HistoryTranslation>()
 
@@ -173,40 +156,38 @@ class Translator(system: System, var log: (message: String) -> Unit = { _ -> })
 	val history: List<HistoryTranslation>
 		get() = this._history
 
-	private fun lookupWithAffixFolding(strokes: List<Stroke>): String?
-	{
-		val tryStrokes = strokes.toMutableList()
-		for(a in this.affixStrokes)
-		{
-			tryStrokes[0] = strokes[0]
-			tryStrokes[tryStrokes.lastIndex] = strokes.last() - a.suffix
-			tryStrokes[0] = tryStrokes[0] - a.prefix
-
-			val rawTranslation = this.dictionary[tryStrokes]
-			if(rawTranslation != null)
-			{
-				val prefix = this.dictionary[listOf(a.prefix)] ?: ""
-				val suffix = this.dictionary[listOf(a.suffix)] ?: ""
-				return "$prefix $rawTranslation $suffix"
-			}
-		}
-
-		return null
-	}
 	private fun lookup(
 		strokes: List<Stroke>,
 		replaces: List<HistoryTranslation>,
-		fullMatch: Boolean
+		prefixes: List<Stroke>,
+		suffixes: List<Stroke>
 	): Translation?
 	{
-		var raw = this.dictionary[strokes]
-		if(raw != null)
-			return Translation(strokes, replaces, raw, true)
+		val tryStrokes = strokes.toMutableList()
+		for(a in product(listOf(prefixes.size, suffixes.size)))
+		{
+			val prefixStrokes = prefixes[a[0]]
+			val suffixStrokes = suffixes[a[1]]
 
-		if(!fullMatch)
-			raw = this.lookupWithAffixFolding(strokes)
-		if(raw != null)
-			return Translation(strokes, replaces, raw, false)
+			tryStrokes[0] = strokes[0]
+			tryStrokes[tryStrokes.lastIndex] = strokes.last() - suffixStrokes
+			tryStrokes[0] = tryStrokes[0] - prefixStrokes
+
+			val main = this.dictionary[tryStrokes]
+			if(main != null)
+			{
+				val prefix = this.dictionary[listOf(prefixStrokes)] ?: ""
+				val suffix = this.dictionary[listOf(suffixStrokes)] ?: ""
+
+				return Translation(
+					strokes,
+					replaces,
+					"$prefix $main $suffix".trim(),
+					false,
+					!prefixStrokes.isEmpty,
+					!suffixStrokes.isEmpty)
+			}
+		}
 
 		return null
 	}
@@ -216,8 +197,16 @@ class Translator(system: System, var log: (message: String) -> Unit = { _ -> })
 		if(s.layout != this.system.keyLayout)
 			throw IllegalArgumentException("s.layout must match system.keyLayout")
 
-		var translation = this.lookup(listOf(s), listOf(), false)
-			?: Translation(listOf(s), listOf(), s.rtfcre, false)
+		val emptyAffix = listOf(Stroke(this.system.keyLayout, 0L))
+		val prefixStrokes = emptyAffix + this.system.prefixStrokes
+		val suffixStrokes = emptyAffix + this.system.suffixStrokes
+
+		var translation = this.lookup(
+				listOf(s),
+				listOf(),
+				prefixStrokes,
+				suffixStrokes)
+			?: Translation(listOf(s), listOf(), s.rtfcre, true, false, false)
 
 		val strokes = mutableListOf(s)
 		val replaces = mutableListOf<HistoryTranslation>()
@@ -229,10 +218,14 @@ class Translator(system: System, var log: (message: String) -> Unit = { _ -> })
 			if(strokes.size > this.dictionary.longestKey)
 				break
 
+			val allowPrefixes = replaces.first().allowPrefixedReplacement
+			val allowSuffixes = translation.hasSuffix || translation.isUntranslate
+
 			translation = this.lookup(
 					strokes.toList(),
 					replaces.toList(),
-					translation.fullMatch)
+					if(allowPrefixes) prefixStrokes else emptyAffix,
+					if(allowSuffixes) suffixStrokes else emptyAffix)
 				?: translation
 		}
 
@@ -270,7 +263,8 @@ class Translator(system: System, var log: (message: String) -> Unit = { _ -> })
 					t.strokes,
 					processed.replaces + t.replaces,
 					processed.actions,
-					this.context))
+					this.context,
+					t.hasPrefix || t.isUntranslate))
 		}
 		catch(e: ParseException)
 		{
