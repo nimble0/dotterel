@@ -20,5 +20,12 @@
 	<string name="pref_header_about">About</string>
 	<string name="about_page_url">file:///android_asset/about.html</string>
 
+	<string name="crash_notification_channel">Dotterel crashes</string>
+	<string name="crash_notification_title">Crash at %1$s</string>
+	<string name="crash_notification_saved_log_to">Saved log file to %1$s</string>
+	<string name="crash_notification_save_log_failed">Could not save log file: %1$s</string>
+	<string name="crash_notification_subject">Dotterel crash log</string>
+	<string name="crash_notification_share">Share</string>
+
 	<string-array name="empty" />
 </resources>

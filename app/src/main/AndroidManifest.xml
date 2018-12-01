@@ -2,7 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 	package="nimble.dotterel">
 
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
 	<application
+		android:name=".DotterelApplication"
 		android:allowBackup="true"
 		android:icon="@mipmap/ic_launcher"
 		android:label="@string/app_name"
@@ -10,7 +14,18 @@
 		android:supportsRtl="true"
 		android:theme="@style/AppTheme">
 
-		<service android:name="nimble.dotterel.Dotterel"
+		<provider
+			android:name="android.support.v4.content.FileProvider"
+			android:authorities="nimble.dotterel"
+			android:exported="false"
+			android:grantUriPermissions="true">
+			<meta-data
+				android:name="android.support.FILE_PROVIDER_PATHS"
+				android:resource="@xml/file_provider_paths"/>
+		</provider>
+
+		<service
+			android:name=".Dotterel"
 			android:label="@string/app_name"
 			android:permission="android.permission.BIND_INPUT_METHOD">
 			<meta-data android:name="android.view.im" android:resource="@xml/method" />
@@ -28,6 +43,7 @@
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
 		</activity>
+
 	</application>
 
 </manifest>
