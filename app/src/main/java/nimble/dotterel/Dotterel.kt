@@ -201,6 +201,12 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 		return view
 	}
 
+	override fun onEvaluateFullscreenMode(): Boolean
+	{
+		super.onEvaluateFullscreenMode()
+		return false
+	}
+
 	override fun changeStroke(s: Stroke) {}
 	override fun applyStroke(s: Stroke)
 	{
