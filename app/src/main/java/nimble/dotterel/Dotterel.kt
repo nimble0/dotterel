@@ -97,6 +97,11 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 			Log.i("IO", "Error reading dictionary $path")
 			return null
 		}
+		catch(e: SecurityException)
+		{
+			Log.i("IO", "Permission denied reading dictionary $path")
+			return null
+		}
 		catch(e: java.lang.IllegalStateException)
 		{
 			Log.i("Dictionary", "$path is not a valid JSON dictionary")
