@@ -5,6 +5,7 @@ package nimble.dotterel
 
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.preference.*
 import android.util.*
@@ -264,6 +265,12 @@ class DictionariesPreferenceFragment : PreferenceFragment()
 				SELECT_DICTIONARY_FILE ->
 					if(resultCode == PreferenceActivity.RESULT_OK)
 					{
+						if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+							this.activity.contentResolver.takePersistableUriPermission(
+								data.data,
+								Intent.FLAG_GRANT_READ_URI_PERMISSION
+									or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+
 						this.add(data.data.toString())
 						// A resume will occur immediately after this,
 						// which will reload the preference.
