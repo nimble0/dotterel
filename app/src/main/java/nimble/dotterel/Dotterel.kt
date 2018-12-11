@@ -17,16 +17,6 @@ import java.io.IOException
 
 import nimble.dotterel.machines.*
 import nimble.dotterel.translation.*
-import nimble.dotterel.translation.systems.IRELAND_SYSTEM
-import nimble.dotterel.util.BiMap
-
-val SYSTEMS = BiMap(mapOf(
-	Pair("Ireland", IRELAND_SYSTEM)
-))
-
-val CODE_ASSETS = mapOf(
-	Pair("dictionaries/Numbers", NumbersDictionary())
-)
 
 val MACHINES = mapOf(
 	Pair("On Screen", OnScreenStenoMachine.Factory()),
@@ -64,12 +54,8 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 		private set
 
 	var translator = Translator(
-		IRELAND_SYSTEM,
+		NULL_SYSTEM,
 		log = { m -> Log.e("Dotterel Translation", m) })
-
-	val systemName: String get() =
-		SYSTEMS.inverted[this.translator.system]
-			?: throw IllegalStateException("System missing from systems map")
 
 	private val machines = mutableMapOf<String, StenoMachine>()
 
@@ -88,68 +74,6 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 				this.setInputView(view ?: View(this.applicationContext))
 			}
 		}
-
-	private fun getDictionary(path: String): Dictionary?
-	{
-		val error = { message: String ->
-			Log.e("Dotterel", message)
-			Toast.makeText(
-				this,
-				message,
-				Toast.LENGTH_LONG
-			).show()
-		}
-
-		try
-		{
-			val type = path.substringBefore("://")
-			val name = path.substringAfter("://")
-			return when(type)
-			{
-				"asset" -> JsonDictionary(this.assets.open(name))
-				"code" -> CODE_ASSETS[name] as Dictionary
-				else -> this.contentResolver.openInputStream(Uri.parse(path))
-					?.use({ JsonDictionary(it) })
-			}
-		}
-		catch(e: IOException)
-		{
-			error("IO error reading dictionary $path")
-		}
-		catch(e: SecurityException)
-		{
-			error("Permission denied reading dictionary $path")
-		}
-		catch(e: com.eclipsesource.json.ParseException)
-		{
-			error("$path is not a valid JSON dictionary")
-		}
-		catch(e: java.lang.UnsupportedOperationException)
-		{
-			error("$path is not a valid JSON dictionary")
-		}
-		catch(e: ClassCastException)
-		{
-			error("$path is not of type Dictionary")
-		}
-
-		return null
-	}
-
-	private fun loadDictionaries()
-	{
-		val key = "system/${this.systemName}/dictionaries"
-		val dictionariesPreference = this.preferences?.getString(key, null)
-			?.let({ dictionaryListFromJson(key, it) })
-
-		val dictionaries = dictionariesPreference
-			?.filter({ it.enabled })
-			?.map({ it.name })
-			?: this.translator.system.defaultDictionaries
-
-		this.translator.dictionary = MultiDictionary(
-			dictionaries.mapNotNull({ this.getDictionary(it) }))
-	}
 
 	private fun addMachine(name: String)
 	{
@@ -192,8 +116,6 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 	{
 		when
 		{
-			key == "system/${this.systemName}/dictionaries" ->
-				this.loadDictionaries()
 			key.substring(0, "machine/".length) == "machine/" ->
 				this.loadMachines()
 		}
@@ -215,7 +137,6 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 		this.preferences?.registerOnSharedPreferenceChangeListener(
 			this.preferenceListener)
 
-		this.loadDictionaries()
 		this.loadMachines()
 	}
 

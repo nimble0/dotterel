@@ -5,6 +5,17 @@
 
 package nimble.dotterel.translation
 
+import nimble.dotterel.util.CaseInsensitiveString
+
+val TRANSFORMS = mapOf(
+	Pair("none", ::noneTransform),
+	Pair("capitalise", ::capitaliseTransform),
+	Pair("uncapitalise", ::uncapitaliseTransform),
+	Pair("uppercase", ::upperCaseTransform),
+	Pair("lowercase", ::lowerCaseTransform),
+	Pair("titlecase", ::titleCaseTransform)
+).mapKeys({ CaseInsensitiveString(it.key) })
+
 fun noneTransform(context: FormattedText, text: UnformattedText, suffix: Boolean) = text
 
 fun capitaliseTransform(

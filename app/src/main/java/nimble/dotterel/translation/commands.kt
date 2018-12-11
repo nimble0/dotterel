@@ -9,6 +9,23 @@ import java.util.Collections
 
 import nimble.dotterel.util.CaseInsensitiveString
 
+val COMMANDS = mapOf(
+	Pair("retro:undo", ::undoStroke),
+	Pair("mode:transform", ::transform),
+	Pair("mode:single_transform", ::singleTransform),
+
+	Pair("retro:repeat_last_stroke", ::repeatLastStroke),
+	Pair("retro:last_translation", ::lastTranslation),
+	Pair("retro:last_cluster", ::lastCluster),
+	Pair("retro:move_last_cluster", ::moveLastCluster),
+	Pair("retro:break_translation", ::retroBreakTranslation),
+	Pair("retro:toggle_asterisk", ::retroToggleAsterisk),
+
+	Pair("mode:set_space", ::setSpace),
+	Pair("mode:reset_case", ::resetTransform),
+	Pair("mode:reset_space", ::resetSpace)
+).mapKeys({ CaseInsensitiveString(it.key) })
+
 private val backspaceWord = KeyCombo("backspace", Modifier.CONTROL.mask)
 
 fun List<Any>.filterTextActions() =
@@ -170,7 +187,7 @@ fun retroBreakTranslation(translator: Translator, arg: String)
 	// tailAction = "land"
 	// headActions = "swiz er"
 	val tailAction = translator.processor.process(
-		translator.dictionary[listOf(lastStroke)] ?: lastStroke.rtfcre)
+		translator.system.dictionaries[listOf(lastStroke)] ?: lastStroke.rtfcre)
 	val headActions = TranslationPart(
 		lastTranslation.replaces.flatMap({
 			it.actions.filterTextActions() }),

@@ -21,7 +21,6 @@ import com.eclipsesource.json.*
 import java.io.IOException
 
 import nimble.dotterel.translation.Dictionary
-import nimble.dotterel.translation.systems.IRELAND_SYSTEM
 
 data class DictionaryItem(
 	var name: String,
@@ -42,7 +41,7 @@ private fun checkAccessible(context: Context, path: String): Boolean
 				true
 			}
 			"code" ->
-				CODE_ASSETS[name] is Dictionary
+				true
 			else ->
 			{
 				context.contentResolver.openInputStream(Uri.parse(path))
@@ -281,8 +280,6 @@ class DictionariesPreferenceFragment : PreferenceFragmentCompat()
 
 		if(value != null)
 			this.load(value)
-		else
-			this.reset()
 	}
 
 	override fun onPause()
@@ -350,17 +347,7 @@ class DictionariesPreferenceFragment : PreferenceFragmentCompat()
 		super.onActivityResult(requestCode, resultCode, data)
 	}
 
-	fun reset()
-	{
-		val system = IRELAND_SYSTEM
-
-		val defaultDictionaries = system.defaultDictionaries
-			.map({ DictionaryItem(it, true) })
-			.toJson()
-			.toString()
-
-		this.load(defaultDictionaries)
-	}
+	fun reset() {}
 
 	fun add(uri: String)
 	{

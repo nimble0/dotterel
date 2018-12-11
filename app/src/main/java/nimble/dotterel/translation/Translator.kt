@@ -111,10 +111,8 @@ class Translator(
 	var system: System,
 	var log: (message: String) -> Unit = {})
 {
-	var dictionary: Dictionary = MultiDictionary()
 	val processor = TranslationProcessor(this)
 
-	private var preHistoryFormatting: Formatting = system.defaultFormatting
 	private val _history = mutableListOf<HistoryTranslation>()
 
 	private var preBufferedContext = ""
@@ -135,7 +133,7 @@ class Translator(
 				0,
 				contextStr.toString(),
 				this._history.lastOrNull()?.text?.formatting
-					?: this.preHistoryFormatting
+					?: this.system.defaultFormatting
 			)
 		}
 
@@ -159,11 +157,11 @@ class Translator(
 			tryStrokes[tryStrokes.lastIndex] = strokes.last() - suffixStrokes
 			tryStrokes[0] = tryStrokes[0] - prefixStrokes
 
-			val main = this.dictionary[tryStrokes]
+			val main = this.system.dictionaries[tryStrokes]
 			if(main != null)
 			{
-				val prefix = this.dictionary[listOf(prefixStrokes)] ?: ""
-				val suffix = this.dictionary[listOf(suffixStrokes)] ?: ""
+				val prefix = this.system.dictionaries[listOf(prefixStrokes)] ?: ""
+				val suffix = this.system.dictionaries[listOf(suffixStrokes)] ?: ""
 
 				return Translation(
 					strokes,
@@ -201,7 +199,7 @@ class Translator(
 			strokes.addAll(0, h.strokes)
 			replaces.add(0, h)
 
-			if(strokes.size > this.dictionary.longestKey)
+			if(strokes.size > this.system.dictionaries.longestKey)
 				break
 
 			val allowPrefixes = replaces.first().allowPrefixedReplacement
@@ -273,10 +271,7 @@ class Translator(
 	fun popFull(): HistoryTranslation?
 	{
 		if(this._history.isEmpty())
-		{
-			this.preHistoryFormatting = this.system.defaultFormatting
 			return null
-		}
 
 		val removed = this._history.removeAt(this._history.lastIndex)
 		this.bufferedActions.add(removed.undoAction)
