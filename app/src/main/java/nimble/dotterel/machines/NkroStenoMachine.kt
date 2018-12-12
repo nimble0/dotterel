@@ -3,26 +3,19 @@
 
 package nimble.dotterel.machines
 
-import android.content.SharedPreferences
-import android.util.Log
 import android.view.KeyEvent
-import android.widget.Toast
+
+import com.eclipsesource.json.JsonObject
 
 import nimble.dotterel.*
 import nimble.dotterel.translation.*
+import nimble.dotterel.util.mapValues
 
 class NkroStenoMachine(private val app: Dotterel) :
 	StenoMachine, Dotterel.KeyListener
 {
-	override var keyLayout: KeyLayout = EMPTY_KEY_LAYOUT
-		set(v)
-		{
-			field = v
-			this.updateKeyMap()
-			this.stroke = Stroke(this.keyLayout, 0)
-			this.keysDown.clear()
-		}
-	private var keyMap: Map<Int, Stroke> = mapOf()
+	private var keyLayout: KeyLayout = KeyLayout("")
+	private var keyMap: KeyMap<Int> = KeyMap(KeyLayout(""), mapOf(), { 0 })
 	private var stroke: Stroke = Stroke(this.keyLayout, 0)
 
 	private val keysDown = mutableSetOf<Int>()
@@ -35,46 +28,39 @@ class NkroStenoMachine(private val app: Dotterel) :
 			NkroStenoMachine(app).also({ app.addKeyListener(it) })
 	}
 
-	private val keyMapPreferenceKey
-		get() = "machine/NKRO/key_map/${this.keyLayout.pureKeysString}"
-
-	private fun updateKeyMap()
+	override fun setConfig(
+		keyLayout: KeyLayout,
+		config: JsonObject,
+		systemConfig: JsonObject)
 	{
-		val keyMapPreference = this.app.preferences
-			?.getString(keyMapPreferenceKey, null)
-			?.let({ keyMapFromJson(keyMapPreferenceKey, it) })
-			?: mapOf()
-
-		if(keyMapPreference.isEmpty())
+		try
 		{
-			val m = "Missing/invalid NKRO key mapping for the current key layout"
-			Log.e("Dotterel", m)
-			Toast.makeText(this.app, m, Toast.LENGTH_SHORT).show()
+			this.keyLayout = keyLayout
+			this.stroke = Stroke(this.keyLayout, 0)
+
+			val mapping = systemConfig
+				.get("layout").asObject()
+				.mapValues({ it.value.asArray().map({ key -> key.asString() }) })
+
+			this.keyMap = KeyMap(this.keyLayout, mapping, { stringToKeyCode(it) })
+
+			this.keysDown.clear()
 		}
-
-		// Keymap is stored as a map of stenoKey to list of keyboard keys,
-		// but in this class we use a map of keyboard key to stenoKey.
-		val keyMap = mutableMapOf<Int, Stroke>()
-		for(mapping in keyMapPreference)
+		catch(e: java.lang.NullPointerException)
 		{
-			val stenoKey = mapping.key
-			for(key in mapping.value)
-				keyMap[stringToKeyCode(key)] = this.keyLayout.parse(stenoKey)
+			throw IllegalArgumentException(e)
 		}
-		this.keyMap = keyMap
-	}
-
-	override fun preferenceChanged(preferences: SharedPreferences, key: String)
-	{
-		when(key)
+		catch(e: java.lang.UnsupportedOperationException)
 		{
-			keyMapPreferenceKey -> this.updateKeyMap()
+			throw IllegalArgumentException(e)
 		}
 	}
 
 	override fun keyDown(e: KeyEvent): Boolean
 	{
-		val keyStroke = this.keyMap[e.keyCode] ?: return false
+		val keyStroke = this.keyMap.parse(e.keyCode)
+		if(keyStroke.isEmpty)
+			return false
 
 		if(this.stroke.keys or keyStroke.keys != this.stroke.keys)
 		{

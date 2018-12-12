@@ -8,7 +8,6 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.MotionEvent
 
-import nimble.dotterel.translation.KeyLayout
 import nimble.dotterel.util.*
 
 import kotlin.math.*
@@ -19,8 +18,6 @@ private const val SIZE_MULTIPLIER = 30f
 class TouchStenoView(context: Context, attributes: AttributeSet) :
 	StenoView(context, attributes)
 {
-	override val keyLayout = KeyLayout("#STKPWHR-AO*EU-FRPBLGTSDZ")
-
 	private val touches = mutableMapOf<Int, Touch>()
 
 	private class Touch(

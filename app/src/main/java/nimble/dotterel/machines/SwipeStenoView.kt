@@ -29,7 +29,6 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.widget.TextView
 
-import nimble.dotterel.translation.KeyLayout
 import nimble.dotterel.util.Vector2
 
 private fun MotionEvent.getTouchLine(i: Int): List<Vector2>
@@ -45,8 +44,6 @@ private fun MotionEvent.getTouchLine(i: Int): List<Vector2>
 class SwipeStenoView(context: Context, attributes: AttributeSet) :
 	StenoView(context, attributes)
 {
-	override val keyLayout = KeyLayout("#STKPWHR-AO*EU-FRPBLGTSDZ")
-
 	private val touches = mutableMapOf<Int, Vector2>()
 
 	override fun applyStroke()

@@ -5,7 +5,6 @@ package nimble.dotterel
 
 import android.content.SharedPreferences
 import android.inputmethodservice.InputMethodService
-import android.net.Uri
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
@@ -13,7 +12,9 @@ import android.widget.Toast
 
 import androidx.preference.PreferenceManager
 
-import java.io.IOException
+import com.eclipsesource.json.Json
+import com.eclipsesource.json.JsonObject
+import com.eclipsesource.json.ParseException
 
 import nimble.dotterel.machines.*
 import nimble.dotterel.translation.*
@@ -75,6 +76,37 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 			}
 		}
 
+	private fun configureMachine(machine: String)
+	{
+		try
+		{
+			val config = Json.parse(
+					this.preferences?.getString("machineConfig/$machine", "{}")
+				).asObject()
+			val systemConfig = this.translator.system.machineConfig[machine]
+				?.asObject()
+				?: JsonObject()
+
+			this.machines[machine]?.setConfig(
+				this.translator.system.keyLayout,
+				config,
+				systemConfig)
+		}
+		catch(e: ParseException)
+		{
+			val m = "$machine machine config has badly formed JSON"
+			Log.e("Dotterel", m)
+			Toast.makeText(this, m, Toast.LENGTH_LONG).show()
+		}
+		catch(e: IllegalArgumentException)
+		{
+			val m = ("Invalid type found while reading $machine machine"
+				+ " config for system ${this.translator.system.path}")
+			Log.e("Dotterel", m)
+			Toast.makeText(this, m, Toast.LENGTH_LONG).show()
+		}
+	}
+
 	private fun addMachine(name: String)
 	{
 		if(name !in this.machines)
@@ -82,10 +114,8 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 			val machineFactory = MACHINES[name] ?: return
 			this.machines[name] = machineFactory
 				.makeStenoMachine(this)
-				.also({
-					it.keyLayout = this.translator.system.keyLayout
-					it.strokeListener = this
-				})
+				.also({ it.strokeListener = this })
+			this.configureMachine(name)
 		}
 	}
 	private fun removeMachine(name: String)
@@ -112,19 +142,28 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 		}
 	}
 
-	private fun onPreferenceChanged(preferences: SharedPreferences, key: String)
+	private fun onPreferenceChanged(key: String)
 	{
 		when
 		{
-			key.substring(0, "machine/".length) == "machine/" ->
-				this.loadMachines()
+			key.startsWith("machine/") ->
+			{
+				val machine = key.substring("machine/".length)
+				if(this.preferences?.getBoolean(key, false) == true)
+					this.addMachine(machine)
+				else
+					this.removeMachine(machine)
+			}
+			key.startsWith("machineConfig/") ->
+			{
+				val machine = key.substring("machineConfig/".length)
+				this.configureMachine(machine)
+			}
 		}
-
-		for(m in this.machines)
-			m.value.preferenceChanged(preferences, key)
 	}
-	private val preferenceListener = SharedPreferences.OnSharedPreferenceChangeListener({
-		preferences, key -> this.onPreferenceChanged(preferences, key) })
+	private val preferenceListener =
+		SharedPreferences.OnSharedPreferenceChangeListener({ _, key ->
+			this.onPreferenceChanged(key) })
 
 	override fun onCreate()
 	{

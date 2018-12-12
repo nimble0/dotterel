@@ -37,6 +37,22 @@ data class SystemDictionaries(
 			.firstOrNull()
 }
 
+class MachineConfig(
+	val system: System,
+	val json: JsonObject)
+{
+	operator fun get(key: String): JsonValue? =
+		this.json[key]
+			?: this.system.base
+				?.machineConfig?.get(key)
+				?.let({ if(it == Json.NULL) null else it })
+	operator fun set(key: String, value: JsonValue)
+	{
+		this.json.set(key, value)
+		this.system.save()
+	}
+}
+
 class System(
 	val base: System?,
 
@@ -53,7 +69,9 @@ class System(
 
 	orthography: SystemOrthography? = null,
 
-	dictionaries: SystemDictionaries? = null)
+	dictionaries: SystemDictionaries? = null,
+
+	machineConfig: JsonObject = JsonObject())
 {
 	var _keyLayout: KeyLayout? = keyLayout
 		set(v)
@@ -150,6 +168,8 @@ class System(
 			?: SystemDictionaries()
 		set(v) { this._dictionaries = v }
 
+	val machineConfig: MachineConfig = MachineConfig(this, machineConfig)
+
 	fun save() = this.manager.saveSystem(this)
 
 	companion object
@@ -171,7 +191,9 @@ fun System.copy(
 
 	orthography: SystemOrthography? = this.orthography,
 
-	dictionaries: SystemDictionaries? = this.dictionaries
+	dictionaries: SystemDictionaries? = this.dictionaries,
+
+	machineConfig: JsonObject = this.machineConfig.json
 ) =
 	System(
 		base,
@@ -189,7 +211,9 @@ fun System.copy(
 
 		orthography,
 
-		dictionaries
+		dictionaries,
+
+		machineConfig
 	)
 
 fun System.toJson() = JsonObject().also({ system ->
@@ -230,6 +254,7 @@ fun System.toJson() = JsonObject().also({ system ->
 			})
 			?.toJson()
 	)
+	system.setNotNull("machineConfig", this.machineConfig.json)
 })
 
 fun nimble.dotterel.translation.System.Companion.fromJson(
@@ -294,7 +319,9 @@ fun nimble.dotterel.translation.System.Companion.fromJson(
 							dictionary)
 					})
 			})
-			?.let({ SystemDictionaries(it) })
+			?.let({ SystemDictionaries(it) }),
+
+		machineConfig = json.get("machineConfig")?.asObject() ?: JsonObject()
 	)
 }
 
