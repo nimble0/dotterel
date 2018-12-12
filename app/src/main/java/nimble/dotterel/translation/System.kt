@@ -3,7 +3,10 @@
 
 package nimble.dotterel.translation
 
+import com.eclipsesource.json.Json
 import com.eclipsesource.json.JsonObject
+import com.eclipsesource.json.JsonValue
+import com.eclipsesource.json.ParseException
 
 import nimble.dotterel.util.*
 
@@ -35,39 +38,85 @@ data class SystemDictionaries(
 }
 
 class System(
+	val base: System?,
+
 	val path: String?,
 	val manager: SystemManager,
 
-	keyLayout: KeyLayout,
-	prefixStrokes: List<Stroke>,
-	suffixStrokes: List<Stroke>,
+	keyLayout: KeyLayout? = null,
+	prefixStrokes: List<Stroke>? = null,
+	suffixStrokes: List<Stroke>? = null,
 
-	aliases: Map<CaseInsensitiveString, String>,
+	aliases: Map<CaseInsensitiveString, String>? = null,
 
-	defaultFormatting: Formatting,
+	defaultFormatting: Formatting? = null,
 
-	orthography: SystemOrthography,
+	orthography: SystemOrthography? = null,
 
-	dictionaries: SystemDictionaries)
+	dictionaries: SystemDictionaries? = null)
 {
-	var keyLayout: KeyLayout = keyLayout
+	var _keyLayout: KeyLayout? = keyLayout
 		set(v)
 		{
 			field = v
 			this.save()
 		}
-	var prefixStrokes: List<Stroke> = prefixStrokes
+	var _prefixStrokes: List<Stroke>? = prefixStrokes
 		set(v)
 		{
 			field = v
 			this.save()
 		}
-	var suffixStrokes: List<Stroke> = suffixStrokes
+	var _suffixStrokes: List<Stroke>? = suffixStrokes
 		set(v)
 		{
 			field = v
 			this.save()
 		}
+
+	var _aliases: Map<CaseInsensitiveString, String>? = aliases
+		set(v)
+		{
+			field = v
+			this.save()
+		}
+
+	var _defaultFormatting: Formatting? = defaultFormatting
+		set(v)
+		{
+			field = v
+			this.save()
+		}
+
+	var _orthography: SystemOrthography? = orthography
+		set(v)
+		{
+			field = v
+			this.save()
+		}
+
+	var _dictionaries: SystemDictionaries? = dictionaries
+		set(v)
+		{
+			field = v
+			this.save()
+		}
+
+	var keyLayout: KeyLayout
+		get() = this._keyLayout
+			?: this.base?.keyLayout
+			?: KeyLayout("")
+		set(v) { this._keyLayout = v }
+	var prefixStrokes: List<Stroke>
+		get() = this._prefixStrokes
+			?: this.base?.prefixStrokes
+			?: listOf()
+		set(v) { this._prefixStrokes = v }
+	var suffixStrokes: List<Stroke>
+		get() = this._suffixStrokes
+			?: this.base?.suffixStrokes
+			?: listOf()
+		set(v) { this._suffixStrokes = v }
 
 	val transforms: Map<
 		CaseInsensitiveString,
@@ -77,32 +126,29 @@ class System(
 		CaseInsensitiveString,
 		(Translator, String) -> TranslationPart>
 		get() = this.manager.commands
-	var aliases: Map<CaseInsensitiveString, String> = aliases
-		set(v)
-		{
-			field = v
-			this.save()
-		}
+	var aliases: Map<CaseInsensitiveString, String>
+		get() = this._aliases
+			?: this.base?.aliases
+			?: mapOf()
+		set(v) { this._aliases = v }
 
-	var dictionaries: SystemDictionaries = dictionaries
-		set(v)
-		{
-			field = v
-			this.save()
-		}
-	var orthography: SystemOrthography = orthography
-		set(v)
-		{
-			field = v
-			this.save()
-		}
+	var defaultFormatting: Formatting
+		get() = this._defaultFormatting
+			?: this.base?.defaultFormatting
+			?: Formatting()
+		set(v) { this._defaultFormatting = v }
 
-	var defaultFormatting: Formatting = defaultFormatting
-		set(v)
-		{
-			field = v
-			this.save()
-		}
+	var orthography: SystemOrthography
+		get() = this._orthography
+			?: this.base?.orthography
+			?: SystemOrthography("", NULL_ORTHOGRAPHY)
+		set(v) { this._orthography = v }
+
+	var dictionaries: SystemDictionaries
+		get() = this._dictionaries
+			?: this.base?.dictionaries
+			?: SystemDictionaries()
+		set(v) { this._dictionaries = v }
 
 	fun save() = this.manager.saveSystem(this)
 
@@ -110,22 +156,26 @@ class System(
 }
 
 fun System.copy(
+	base: System? = this.base,
+
 	path: String? = this.path,
 	manager: SystemManager = this.manager,
 
-	keyLayout: KeyLayout = this.keyLayout,
-	prefixStrokes: List<Stroke> = this.prefixStrokes,
-	suffixStrokes: List<Stroke> = this.suffixStrokes,
+	keyLayout: KeyLayout? = this.keyLayout,
+	prefixStrokes: List<Stroke>? = this.prefixStrokes,
+	suffixStrokes: List<Stroke>? = this.suffixStrokes,
 
-	aliases: Map<CaseInsensitiveString, String> = this.aliases,
+	aliases: Map<CaseInsensitiveString, String>? = this.aliases,
 
-	defaultFormatting: Formatting = this.defaultFormatting,
+	defaultFormatting: Formatting? = this.defaultFormatting,
 
-	orthography: SystemOrthography = this.orthography,
+	orthography: SystemOrthography? = this.orthography,
 
-	dictionaries: SystemDictionaries = this.dictionaries
+	dictionaries: SystemDictionaries? = this.dictionaries
 ) =
 	System(
+		base,
+
 		path,
 		manager,
 
@@ -143,14 +193,14 @@ fun System.copy(
 	)
 
 fun System.toJson() = JsonObject().also({ system ->
-	system.set("keyLayout", this.keyLayout.toJson())
-	system.set("aliases", this.aliases.mapKeys({ it.key.value }).toJson())
-	system.set("prefixStrokes", this.prefixStrokes.map({ it.rtfcre }).toJson())
-	system.set("suffixStrokes", this.suffixStrokes.map({ it.rtfcre }).toJson())
-	system.set(
+	system.setNotNull("keyLayout", this._keyLayout?.toJson())
+	system.setNotNull("aliases", this._aliases?.mapKeys({ it.key.value })?.toJson())
+	system.setNotNull("prefixStrokes", this._prefixStrokes?.map({ it.rtfcre })?.toJson())
+	system.setNotNull("suffixStrokes", this._suffixStrokes?.map({ it.rtfcre })?.toJson())
+	system.setNotNull(
 		"defaultFormatting",
-		this.defaultFormatting
-			.let({ formatting ->
+		this._defaultFormatting
+			?.let({ formatting ->
 				JsonObject().also({
 					it.set("space", formatting.space)
 					it.set("spaceStart", formatting.spaceEnd.toString())
@@ -164,51 +214,54 @@ fun System.toJson() = JsonObject().also({ system ->
 						this.manager
 							.transforms
 							.inverted()[formatting.singleTransform]?.value)
-					it.set("transformState", formatting.toString())
+					it.set("transformState", formatting.transformState.toString())
 				})
 			})
 	)
-	system.set("orthography", this.orthography.path)
-	system.set(
+	system.setNotNull("orthography", this.orthography.path)
+	system.setNotNull(
 		"dictionaries",
-		this.dictionaries.dictionaries
-			.map({ d ->
+		this._dictionaries?.dictionaries
+			?.map({ d ->
 				JsonObject().also({
 					it.set("path", d.path)
 					it.set("enabled", d.enabled)
 				})
 			})
-			.toJson()
+			?.toJson()
 	)
 })
 
 fun nimble.dotterel.translation.System.Companion.fromJson(
 	manager: SystemManager,
+	base: System?,
 	json: JsonObject
 ): System
 {
-	val keyLayout = json.get("keyLayout").asObject().let({ KeyLayout(it) })
+	val keyLayout = json.getOrNull("keyLayout")?.asObject()?.let({ KeyLayout(it) })
+	val keyLayout2 = keyLayout ?: base?.keyLayout ?: NULL_SYSTEM.keyLayout
 
 	return nimble.dotterel.translation.System(
+		base = base,
 		path = null,
 		manager = manager,
 		keyLayout = keyLayout,
-		prefixStrokes = json.get("prefixStrokes").asArray()
-			.map({ keyLayout.parse(it.asString()) }),
-		suffixStrokes = json.get("suffixStrokes").asArray()
-			.map({ keyLayout.parse(it.asString()) }),
+		prefixStrokes = json.getOrNull("prefixStrokes")?.asArray()
+			?.map({ keyLayout2.parse(it.asString()) }),
+		suffixStrokes = json.getOrNull("suffixStrokes")?.asArray()
+			?.map({ keyLayout2.parse(it.asString()) }),
 
-		aliases = json.get("aliases")
-			.asObject()
-			.associateBy(
+		aliases = json.getOrNull("aliases")
+			?.asObject()
+			?.associateBy(
 				{ CaseInsensitiveString(it.name) },
 				{ it.value.asString() }),
 
-		defaultFormatting = json.get("defaultFormatting").asObject()
-			.let({ formatting ->
+		defaultFormatting = json.getOrNull("defaultFormatting")?.asObject()
+			?.let({ formatting ->
 				Formatting(
 					space = formatting.getString("space", " "),
-					spaceEnd = formatting.getString("spaceStart", null)
+					spaceEnd = formatting.getOrNull("spaceStart")?.asString()
 						?.let({ Formatting.Space.valueOf(it) })
 						?: Formatting.Space.NORMAL,
 					transform = manager.transforms[
@@ -219,20 +272,20 @@ fun nimble.dotterel.translation.System.Companion.fromJson(
 						formatting.getOrNull("singleTransform")
 							?.asString()
 							?.let({ CaseInsensitiveString(it) })],
-					transformState = formatting.getString("transformState", null)
+					transformState = formatting.getOrNull("transformState")?.asString()
 						?.let({ Formatting.TransformState.valueOf(it) })
 						?: Formatting.TransformState.NORMAL)
 			}),
 
-		orthography = json.getString("orthography", null)
-			.let({ SystemOrthography(
+		orthography = json.getOrNull("orthography")?.asString()
+			?.let({ SystemOrthography(
 				it,
 				manager.openOrthography(it) ?: NULL_ORTHOGRAPHY)
 			}),
 
-		dictionaries = json.get("dictionaries").asArray()
-			.map({ it.asObject() })
-			.mapNotNull({
+		dictionaries = json.getOrNull("dictionaries")?.asArray()
+			?.map({ it.asObject() })
+			?.mapNotNull({
 				manager.openDictionary(it.get("path").asString())
 					?.let({ dictionary ->
 						SystemDictionary(
@@ -241,23 +294,43 @@ fun nimble.dotterel.translation.System.Companion.fromJson(
 							dictionary)
 					})
 			})
-			.let({ SystemDictionaries(it) })
+			?.let({ SystemDictionaries(it) })
 	)
 }
 
 val NULL_SYSTEM = System(
+	base = null,
 	path = null,
-	manager = NULL_SYSTEM_MANAGER,
-
-	keyLayout = KeyLayout(""),
-	prefixStrokes = listOf(),
-	suffixStrokes = listOf(),
-
-	aliases = mapOf(),
-
-	defaultFormatting = Formatting(),
-
-	orthography = SystemOrthography("code://orthography/null", NULL_ORTHOGRAPHY),
-
-	dictionaries = SystemDictionaries()
+	manager = NULL_SYSTEM_MANAGER
 )
+
+fun mergedSystemJson(resources: SystemResources, path: String): JsonObject?
+{
+	try
+	{
+		val loadSystem = { systemPath: String ->
+			resources.openInputStream(systemPath)
+				?.let({ Json.parse(it.bufferedReader()).asObject() })
+		}
+
+		val system = loadSystem(path) ?: return null
+		val systems = mutableListOf(system)
+		while(true)
+		{
+			val baseSystemPath = systems.last().getString("base", null) ?: break
+			val baseSystem = loadSystem(baseSystemPath) ?: break
+			systems.add(baseSystem)
+		}
+
+		return systems.reduceRight({ it, acc ->
+			for(member in it)
+				if(!member.value.isNull)
+					acc.set(member.name, member.value)
+			acc
+		})
+	}
+	catch(e: ParseException)
+	{
+		return null
+	}
+}

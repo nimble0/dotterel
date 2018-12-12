@@ -107,7 +107,10 @@ class SystemManager(
 		{
 			val file = this.resources.openInputStream(path) ?: return null
 			val json = Json.parse(file.bufferedReader()).asObject()
-			return System.fromJson(this, json)
+			val baseSystem = json.getString("base", null)
+				?.let({ this.openSystem(it) })
+			val system = System.fromJson(this, baseSystem, json)
+			return system.copy(path = path)
 		}
 		catch(e: com.eclipsesource.json.ParseException)
 		{
