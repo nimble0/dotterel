@@ -46,4 +46,31 @@ class MachinesPreferenceFragment : PreferenceFragmentCompat()
 		else
 			super.onDisplayPreferenceDialog(preference)
 	}
+
+	override fun onResume()
+	{
+		super.onResume()
+
+		val jsonDataStores = mutableMapOf<String, JsonDataStore>()
+		for(preference in this.preferenceScreen.flatten())
+		{
+			val dataStorePath = preference.extras.getString("store_path")
+			if(dataStorePath != null)
+				when(preference.extras.getString("store_type"))
+				{
+					"json_preference" ->
+					{
+						val dataStore = jsonDataStores[dataStorePath]
+							?: JsonPreferenceDataStore(
+								this.preferenceManager.sharedPreferences,
+								dataStorePath
+							).also({ jsonDataStores[dataStorePath] = it })
+						preference.key = preference.extras.getString("key")
+						preference.preferenceDataStore = dataStore
+					}
+				}
+		}
+
+		bindSystemPreferencesToActiveSystem(this)
+	}
 }

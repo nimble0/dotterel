@@ -31,9 +31,4 @@
 		<item name="android:background">@drawable/special_steno_key</item>
 	</style>
 
-	<style name="KeyMappingKey">
-		<item name="android:gravity">center</item>
-		<item name="android:background">@drawable/key_mapping_key</item>
-	</style>
-
 </resources>

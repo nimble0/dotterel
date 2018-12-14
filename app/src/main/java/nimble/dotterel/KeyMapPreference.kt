@@ -4,9 +4,7 @@
 package nimble.dotterel
 
 import android.content.Context
-import android.content.res.TypedArray
 import android.util.AttributeSet
-import android.util.Log
 import android.view.*
 import android.widget.*
 
@@ -20,42 +18,13 @@ import nimble.dotterel.util.DialogPreference
 
 data class KeyMapping(val stenoKey: String, val keyboardKeys: MutableList<String>)
 
-fun List<KeyMapping>.toJson(): JsonObject
-{
-	val json = JsonObject()
-	for(mapping in this)
-		json.add(mapping.stenoKey, mapping.keyboardKeys.toJson())
-	return json
-}
-
-fun keyMapFromJson(key: String, json: String): Map<String, List<String>>
-{
-	try
-	{
-		val keyMap = mutableMapOf<String, List<String>>()
-		for(mapping in Json.parse(json).asObject())
-			keyMap[mapping.name] = mapping.value.asArray().map({ it.asString() })
-		return keyMap
-	}
-	catch(e: com.eclipsesource.json.ParseException)
-	{
-		Log.e("Dotterel", "Preference $key has badly formed JSON")
-	}
-	catch(e: java.lang.UnsupportedOperationException)
-	{
-		Log.e("Dotterel", "Invalid type found while reading preference $key")
-	}
-
-	return mapOf()
-}
-
 fun keyCodeToString(keyCode: Int) =
 	KeyEvent.keyCodeToString(keyCode).substring("KEYCODE_".length).toLowerCase()
 
 fun stringToKeyCode(keyCodeString: String) =
 	KeyEvent.keyCodeFromString("KEYCODE_${keyCodeString.toUpperCase()}")
 
-class KeyMapAdapter(context: Context, items: MutableList<KeyMapping>) :
+class KeyMapAdapter(context: Context, items: List<KeyMapping>) :
 	ArrayAdapter<KeyMapping>(context, R.layout.pref_key_mapping, items)
 {
 	private fun addMapping(i: Int, keyCode: String)
@@ -92,7 +61,7 @@ class KeyMapAdapter(context: Context, items: MutableList<KeyMapping>) :
 				it.removeAllViews()
 				for(k in item.keyboardKeys)
 				{
-					val keyView = (inflater.inflate(R.layout.pref_key_mapping_key, null)
+					val keyView = (inflater.inflate(R.layout.pref_key_mapping_key, parent, false)
 						as TextView)
 					keyView.text = k
 					keyView.setOnClickListener({ this.removeMapping(position, k) })
@@ -131,36 +100,55 @@ class KeyMapAdapter(context: Context, items: MutableList<KeyMapping>) :
 class KeyMapPreference(context: Context, attributes: AttributeSet) :
 	DialogPreference(context, attributes)
 {
-	var keyLayout: KeyLayout = KeyLayout("", mapOf())
-		set(v)
-		{
-			field = v
-			items = v.pureKeysList.map({ KeyMapping(it, mutableListOf()) })
-		}
-	private var _items: List<KeyMapping> = listOf()
-	var items: List<KeyMapping>
-		get() = this._items
-		set(v)
-		{
-			this._items = v
-			this.persistString(v.toJson().toString())
-		}
+	private var keyLayout: KeyLayout = KeyLayout("#STKPWHR-AO*EU-FRPBLGTSDZ")
 
 	override val dialogFragment get() = KeyMapPreferenceFragment()
 
-	init { this.keyLayout = KeyLayout("#STKPWHR-AO*EU-FRPBLGTSDZ") }
-
 	override fun getDialogLayoutResource(): Int = R.layout.pref_key_map
 
-	override fun onGetDefaultValue(a: TypedArray, index: Int): Any? =
-		a.getString(index)
-	override fun onSetInitialValue(defaultValue: Any?)
+	override fun setPreferenceDataStore(dataStore: PreferenceDataStore?)
 	{
-		val value = this.getPersistedString(defaultValue as? String) ?: return
+		super.setPreferenceDataStore(dataStore)
+		this.load()
+	}
 
-		val keyMap = keyMapFromJson(this.key, value)
+	internal fun updateKeyLayout()
+	{
+		this.keyLayout = KeyLayout((this.preferenceDataStore as? JsonDataStore)
+			?.safeGet("keyLayout", null, { v -> v.asObject() }) ?: JsonObject())
+	}
 
-		for(item in this.items)
+	internal fun save(items: List<KeyMapping>)
+	{
+		if(this.extras?.getBoolean("readOnly") == true)
+			return
+
+		val layout = items.let({ mappings: List<KeyMapping> ->
+			val keyMap = JsonObject()
+			for(mapping in mappings)
+				keyMap.add(mapping.stenoKey, mapping.keyboardKeys.toJson())
+			keyMap
+		})
+
+		(this.preferenceDataStore as? JsonDataStore)?.safePut(this.key, layout)
+	}
+
+	internal fun load(): List<KeyMapping>
+	{
+		val keyMap = (this.preferenceDataStore as? JsonDataStore)
+			?.safeGet(
+				this.key,
+				null,
+				{ v ->
+					v.asObject()
+						.mapValues({
+							it.value.asArray().map({ key -> key.asString() })
+						})
+				})
+			?: mapOf()
+
+		val items = this.keyLayout.pureKeysList.map({ KeyMapping(it, mutableListOf()) })
+		for(item in items)
 		{
 			val mapping = keyMap[item.stenoKey]
 			if(mapping != null)
@@ -169,26 +157,30 @@ class KeyMapPreference(context: Context, attributes: AttributeSet) :
 				item.keyboardKeys.addAll(mapping)
 			}
 		}
+
+		return items
 	}
 }
 
 class KeyMapPreferenceFragment : PreferenceDialogFragmentCompat()
 {
-	private val items = mutableListOf<KeyMapping>()
-	private var adapter: KeyMapAdapter? = null
+	private var items: List<KeyMapping> = listOf()
 
 	override fun onBindDialogView(view: View)
 	{
 		super.onBindDialogView(view)
-		this.adapter = KeyMapAdapter(this.context!!, this.items)
-		this.items.clear()
-		(this.preference as? KeyMapPreference)?.items?.also({ this.items.addAll(it) })
-		view.findViewById<ListView>(R.id.main).adapter = this.adapter
+
+		val preference = this.preference as? KeyMapPreference
+		preference?.updateKeyLayout()
+		this.items = preference?.load() ?: listOf()
+		view.findViewById<ListView>(R.id.main).adapter = KeyMapAdapter(
+			this.requireContext(),
+			this.items)
 	}
 
 	override fun onDialogClosed(positiveResult: Boolean)
 	{
 		if(positiveResult)
-			(this.preference as? KeyMapPreference)?.also({ it.items = this.items })
+			(this.preference as? KeyMapPreference)?.save(this.items)
 	}
 }

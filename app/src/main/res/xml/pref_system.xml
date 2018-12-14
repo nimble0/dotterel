@@ -11,6 +11,12 @@
 		<extra android:name="key" android:value="dictionaries" />
 	</Preference>
 
+	<nimble.dotterel.KeyMapPreference
+		android:title="@string/pref_machines_nkro_key_map">
+		<extra android:name="store_type" android:value="json_file" />
+		<extra android:name="key" android:value="machineConfig/NKRO/layout" />
+	</nimble.dotterel.KeyMapPreference>
+
 	<Preference
 		android:title="@string/pref_systems_json"
 		android:fragment="nimble.dotterel.EditTextFragment">
