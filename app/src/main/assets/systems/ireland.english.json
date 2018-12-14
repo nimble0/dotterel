@@ -1,0 +1,156 @@
+{
+	"keyLayout": {
+		"keysString": "#1S2TK3PW4HR-5A0O*EU-6FR7PB8LG9TSDZ",
+		"mappedKeys": {
+			"1-": ["#-", "S-"],
+			"2-": ["#-", "T-"],
+			"3-": ["#-", "P-"],
+			"4-": ["#-", "H-"],
+			"5": ["#-", "A-"],
+			"0": ["#-", "O-"],
+			"-6": ["#-", "-F"],
+			"-7": ["#-", "-P"],
+			"-8": ["#-", "-L"],
+			"-9": ["#-", "-T"]
+		}
+	},
+	"prefixStrokes": [],
+	"suffixStrokes": [
+		"-Z",
+		"-D",
+		"-S",
+		"-G"
+	],
+
+	"aliases": {
+		"-|": "{MODE:SINGLE_TRANSFORM:CAPITALISE}",
+		"<": "{MODE:SINGLE_TRANSFORM:UPPERCASE}",
+		">": "{MODE:SINGLE_TRANSFORM:UNCAPITALISE}",
+		".": "{^.}{-|}",
+		"?": "{^?}{-|}",
+		"!": "{^!}{-|}",
+		",": "{^~|,}",
+		";": "{^~|;}",
+		":": "{^~|:}",
+		"*>": "{>}{RETRO:MOVE_LAST_CLUSTER}",
+		"*<": "{<}{RETRO:MOVE_LAST_CLUSTER}",
+		"*-|": "{-|}{RETRO:MOVE_LAST_CLUSTER}",
+		"*+": "{RETRO:REPEAT_LAST_STROKE}",
+		"*": "{RETRO:TOGGLE_ASTERISK}",
+		"*?": "{RETRO:BREAK_TRANSLATION}",
+		"*!": "{^}{RETRO:MOVE_LAST_CLUSTER}",
+		"MODE:RESET": "{MODE:RESET_CASE}{MODE:RESET_SPACE}",
+		"MODE:CAPS": "{MODE:TRANSFORM:UPPERCASE}",
+		"MODE:LOWER": "{MODE:TRANSFORM:LOWERCASE}",
+		"MODE:TITLE": "{MODE:TRANSFORM:TITLECASE}",
+		"MODE:CAMEL": "{MODE:TRANSFORM:TITLECASE}{MODE:SET_SPACE:}{^}",
+		"MODE:SNAKE": "{MODE:SET_SPACE:_}"
+	},
+
+	"defaultFormatting": {
+		"space": " ",
+		"spaceStart": "NORMAL",
+
+		"transform": "",
+		"singleTransform": "",
+		"transformState": "NORMAL"
+	},
+
+	"orthography": "asset:/orthography/english.json",
+
+	"dictionaries": [
+		{"path": "asset:/dictionaries/main.json", "enabled": true},
+		{"path": "asset:/dictionaries/commands.json", "enabled": true},
+		{"path": "code_dictionary:/Numbers", "enabled": true}
+	],
+
+	"machineConfig": {
+		"NKRO": {
+			"layout": {
+				"#-": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "minus", "equals"],
+				"S-": ["q", "a"],
+				"T-": ["w"],
+				"K-": ["s"],
+				"P-": ["e"],
+				"W-": ["d"],
+				"H-": ["r"],
+				"R-": ["f"],
+				"A": ["c"],
+				"O": ["v"],
+				"*": ["t", "g", "y", "h"],
+				"E": ["n"],
+				"U": ["m"],
+				"-F": ["u"],
+				"-R": ["j"],
+				"-P": ["i"],
+				"-B": ["k"],
+				"-L": ["o"],
+				"-G": ["l"],
+				"-T": ["p"],
+				"-S": ["semicolon"],
+				"-D": ["left_bracket"],
+				"-Z": ["apostrophe"]
+			}
+		},
+		"On Screen": {
+			"styles": {
+				"Touch": {
+					"viewLayout": "Ireland",
+					"layout": {
+						"#-": ["#-"],
+						"S-": ["S-"],
+						"T-": ["T-"],
+						"K-": ["K-"],
+						"P-": ["P-"],
+						"W-": ["W-"],
+						"H-": ["H-"],
+						"R-": ["R-"],
+						"A": ["A-"],
+						"O": ["O-"],
+						"*": ["*"],
+						"E": ["-E"],
+						"U": ["-U"],
+						"-F": ["-F"],
+						"-R": ["-R"],
+						"-P": ["-P"],
+						"-B": ["-B"],
+						"-L": ["-L"],
+						"-G": ["-G"],
+						"-T": ["-T"],
+						"-S": ["-S"],
+						"-D": ["-D"],
+						"-Z": ["-Z"]
+					}
+				},
+				"Swipe": {
+					"viewLayout": "Ireland",
+					"layout": {
+						"#-": ["#-"],
+						"S-": ["S-"],
+						"T-": ["T-"],
+						"K-": ["K-"],
+						"P-": ["P-"],
+						"W-": ["W-"],
+						"H-": ["H-"],
+						"R-": ["R-"],
+						"A": ["A-"],
+						"O": ["O-"],
+						"*": ["*"],
+						"E": ["-E"],
+						"U": ["-U"],
+						"-F": ["-F"],
+						"-R": ["-R"],
+						"-P": ["-P"],
+						"-B": ["-B"],
+						"-L": ["-L"],
+						"-G": ["-G"],
+						"-T": ["-T"],
+						"-S": ["-S"],
+						"-D": ["-D"],
+						"-Z": ["-Z"]
+					}
+				}
+			}
+		}
+	}
+}

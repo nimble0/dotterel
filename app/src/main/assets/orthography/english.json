@@ -1,0 +1,5 @@
+[
+{"l": "(?<=[bcdfghjklmnpqrstvwxz] ?)y", "r": "s", "s": "ies"},
+{"l": "(?<=s|sh|x|z|zh ?)", "r": "s", "s": "es"},
+{"l": "ie", "r": "ing", "s": "ying"}
+]
