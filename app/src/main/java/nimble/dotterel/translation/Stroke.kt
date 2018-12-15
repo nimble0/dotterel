@@ -9,7 +9,9 @@ data class Stroke(val layout: KeyLayout, val keys: Long)
 	operator fun minus(b: Stroke) = Stroke(this.layout, this.keys and b.keys.inv())
 
 	val rtfcre: String get() = this.layout.rtfcre(this.keys)
-	val keyString: String get() = this.layout.keyString(this.keys)
+	val pureKeysString: String get() = this.layout.pureKeysString(this.keys)
+
+	override fun toString() = this.rtfcre
 }
 
 val List<Stroke>.rtfcre: String
