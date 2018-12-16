@@ -42,10 +42,8 @@ class MachineConfig(
 	val json: JsonObject)
 {
 	operator fun get(key: String): JsonValue? =
-		this.json[key]
-			?: this.system.base
-				?.machineConfig?.get(key)
-				?.let({ if(it == Json.NULL) null else it })
+		(this.json[key] ?: this.system.base?.machineConfig?.get(key))
+			?.let({ if(it == Json.NULL) null else it })
 	operator fun set(key: String, value: JsonValue)
 	{
 		this.json.set(key, value)
