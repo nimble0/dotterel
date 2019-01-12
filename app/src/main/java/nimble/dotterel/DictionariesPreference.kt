@@ -14,6 +14,8 @@ import android.view.*
 import android.widget.*
 import android.widget.AbsListView.*
 
+import androidx.preference.PreferenceFragmentCompat
+
 import com.eclipsesource.json.*
 
 import java.io.IOException
@@ -229,22 +231,20 @@ private class DictionariesPreferenceModalListener(
 
 const val SELECT_DICTIONARY_FILE = 2
 
-class DictionariesPreferenceFragment : PreferenceFragment()
+class DictionariesPreferenceFragment : PreferenceFragmentCompat()
 {
 	private var key = "system/Ireland/dictionaries"
 	private var view: ReorderableListView? = null
 	private var adapter: DictionariesPreferenceAdapter? = null
 
-	override fun onCreate(savedInstanceState: Bundle?)
+	override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?)
 	{
-		super.onCreate(savedInstanceState)
-
 		this.key = "system/Ireland/dictionaries"
 	}
 
 	override fun onCreateView(
 		inflater: LayoutInflater,
-		container: ViewGroup,
+		container: ViewGroup?,
 		savedInstanceState: Bundle?
 	): View
 	{
@@ -277,7 +277,7 @@ class DictionariesPreferenceFragment : PreferenceFragment()
 	{
 		super.onResume()
 
-		val value = PreferenceManager.getDefaultSharedPreferences(this.activity)
+		val value = PreferenceManager.getDefaultSharedPreferences(this.requireContext())
 			.getString(this.key, null)
 
 		if(value != null)
@@ -318,7 +318,7 @@ class DictionariesPreferenceFragment : PreferenceFragment()
 		catch(e: android.content.ActivityNotFoundException)
 		{
 			Toast.makeText(
-				this.activity,
+				this.requireContext(),
 				"Please install a File Manager.",
 				Toast.LENGTH_LONG
 			).show()
@@ -335,10 +335,12 @@ class DictionariesPreferenceFragment : PreferenceFragment()
 					if(resultCode == PreferenceActivity.RESULT_OK)
 					{
 						if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
-							this.activity?.contentResolver?.takePersistableUriPermission(
-								uri,
-								Intent.FLAG_GRANT_READ_URI_PERMISSION
-									or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+							this.requireContext()
+								.contentResolver
+								.takePersistableUriPermission(
+									uri,
+									Intent.FLAG_GRANT_READ_URI_PERMISSION
+										or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
 
 						this.add(uri.toString())
 						// A resume will occur immediately after this,
@@ -374,7 +376,7 @@ class DictionariesPreferenceFragment : PreferenceFragment()
 	{
 		val value = this.adapter?.items?.toJson()
 		if(value != null)
-			PreferenceManager.getDefaultSharedPreferences(this.activity)
+			PreferenceManager.getDefaultSharedPreferences(this.requireContext())
 				.edit()
 				.putString(this.key, value.toString())
 				.apply()
@@ -387,7 +389,7 @@ class DictionariesPreferenceFragment : PreferenceFragment()
 				DictionaryItem(
 					it.name,
 					it.enabled,
-					checkAccessible(this.activity, it.name))
+					checkAccessible(this.requireContext(), it.name))
 			})
 		this.adapter?.clear()
 		this.adapter?.addAll(newItems)

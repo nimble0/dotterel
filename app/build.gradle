@@ -37,6 +37,7 @@ dependencies {
 	implementation 'androidx.vectordrawable:vectordrawable:1.1.0-alpha01'
 	implementation 'androidx.gridlayout:gridlayout:1.0.0'
 	implementation 'androidx.constraintlayout:constraintlayout:2.0.0-alpha2'
+	implementation 'androidx.preference:preference:1.0.0'
 	implementation 'com.eclipsesource.minimal-json:minimal-json:0.9.5'
 	testImplementation 'io.kotlintest:kotlintest:2.0.7'
 	androidTestImplementation 'androidx.test:runner:1.1.1'

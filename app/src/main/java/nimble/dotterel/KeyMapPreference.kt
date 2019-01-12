@@ -5,17 +5,19 @@ package nimble.dotterel
 
 import android.content.Context
 import android.content.res.TypedArray
-import android.preference.DialogPreference
 import android.util.AttributeSet
 import android.util.Log
 import android.view.*
 import android.widget.*
+
+import androidx.preference.*
 
 import com.eclipsesource.json.*
 
 import nimble.dotterel.translation.KeyLayout
 import nimble.dotterel.translation.systems.IRELAND_LAYOUT
 import nimble.dotterel.util.*
+import nimble.dotterel.util.DialogPreference
 
 data class KeyMapping(val stenoKey: String, val keyboardKeys: MutableList<String>)
 
@@ -130,65 +132,45 @@ class KeyMapAdapter(context: Context, items: MutableList<KeyMapping>) :
 class KeyMapPreference(context: Context, attributes: AttributeSet) :
 	DialogPreference(context, attributes)
 {
-	var keyLayout: KeyLayout = KeyLayout("", "", "", mapOf())
+	var keyLayout: KeyLayout = IRELAND_LAYOUT
 		set(v)
 		{
 			field = v
+
+			val items = mutableListOf<KeyMapping>()
 			for((i, k) in v.rtfcreKeys.withIndex())
 				if(k.pure)
 				{
 					val keyString = (
 						(if(i >= v.breakKeys.second) "-" else "")
-						+ k.char.toString ()
-						+ (if(i < v.breakKeys.first) "-" else ""))
+							+ k.char.toString ()
+							+ (if(i < v.breakKeys.first) "-" else ""))
 
 					items.add(KeyMapping(keyString, mutableListOf()))
 				}
+			this._items = items
+		}
+	private var _items: List<KeyMapping> = listOf()
+	var items: List<KeyMapping>
+		get() = this._items
+		set(v)
+		{
+			this._items = v
+			this.persistString(v.toJson().toString())
 		}
 
-	private val items = mutableListOf<KeyMapping>()
-	private var adapter = KeyMapAdapter(context, this.items)
-	init
+	override val dialogFragment get() = KeyMapPreferenceFragment()
+
+	init { this.keyLayout = IRELAND_LAYOUT }
+
+	override fun getDialogLayoutResource(): Int = R.layout.pref_key_map
+
+	override fun onGetDefaultValue(a: TypedArray, index: Int): Any? =
+		a.getString(index)
+	override fun onSetInitialValue(defaultValue: Any?)
 	{
-		this.dialogLayoutResource = R.layout.pref_key_map
-		this.setPositiveButtonText(android.R.string.ok)
-		this.setNegativeButtonText(android.R.string.cancel)
+		val value = this.getPersistedString(defaultValue as? String) ?: return
 
-		this.dialogIcon = null
-
-		this.keyLayout = IRELAND_LAYOUT
-	}
-
-	override fun onBindDialogView(view: View?)
-	{
-		super.onBindDialogView(view)
-		this.load(this.getPersistedString("{}"))
-		(view as ListView).adapter = this.adapter
-	}
-
-	override fun onGetDefaultValue(array: TypedArray, i: Int): Any? =
-		array.getString(i)
-
-	override fun onSetInitialValue(restore: Boolean, defaultValue: Any?)
-	{
-		this.load(
-			if(restore)
-				this.getPersistedString("{}")
-			else
-				defaultValue as? String ?: "{}")
-		this.save()
-	}
-
-	override fun onDialogClosed(positiveResult: Boolean)
-	{
-		if(positiveResult)
-			this.save()
-	}
-
-	fun save() = this.persistString(this.items.toJson().toString())
-
-	fun load(value: String)
-	{
 		val keyMap = keyMapFromJson(this.key, value)
 
 		for(item in this.items)
@@ -200,6 +182,26 @@ class KeyMapPreference(context: Context, attributes: AttributeSet) :
 				item.keyboardKeys.addAll(mapping)
 			}
 		}
-		this.adapter.notifyDataSetChanged()
+	}
+}
+
+class KeyMapPreferenceFragment : PreferenceDialogFragmentCompat()
+{
+	private val items = mutableListOf<KeyMapping>()
+	private var adapter: KeyMapAdapter? = null
+
+	override fun onBindDialogView(view: View)
+	{
+		super.onBindDialogView(view)
+		this.adapter = KeyMapAdapter(this.context!!, this.items)
+		this.items.clear()
+		(this.preference as? KeyMapPreference)?.items?.also({ this.items.addAll(it) })
+		view.findViewById<ListView>(R.id.main).adapter = this.adapter
+	}
+
+	override fun onDialogClosed(positiveResult: Boolean)
+	{
+		if(positiveResult)
+			(this.preference as? KeyMapPreference)?.also({ it.items = this.items })
 	}
 }

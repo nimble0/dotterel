@@ -1,39 +1,93 @@
 package nimble.dotterel
 
-import android.annotation.TargetApi
-import android.content.res.Configuration
-import android.os.Build
 import android.os.Bundle
-import android.preference.PreferenceActivity
-import android.preference.PreferenceFragment
-import android.preference.PreferenceManager
+import android.view.MenuItem
+
+import androidx.appcompat.app.AppCompatActivity
+import androidx.preference.*
+import androidx.preference.PreferenceFragmentCompat
 
 val PREFERENCE_RESOURCES = listOf(
 	R.xml.pref_machines
 )
 
-class DotterelSettings : AppCompatPreferenceActivity()
+class DotterelSettings :
+	AppCompatActivity(),
+	PreferenceFragmentCompat.OnPreferenceStartFragmentCallback
 {
+	private val rootTitle: String
+		by lazy { this.getString(R.string.pref_root) }
+
 	override fun onCreate(savedInstanceState: Bundle?)
 	{
 		super.onCreate(savedInstanceState)
+		this.setContentView(R.layout.settings)
 		this.supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
 		for(resource in PREFERENCE_RESOURCES)
 			PreferenceManager.setDefaultValues(this, resource, true)
+
+		if(savedInstanceState == null)
+		{
+			val fragment = SettingsFragment()
+			this.supportFragmentManager
+				.beginTransaction()
+				.add(R.id.preference_screen, fragment)
+				.commit()
+			this.supportActionBar?.title = rootTitle
+		}
 	}
 
-	override fun onIsMultiPane(): Boolean =
-		(this.resources.configuration.screenLayout and
-			Configuration.SCREENLAYOUT_SIZE_MASK >= Configuration.SCREENLAYOUT_SIZE_XLARGE)
+	override fun onPreferenceStartFragment(
+		caller: PreferenceFragmentCompat?,
+		preference: Preference
+	): Boolean
+	{
+		val fragment = this.supportFragmentManager.fragmentFactory
+			.instantiate(this.classLoader, preference.fragment, preference.extras)
+		this.supportFragmentManager
+			.beginTransaction()
+			.replace(R.id.preference_screen, fragment)
+			.addToBackStack(preference.title?.toString())
+			.commit()
 
-	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
-	override fun onBuildHeaders(target: List<PreferenceActivity.Header>) =
-		loadHeadersFromResource(R.xml.pref_headers, target)
+		this.supportActionBar?.title = preference.title
 
-	override fun isValidFragment(fragmentName: String): Boolean =
-		fragmentName == PreferenceFragment::class.java.name
-			|| fragmentName == DictionariesPreferenceFragment::class.java.name
-			|| fragmentName == MachinesPreferenceFragment::class.java.name
-			|| fragmentName == AboutFragment::class.java.name
+		return true
+	}
+
+	override fun onBackPressed()
+	{
+		super.onBackPressed()
+
+		val count = this.supportFragmentManager.backStackEntryCount
+		this.supportActionBar?.title = if(count == 0)
+				this.rootTitle
+			else
+				this.supportFragmentManager
+					.getBackStackEntryAt(count - 1)
+					.name
+	}
+
+	override fun onOptionsItemSelected(item: MenuItem): Boolean
+	{
+		return when(item.itemId)
+		{
+			android.R.id.home ->
+			{
+				this.onBackPressed()
+				true
+			}
+			else ->
+				super.onOptionsItemSelected(item)
+		}
+	}
+}
+
+class SettingsFragment : PreferenceFragmentCompat()
+{
+	override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?)
+	{
+		this.addPreferencesFromResource(R.xml.pref_root)
+	}
 }

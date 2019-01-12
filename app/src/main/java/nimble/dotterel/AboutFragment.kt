@@ -5,24 +5,25 @@ package nimble.dotterel
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.preference.PreferenceFragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebView
 
-class AboutFragment : PreferenceFragment()
+import androidx.fragment.app.Fragment
+
+class AboutFragment : Fragment()
 {
 	@SuppressLint("SetJavaScriptEnabled")
 	override fun onCreateView(
 		inflater: LayoutInflater,
-		container: ViewGroup,
+		container: ViewGroup?,
 		savedInstanceState: Bundle?
 	): View
 	{
 		val webView = WebView(inflater.context)
 		webView.settings.javaScriptEnabled = true
-		webView.loadUrl(this.getString(R.string.about_page_url)
+		webView.loadUrl(this.getString(R.string.pref_about_page_url)
 			+ "?version=" + this.getString(R.string.version_name))
 
 		return webView

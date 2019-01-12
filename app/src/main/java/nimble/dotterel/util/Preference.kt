@@ -3,9 +3,9 @@
 
 package nimble.dotterel.util
 
-import android.preference.ListPreference
-import android.preference.Preference
-import android.preference.PreferenceManager
+import androidx.preference.ListPreference
+import androidx.preference.Preference
+import androidx.preference.PreferenceManager
 
 private val bindPreferenceSummaryToValueListener =
 	Preference.OnPreferenceChangeListener{ preference, value ->

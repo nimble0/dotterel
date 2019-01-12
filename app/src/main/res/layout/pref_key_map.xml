@@ -3,6 +3,7 @@
 <!-- See file <LICENSE.txt> or go to <http://www.gnu.org/licenses/> for full license details. -->
 
 <ListView xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/main"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
 	android:divider="#DCDCDC"
