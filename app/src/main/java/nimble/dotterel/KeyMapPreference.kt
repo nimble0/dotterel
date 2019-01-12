@@ -59,14 +59,14 @@ class KeyMapAdapter(context: Context, items: MutableList<KeyMapping>) :
 {
 	private fun addMapping(i: Int, keyCode: String)
 	{
-		val item = this.getItem(i)
+		val item = this.getItem(i) ?: return
 		if(keyCode !in item.keyboardKeys)
 			item.keyboardKeys.add(keyCode)
 		this.notifyDataSetChanged()
 	}
 	private fun removeMapping(i: Int, keyCode: String)
 	{
-		val item = this.getItem(i)
+		val item = this.getItem(i) ?: return
 		item.keyboardKeys.remove(keyCode)
 		this.notifyDataSetChanged()
 	}
@@ -79,35 +79,29 @@ class KeyMapAdapter(context: Context, items: MutableList<KeyMapping>) :
 		val v = convertView
 			?: inflater.inflate(R.layout.pref_key_mapping, parent, false)
 
-		val item = this.getItem(position)
+		val item = this.getItem(position) ?: return v
 
 		v.findViewById<TextView>(R.id.steno_key)
 			.apply({
 				this.text = item.stenoKey
 			})
 
-		val _this = this
-
 		v.findViewById<FlowLayout>(R.id.keyboard_keys)
-			.apply({
-				this.removeAllViews()
+			.also({
+				it.removeAllViews()
 				for(k in item.keyboardKeys)
 				{
-					val keyView = (inflater.inflate(
-						R.layout.pref_key_mapping_key,
-						null
-					) as TextView)
-						.apply({
-							this.text = k
-							this.setOnClickListener({ _this.removeMapping(position, k) })
-						})
-					this.addView(keyView)
+					val keyView = (inflater.inflate(R.layout.pref_key_mapping_key, null)
+						as TextView)
+					keyView.text = k
+					keyView.setOnClickListener({ this.removeMapping(position, k) })
+					it.addView(keyView)
 				}
 			})
 
 		v.findViewById<Button>(R.id.add_keyboard_key)
-			.apply({
-				this.setOnFocusChangeListener({ _, focused ->
+			.also({
+				it.setOnFocusChangeListener({ _, focused ->
 					if(focused)
 					{
 						val toast = Toast.makeText(
@@ -116,11 +110,11 @@ class KeyMapAdapter(context: Context, items: MutableList<KeyMapping>) :
 							Toast.LENGTH_SHORT
 						)
 
-						this.setOnKeyListener({ _, keyCode, _ ->
-							this.clearFocus()
-							this.setOnKeyListener(null)
+						it.setOnKeyListener({ _, keyCode, _ ->
+							it.clearFocus()
+							it.setOnKeyListener(null)
 							toast.cancel()
-							_this.addMapping(position, keyCodeToString(keyCode))
+							this.addMapping(position, keyCodeToString(keyCode))
 							true
 						})
 
@@ -141,7 +135,6 @@ class KeyMapPreference(context: Context, attributes: AttributeSet) :
 		{
 			field = v
 			for((i, k) in v.rtfcreKeys.withIndex())
-			{
 				if(k.pure)
 				{
 					val keyString = (
@@ -151,7 +144,6 @@ class KeyMapPreference(context: Context, attributes: AttributeSet) :
 
 					items.add(KeyMapping(keyString, mutableListOf()))
 				}
-			}
 		}
 
 	private val items = mutableListOf<KeyMapping>()
@@ -174,7 +166,7 @@ class KeyMapPreference(context: Context, attributes: AttributeSet) :
 		(view as ListView).adapter = this.adapter
 	}
 
-	override fun onGetDefaultValue(array: TypedArray, i: Int): Any =
+	override fun onGetDefaultValue(array: TypedArray, i: Int): Any? =
 		array.getString(i)
 
 	override fun onSetInitialValue(restore: Boolean, defaultValue: Any?)

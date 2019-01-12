@@ -131,7 +131,7 @@ private class DictionariesPreferenceAdapter(
 		val v = convertView ?: LayoutInflater.from(this.context)
 			.inflate(R.layout.pref_dictionaries_item, parent, false)
 
-		val item = this.getItem(position)
+		val item = this.getItem(position) ?: return v
 
 		v.findViewById<TextView>(R.id.path)
 			.also({
@@ -327,19 +327,20 @@ class DictionariesPreferenceFragment : PreferenceFragment()
 
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?)
 	{
-		if(data != null)
+		val uri = data?.data
+		if(uri != null)
 			when(requestCode)
 			{
 				SELECT_DICTIONARY_FILE ->
 					if(resultCode == PreferenceActivity.RESULT_OK)
 					{
 						if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
-							this.activity.contentResolver.takePersistableUriPermission(
-								data.data,
+							this.activity?.contentResolver?.takePersistableUriPermission(
+								uri,
 								Intent.FLAG_GRANT_READ_URI_PERMISSION
 									or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
 
-						this.add(data.data.toString())
+						this.add(uri.toString())
 						// A resume will occur immediately after this,
 						// which will reload the preference.
 						this.save()
