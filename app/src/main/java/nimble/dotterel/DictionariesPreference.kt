@@ -5,6 +5,7 @@ package nimble.dotterel
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.preference.*
@@ -15,9 +16,59 @@ import android.widget.AbsListView.*
 
 import com.beust.klaxon.*
 
+import java.io.IOException
+
+import nimble.dotterel.translation.Dictionary
 import nimble.dotterel.translation.systems.IRELAND_SYSTEM
 
-data class DictionaryItem(var name: String, var enabled: Boolean)
+data class DictionaryItem(
+	var name: String,
+	var enabled: Boolean,
+	var accessible: Boolean = true)
+
+private fun checkAccessible(context: Context, path: String): Boolean
+{
+	try
+	{
+		val type = path.substringBefore("://")
+		val name = path.substringAfter("://")
+		return when(type)
+		{
+			"asset" ->
+			{
+				context.assets.open(name)
+				true
+			}
+			"code" ->
+				CODE_ASSETS[name] is Dictionary
+			else ->
+			{
+				context.contentResolver.openInputStream(Uri.parse(path))
+				true
+			}
+		}
+	}
+	catch(e: IOException)
+	{
+		Log.i("IO", "Error reading dictionary $path")
+		return false
+	}
+	catch(e: SecurityException)
+	{
+		Log.i("IO", "Permission denied reading dictionary $path")
+		return false
+	}
+	catch(e: java.lang.IllegalStateException)
+	{
+		Log.i("Dictionary", "$path is not a valid JSON dictionary")
+		return false
+	}
+	catch(e: ClassCastException)
+	{
+		Log.i("Type", "$path is not of type Dictionary")
+		return false
+	}
+}
 
 fun List<DictionaryItem>.toJson(): String
 {
@@ -78,10 +129,22 @@ private class DictionariesPreferenceAdapter(
 		val item = this.getItem(position)
 
 		v.findViewById<TextView>(R.id.path)
-			.apply({
-				this.text = item.name
-				this.isEnabled = item.enabled
+			.also({
+				it.text = item.name
+				it.isEnabled = item.enabled
 			})
+
+		val background = if(item.accessible)
+			R.drawable.dictionary_item
+		else
+			R.drawable.dictionary_item_inaccessible
+		v.background =
+			if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
+				this.context.resources.getDrawable(background, null)
+			else
+				@Suppress("DEPRECATION")
+				this.context.resources.getDrawable(background)
+
 
 		return v
 	}
@@ -313,6 +376,12 @@ class DictionariesPreferenceFragment : PreferenceFragment()
 	fun load(value: String)
 	{
 		val newItems = dictionaryListFromJson(this.key, value)
+			.map({
+				DictionaryItem(
+					it.name,
+					it.enabled,
+					checkAccessible(this.activity, it.name))
+			})
 		this.adapter?.clear()
 		this.adapter?.addAll(newItems)
 		this.adapter?.notifyDataSetChanged()
