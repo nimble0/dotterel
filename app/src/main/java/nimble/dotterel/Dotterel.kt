@@ -6,11 +6,12 @@ package nimble.dotterel
 import android.content.SharedPreferences
 import android.inputmethodservice.InputMethodService
 import android.net.Uri
-import android.preference.PreferenceManager
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.widget.Toast
+
+import androidx.preference.PreferenceManager
 
 import java.io.IOException
 
@@ -98,8 +99,8 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 			{
 				"asset" -> JsonDictionary(this.assets.open(name))
 				"code" -> CODE_ASSETS[name] as Dictionary
-				else -> JsonDictionary(
-					this.contentResolver.openInputStream(Uri.parse(path)))
+				else -> this.contentResolver.openInputStream(Uri.parse(path))
+					?.use({ JsonDictionary(it) })
 			}
 		}
 		catch(e: IOException)
@@ -200,7 +201,7 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 
 		for(resource in PREFERENCE_RESOURCES)
 			PreferenceManager.setDefaultValues(this, resource, true)
-		this.preferences = android.preference.PreferenceManager
+		this.preferences = PreferenceManager
 			.getDefaultSharedPreferences(this)
 		this.preferences?.registerOnSharedPreferenceChangeListener(
 			this.preferenceListener)

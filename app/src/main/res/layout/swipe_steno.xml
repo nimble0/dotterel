@@ -35,7 +35,7 @@
 
 	</LinearLayout>
 
-	<android.support.v7.widget.GridLayout android:id="@+id/keys"
+	<androidx.gridlayout.widget.GridLayout android:id="@+id/keys"
 		style="@style/SwipeStenoKeyboard"
 		android:layout_width="0dp"
 		android:layout_height="0dp"
@@ -188,6 +188,6 @@
 			android:hint="-S"
 			android:text="S" />
 
-	</android.support.v7.widget.GridLayout>
+	</androidx.gridlayout.widget.GridLayout>
 
 </nimble.dotterel.machines.SwipeStenoView>

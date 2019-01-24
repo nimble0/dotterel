@@ -3,12 +3,13 @@ package nimble.dotterel.machines
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
-import android.support.constraint.ConstraintLayout
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
+
+import androidx.constraintlayout.widget.ConstraintLayout
 
 import nimble.dotterel.*
 import nimble.dotterel.translation.*

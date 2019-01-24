@@ -4,32 +4,32 @@
 package nimble.dotterel
 
 import android.os.Bundle
-import android.preference.CheckBoxPreference
-import android.preference.ListPreference
-import android.preference.PreferenceFragment
+
+import androidx.preference.*
 
 import nimble.dotterel.machines.ON_SCREEN_MACHINE_STYLES
 import nimble.dotterel.util.*
+import nimble.dotterel.util.DialogPreference
 
-class MachinesPreferenceFragment : PreferenceFragment()
+private const val DIALOG_FRAGMENT_TAG = "nimble.dotterel.MachinePreferenceFragment.DIALOG"
+
+class MachinesPreferenceFragment : PreferenceFragmentCompat()
 {
-	override fun onCreate(savedInstanceState: Bundle?)
+	override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?)
 	{
-		super.onCreate(savedInstanceState)
-		this.preferenceScreen = this.preferenceManager
-			.createPreferenceScreen(this.activity)
+		this.addPreferencesFromResource(R.xml.pref_machines)
+		this.preferenceScreen.removePreference(this.findPreference("hidden"))
 
+		val machinesCategory = this.preferenceScreen.findPreference("machines")
+			as PreferenceCategory
 		for(m in MACHINES)
 		{
-			val enabled = CheckBoxPreference(this.preferenceScreen.context)
+			val enabled = SwitchPreference(this.preferenceScreen.context)
 			enabled.key = "machine/${m.key}"
 			enabled.title = m.key
 			enabled.setDefaultValue(false)
-			this.preferenceScreen.addPreference(enabled)
+			machinesCategory.addPreference(enabled)
 		}
-
-		this.addPreferencesFromResource(R.xml.pref_machines)
-		this.preferenceScreen.removePreference(this.findPreference("hidden"))
 
 		val onScreenStyle = this.findPreference("machine/On Screen/style")
 			as ListPreference
@@ -37,5 +37,13 @@ class MachinesPreferenceFragment : PreferenceFragment()
 			.toTypedArray()
 		onScreenStyle.entryValues = onScreenStyle.entries
 		onScreenStyle.bindSummaryToValue()
+	}
+
+	override fun onDisplayPreferenceDialog(preference: Preference)
+	{
+		if(preference is DialogPreference)
+			this.displayPreferenceDialog(preference, DIALOG_FRAGMENT_TAG)
+		else
+			super.onDisplayPreferenceDialog(preference)
 	}
 }
