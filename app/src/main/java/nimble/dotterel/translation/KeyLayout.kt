@@ -144,7 +144,7 @@ class KeyLayout(
 		return Stroke(this, strokeKeys)
 	}
 
-	fun keyString(keys: Long): String =
+	fun pureKeysString(keys: Long): String =
 		this.rtfcreKeys.joinToString(separator = "", transform =
 		{
 			if(it.pure && it.keys and keys != 0L)

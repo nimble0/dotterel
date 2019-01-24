@@ -27,7 +27,7 @@ class FormattingTests : FunSpec
 		)
 		forAll(spacingTable) { a, b, result ->
 			UnformattedText(0, "text", Formatting(spaceStart = b))
-				.format(FormattedText(0, "context", Formatting(spaceEnd = a, space = " ")))
+				.format(FormattedText(0, "context", Formatting(space = " ", spaceEnd = a)))
 				.text shouldBe result + "text"
 		}
 
@@ -43,7 +43,7 @@ class FormattingTests : FunSpec
 			val context = FormattedText(
 				0,
 				"context",
-				Formatting(spaceEnd = Formatting.Space.NORMAL, space = " "))
+				Formatting(space = " ", spaceEnd = Formatting.Space.NORMAL))
 			val a = UnformattedText(
 				0,
 				"text",
@@ -62,7 +62,7 @@ class FormattingTests : FunSpec
 			val context = FormattedText(
 				0,
 				"context",
-				Formatting(spaceEnd = Formatting.Space.NORMAL, space = " "))
+				Formatting(space = " ", spaceEnd = Formatting.Space.NORMAL))
 			val a = UnformattedText(
 				0,
 				"text",
@@ -86,7 +86,7 @@ class FormattingTests : FunSpec
 			val context = FormattedText(
 				0,
 				"context",
-				Formatting(spaceEnd = Formatting.Space.NORMAL, space = "_@"))
+				Formatting(space = "_@", spaceEnd = Formatting.Space.NORMAL))
 			val a = UnformattedText(
 				0,
 				"text  text",
@@ -100,7 +100,7 @@ class FormattingTests : FunSpec
 			val context = FormattedText(
 				0,
 				"context",
-				Formatting(spaceEnd = Formatting.Space.GLUE, space = "_@"))
+				Formatting(space = "_@", spaceEnd = Formatting.Space.GLUE))
 			val a = UnformattedText(
 				0,
 				"text  text",

@@ -48,7 +48,7 @@ class NkroStenoMachine(private val app: Dotterel) :
 		if(keyMapPreference.isEmpty())
 		{
 			val m = "Missing/invalid NKRO key mapping for the current key layout"
-			Log.i("Machine", m)
+			Log.e("Dotterel", m)
 			Toast.makeText(this.app, m, Toast.LENGTH_SHORT).show()
 		}
 

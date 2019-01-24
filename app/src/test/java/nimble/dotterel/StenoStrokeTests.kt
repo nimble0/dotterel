@@ -65,27 +65,27 @@ class StenoStrokeTests : FunSpec
 		layout.parseKeys(listOf("A", "O", "*", "E", "U")).rtfcre shouldBe "AO*EU"
 	}
 
-	test("keyString")
+	test("pureKeysString")
 	{
-		layout.parse("STKPWHRAO*EUFRPBLGTSDZ").keyString shouldBe " STKPWHRAO*EUFRPBLGTSDZ"
-		layout.parse("STKPWHRAO-EUFRPBLGTSDZ").keyString shouldBe " STKPWHRAO EUFRPBLGTSDZ"
-		layout.parse("R").keyString shouldBe "       R               "
-		layout.parse("-R").keyString shouldBe "              R        "
-		layout.parse("RE").keyString shouldBe "       R   E           "
-		layout.parse("ER").keyString shouldBe "           E  R        "
+		layout.parse("STKPWHRAO*EUFRPBLGTSDZ").pureKeysString shouldBe " STKPWHRAO*EUFRPBLGTSDZ"
+		layout.parse("STKPWHRAO-EUFRPBLGTSDZ").pureKeysString shouldBe " STKPWHRAO EUFRPBLGTSDZ"
+		layout.parse("R").pureKeysString shouldBe "       R               "
+		layout.parse("-R").pureKeysString shouldBe "              R        "
+		layout.parse("RE").pureKeysString shouldBe "       R   E           "
+		layout.parse("ER").pureKeysString shouldBe "           E  R        "
 
 		// Invalid strokes
-		layout.parse("TT").keyString shouldBe "                       "
-		layout.parse("G").keyString shouldBe "                       "
-		layout.parse("TS").keyString shouldBe "                       "
+		layout.parse("TT").pureKeysString shouldBe "                       "
+		layout.parse("G").pureKeysString shouldBe "                       "
+		layout.parse("TS").pureKeysString shouldBe "                       "
 
 		// Combination keys
-		layout.parse("#STKPWHRAO*EUFRPBLGTSDZ").keyString shouldBe "#STKPWHRAO*EUFRPBLGTSDZ"
-		layout.parse("#KWR*EURBGSDZ").keyString shouldBe "#  K W R  *EU R B G SDZ"
-		layout.parse("#S").keyString shouldBe "#S                     "
-		layout.parse("#-T").keyString shouldBe "#                  T   "
-		layout.parse("1").keyString shouldBe "#S                     "
-		layout.parse("-9").keyString shouldBe "#                  T   "
+		layout.parse("#STKPWHRAO*EUFRPBLGTSDZ").pureKeysString shouldBe "#STKPWHRAO*EUFRPBLGTSDZ"
+		layout.parse("#KWR*EURBGSDZ").pureKeysString shouldBe "#  K W R  *EU R B G SDZ"
+		layout.parse("#S").pureKeysString shouldBe "#S                     "
+		layout.parse("#-T").pureKeysString shouldBe "#                  T   "
+		layout.parse("1").pureKeysString shouldBe "#S                     "
+		layout.parse("-9").pureKeysString shouldBe "#                  T   "
 	}
 
 	test("plus/minus")

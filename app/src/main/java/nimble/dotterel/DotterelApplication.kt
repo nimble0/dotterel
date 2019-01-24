@@ -55,11 +55,12 @@ class DotterelApplication : Application()
 
 	private fun deleteOldLogFiles()
 	{
-		this.getExternalFilesDir("logs").listFiles()
-			.filter({ it.name.startsWith(LOG_FILE_NAME) })
-			.sortedBy({ it.lastModified() })
-			.dropLast(MAX_LOG_FILES)
-			.forEach({ it.delete() })
+		this.getExternalFilesDir("logs")
+			?.listFiles()
+			?.filter({ it.name.startsWith(LOG_FILE_NAME) })
+			?.sortedBy({ it.lastModified() })
+			?.dropLast(MAX_LOG_FILES)
+			?.forEach({ it.delete() })
 	}
 
 	private fun saveLogFile(): File?

@@ -96,9 +96,9 @@ val IRELAND_SYSTEM = System(
 		"code://dictionaries/Numbers"),
 
 	defaultFormatting = Formatting(
+		space = " ",
 		spaceStart = Formatting.Space.NORMAL,
 		spaceEnd = Formatting.Space.NORMAL,
-		space = " ",
 		orthography = null,
 		transform = ::noneTransform)
 )

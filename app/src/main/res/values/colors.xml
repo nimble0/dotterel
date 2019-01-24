@@ -3,9 +3,9 @@
 <!-- See file <LICENSE.txt> or go to <http://www.gnu.org/licenses/> for full license details. -->
 
 <resources>
-	<color name="colorPrimary">#3F51B5</color>
-	<color name="colorPrimaryDark">#303F9F</color>
-	<color name="colorAccent">#FF4081</color>
+	<color name="primary">#3F51B5</color>
+	<color name="primaryDark">#303F9F</color>
+	<color name="accent">#FF4081</color>
 
 	<color name="stenoKey">#000</color>
 	<color name="stenoKeyBorder">#555</color>

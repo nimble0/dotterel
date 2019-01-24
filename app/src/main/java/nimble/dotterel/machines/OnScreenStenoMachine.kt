@@ -46,7 +46,7 @@ class OnScreenStenoMachine(private val app: Dotterel) :
 		if(viewId == null)
 		{
 			val m = "On Screen machine style $style does not support the current key layout"
-			Log.i("Machine", m)
+			Log.e("Dotterel", m)
 			Toast.makeText(this.app, m, Toast.LENGTH_SHORT).show()
 		}
 		this.app.viewId = viewId

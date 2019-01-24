@@ -50,22 +50,22 @@ private fun checkAccessible(context: Context, path: String): Boolean
 	}
 	catch(e: IOException)
 	{
-		Log.i("IO", "Error reading dictionary $path")
+		Log.w("Dotterel", "Error reading dictionary $path")
 		return false
 	}
 	catch(e: SecurityException)
 	{
-		Log.i("IO", "Permission denied reading dictionary $path")
+		Log.w("Dotterel", "Permission denied reading dictionary $path")
 		return false
 	}
 	catch(e: java.lang.IllegalStateException)
 	{
-		Log.i("Dictionary", "$path is not a valid JSON dictionary")
+		Log.w("Dotterel", "$path is not a valid JSON dictionary")
 		return false
 	}
 	catch(e: ClassCastException)
 	{
-		Log.i("Type", "$path is not of type Dictionary")
+		Log.w("Dotterel", "$path is not of type Dictionary")
 		return false
 	}
 }
@@ -96,11 +96,11 @@ fun dictionaryListFromJson(key: String, json: String): List<DictionaryItem>
 	}
 	catch(e: com.eclipsesource.json.ParseException)
 	{
-		Log.e("Preferences", "Preference $key has badly formed JSON")
+		Log.e("Dotterel", "Preference $key has badly formed JSON")
 	}
 	catch(e: java.lang.UnsupportedOperationException)
 	{
-		Log.e("Preferences", "Invalid type found while reading preference $key")
+		Log.e("Dotterel", "Invalid type found while reading preference $key")
 	}
 
 	return listOf()
@@ -131,7 +131,7 @@ private class DictionariesPreferenceAdapter(
 		val v = convertView ?: LayoutInflater.from(this.context)
 			.inflate(R.layout.pref_dictionaries_item, parent, false)
 
-		val item = this.getItem(position)
+		val item = this.getItem(position) ?: return v
 
 		v.findViewById<TextView>(R.id.path)
 			.also({
@@ -212,7 +212,7 @@ private class DictionariesPreferenceModalListener(
 
 	override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean
 	{
-		mode.menuInflater.inflate(R.menu.dictionaries_preference_menu, menu)
+		mode.menuInflater.inflate(R.menu.dictionaries_preference, menu)
 		this.list.allowDragging = false
 		this.list.actionMode = mode
 		return true
@@ -327,19 +327,20 @@ class DictionariesPreferenceFragment : PreferenceFragment()
 
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?)
 	{
-		if(data != null)
+		val uri = data?.data
+		if(uri != null)
 			when(requestCode)
 			{
 				SELECT_DICTIONARY_FILE ->
 					if(resultCode == PreferenceActivity.RESULT_OK)
 					{
 						if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
-							this.activity.contentResolver.takePersistableUriPermission(
-								data.data,
+							this.activity?.contentResolver?.takePersistableUriPermission(
+								uri,
 								Intent.FLAG_GRANT_READ_URI_PERMISSION
 									or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
 
-						this.add(data.data.toString())
+						this.add(uri.toString())
 						// A resume will occur immediately after this,
 						// which will reload the preference.
 						this.save()
