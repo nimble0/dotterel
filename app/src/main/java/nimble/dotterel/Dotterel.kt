@@ -10,6 +10,7 @@ import android.preference.PreferenceManager
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
+import android.widget.Toast
 
 import java.io.IOException
 
@@ -80,6 +81,15 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 
 	private fun getDictionary(path: String): Dictionary?
 	{
+		val error = { message: String ->
+			Log.e("Dotterel", message)
+			Toast.makeText(
+				this,
+				message,
+				Toast.LENGTH_LONG
+			).show()
+		}
+
 		try
 		{
 			val type = path.substringBefore("://")
@@ -94,17 +104,22 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 		}
 		catch(e: IOException)
 		{
-			Log.i("IO", "Error reading dictionary $path")
+			error("Error reading dictionary $path")
+			return null
+		}
+		catch(e: SecurityException)
+		{
+			error("Permission denied reading dictionary $path")
 			return null
 		}
 		catch(e: java.lang.IllegalStateException)
 		{
-			Log.i("Dictionary", "$path is not a valid JSON dictionary")
+			error("$path is not a valid JSON dictionary")
 			return null
 		}
 		catch(e: ClassCastException)
 		{
-			Log.i("Type", "$path is not of type Dictionary")
+			error("$path is not of type Dictionary")
 			return null
 		}
 	}
