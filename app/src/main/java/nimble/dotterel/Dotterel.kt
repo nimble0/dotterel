@@ -38,6 +38,20 @@ val MACHINES = mapOf(
 	Pair("NKRO", NkroStenoMachine.Factory())
 )
 
+interface DotterelRunnable
+{
+	operator fun invoke(dotterel: Dotterel)
+
+	companion object
+	{
+		fun make(lambda: (Dotterel) -> Unit) =
+			object : DotterelRunnable
+			{
+				override fun invoke(dotterel: Dotterel) = lambda(dotterel)
+			}
+	}
+}
+
 class Dotterel : InputMethodService(), StenoMachine.Listener
 {
 	interface EditorListener
@@ -247,6 +261,7 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 				}
 				is KeyCombo -> a.toAndroidKeyEvent()?.run({ ic?.sendKeyEvent(this) })
 				is Runnable -> a.run()
+				is DotterelRunnable -> a(this)
 			}
 	}
 
