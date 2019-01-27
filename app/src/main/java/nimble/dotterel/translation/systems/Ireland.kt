@@ -3,6 +3,7 @@
 
 package nimble.dotterel.translation.systems
 
+import nimble.dotterel.*
 import nimble.dotterel.translation.*
 import nimble.dotterel.translation.Orthography.Replacement
 
@@ -56,7 +57,13 @@ val IRELAND_SYSTEM = System(
 
 		Pair("MODE:SET_SPACE", ::setSpace),
 		Pair("MODE:RESET_CASE", ::resetTransform),
-		Pair("MODE:RESET_SPACE", ::resetSpace)
+		Pair("MODE:RESET_SPACE", ::resetSpace),
+
+		Pair("IME:EDITOR_ACTION", ::editorAction),
+		Pair("IME:SWITCH_PREVIOUS", ::switchPreviousIme),
+		Pair("IME:SWITCH_NEXT", ::switchNextIme),
+		Pair("IME:SWITCH", ::switchIme),
+		Pair("IME:SHOW_PICKER", ::showImePicker)
 	),
 
 	aliases = mapOf(

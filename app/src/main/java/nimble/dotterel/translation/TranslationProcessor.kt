@@ -96,17 +96,19 @@ class TranslationProcessor
 	private fun parseCommand(translator: Translator, commandStr: String)
 		: TranslationPart
 	{
-		var i = commandStr.indexOf(':')
-		i = commandStr.indexOf(':', i + 1)
+		var i = commandStr.length
+		while(i != -1)
+		{
+			val name = commandStr.substring(0, i).toLowerCase()
+			val arg = commandStr.substring(min(i + 1, commandStr.length))
+			val command = this.commands[name]
+			if(command != null)
+				return command(translator, arg)
 
-		if(i == -1)
-			i = commandStr.length
+			i = commandStr.lastIndexOf(":", i - 1)
+		}
 
-		val name = commandStr.substring(0, i).toLowerCase()
-		val arg = commandStr.substring(min(commandStr.length, i + 1))
-
-		return this.commands[name]?.invoke(translator, arg)
-			?: TranslationPart()
+		return TranslationPart()
 	}
 
 	@Throws(ParseException::class)

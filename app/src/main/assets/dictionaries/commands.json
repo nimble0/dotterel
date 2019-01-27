@@ -21,7 +21,7 @@
 "R*R": "{#Return}{^}",
 "R-R": "{^}{#Return}{^}{-|}",
 "SH-FT": "{#Control_L(Home)}{^}",
-"SKW-BGS": "{#Return}{^}",
+"SKW-BGS": "{IME:EDITOR_ACTION}{^}",
 "SKWRAEURBGS": "{#Return}{#Return}{^}{-|}",
 "SKWRAURBGS": "{#Return}{#Return}{^}{-|}",
 "SR-RS": "{#Control_L(End)}{^}",

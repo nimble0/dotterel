@@ -38,6 +38,20 @@ val MACHINES = mapOf(
 	Pair("NKRO", NkroStenoMachine.Factory())
 )
 
+interface DotterelRunnable
+{
+	operator fun invoke(dotterel: Dotterel)
+
+	companion object
+	{
+		fun make(lambda: (Dotterel) -> Unit) =
+			object : DotterelRunnable
+			{
+				override fun invoke(dotterel: Dotterel) = lambda(dotterel)
+			}
+	}
+}
+
 class Dotterel : InputMethodService(), StenoMachine.Listener
 {
 	interface EditorListener
@@ -228,14 +242,13 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 	override fun changeStroke(s: Stroke) {}
 	override fun applyStroke(s: Stroke)
 	{
-		val ic = this.currentInputConnection
 		this.translator.apply(s)
 		for(a in this.translator.flush())
 			when(a)
 			{
 				is FormattedText ->
 				{
-					ic?.run({
+					this.currentInputConnection?.run({
 						this.beginBatchEdit()
 						// TODO: Make sure that this is deleting the expected content.
 						// InputConnection.deleteSurroundingText should not delete
@@ -245,8 +258,12 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 						this.endBatchEdit()
 					})
 				}
-				is KeyCombo -> a.toAndroidKeyEvent()?.run({ ic?.sendKeyEvent(this) })
+				is KeyCombo ->
+					a.toAndroidKeyEvent()?.also({
+						this.currentInputConnection?.sendKeyEvent(it)
+					})
 				is Runnable -> a.run()
+				is DotterelRunnable -> a(this)
 			}
 	}
 
