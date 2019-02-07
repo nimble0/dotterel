@@ -93,7 +93,7 @@ class DotterelApplication : Application()
 					+ "Android version: ${Build.VERSION.SDK_INT}\n"
 					+ "Device: $model\n"
 					+ "App version: ${info?.versionName} (${info?.versionCode})\n")
-				process.inputStream.reader().copyTo(it)
+				process.inputStream.bufferedReader().copyTo(it)
 			})
 
 			return logFile
