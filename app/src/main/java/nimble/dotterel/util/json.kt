@@ -95,8 +95,10 @@ fun Map<String, String>.toJson() = JsonObject()
 	})
 
 
-fun <T> JsonObject.mapValues(transform: (JsonValue) -> T) =
-	this.associateBy({ it.name }, { transform(it.value) })
+fun <T> JsonObject.mapKeys(transform: (JsonObject.Member) -> T) =
+	this.associateBy({ transform(it) }, { it.value })
+fun <T> JsonObject.mapValues(transform: (JsonObject.Member) -> T) =
+	this.associateBy({ it.name }, { transform(it) })
 
 
 fun JsonObject.setNotNull(name: String, value: JsonValue?)
