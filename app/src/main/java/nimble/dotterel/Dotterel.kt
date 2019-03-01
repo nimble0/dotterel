@@ -209,8 +209,8 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 	{
 		super.onCreate()
 
-		for(resource in PREFERENCE_RESOURCES)
-			PreferenceManager.setDefaultValues(this, resource, true)
+		setDefaultSettings(this)
+
 		this.preferences = PreferenceManager
 			.getDefaultSharedPreferences(this)
 		// Preference listener stored as member variable because

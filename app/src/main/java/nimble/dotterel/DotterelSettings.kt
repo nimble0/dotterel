@@ -12,14 +12,45 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.*
 import androidx.preference.PreferenceFragmentCompat
 
+import com.eclipsesource.json.JsonObject
+import com.eclipsesource.json.PrettyPrint
+
 import java.io.File
 
 import nimble.dotterel.util.bindSummaryToValue
 import nimble.dotterel.util.flatten
 
-val PREFERENCE_RESOURCES = listOf(
+private val PREFERENCE_RESOURCES = listOf(
+	R.xml.pref_root,
 	R.xml.pref_machines
 )
+
+fun setDefaultSettings(context: Context)
+{
+	val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+	val activeSystem = sharedPreferences.getString("system", null)
+	if(activeSystem == null)
+	{
+		val systemsFolder = File(context.filesDir, "systems")
+		systemsFolder.mkdirs()
+		val newSystemFile = File(systemsFolder, "My System.json")
+		newSystemFile.createNewFile()
+		newSystemFile.writer()
+			.use({ output ->
+				JsonObject()
+					.add("base", "asset:/systems/ireland.english.json")
+					.writeTo(output, PrettyPrint.indentWithTabs())
+			})
+
+		sharedPreferences
+			.edit()
+			.putString("system", newSystemFile.absolutePath)
+			.apply()
+	}
+
+	for(resource in PREFERENCE_RESOURCES)
+		PreferenceManager.setDefaultValues(context, resource, true)
+}
 
 class DotterelSettings :
 	AppCompatActivity(),
@@ -34,8 +65,7 @@ class DotterelSettings :
 		this.setContentView(R.layout.settings)
 		this.supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
-		for(resource in PREFERENCE_RESOURCES)
-			PreferenceManager.setDefaultValues(this, resource, true)
+		setDefaultSettings(this)
 
 		if(savedInstanceState == null)
 		{
