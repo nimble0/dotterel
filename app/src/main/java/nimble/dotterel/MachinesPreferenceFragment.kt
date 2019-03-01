@@ -7,7 +7,6 @@ import android.os.Bundle
 
 import androidx.preference.*
 
-import nimble.dotterel.machines.ON_SCREEN_MACHINE_STYLES
 import nimble.dotterel.util.*
 import nimble.dotterel.util.DialogPreference
 
@@ -31,12 +30,10 @@ class MachinesPreferenceFragment : PreferenceFragmentCompat()
 			machinesCategory.addPreference(enabled)
 		}
 
-		val onScreenStyle = this.findPreference("machine/On Screen/style")
-			as ListPreference
-		onScreenStyle.entries = ON_SCREEN_MACHINE_STYLES.map({ it.key })
-			.toTypedArray()
-		onScreenStyle.entryValues = onScreenStyle.entries
-		onScreenStyle.bindSummaryToValue()
+		this.preferenceScreen
+			.flatten()
+			.filter({ it.extras.getBoolean("bindSummaryToValue") })
+			.forEach({ it.bindSummaryToValue() })
 	}
 
 	override fun onDisplayPreferenceDialog(preference: Preference)
@@ -67,6 +64,7 @@ class MachinesPreferenceFragment : PreferenceFragmentCompat()
 							).also({ jsonDataStores[dataStorePath] = it })
 						preference.key = preference.extras.getString("key")
 						preference.preferenceDataStore = dataStore
+						preference.reloadValue()
 					}
 				}
 		}

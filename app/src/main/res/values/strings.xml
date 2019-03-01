@@ -51,5 +51,10 @@
 	<string name="crash_notification_subject">Dotterel crash log</string>
 	<string name="crash_notification_share">Share</string>
 
+	<string-array name="on_screen_styles">
+		<item>Touch</item>
+		<item>Swipe</item>
+	</string-array>
+
 	<string-array name="empty" />
 </resources>
