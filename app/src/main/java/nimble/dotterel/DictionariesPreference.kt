@@ -21,15 +21,6 @@ data class DictionaryItem(
 	var enabled: Boolean,
 	var accessible: Boolean = true)
 
-private fun checkAccessible(context: Context, path: String): Boolean =
-	when(path.substringBefore("://"))
-	{
-		"code_dictionary" ->
-			true
-		else ->
-			AndroidSystemResources(context).openInputStream(path) != null
-	}
-
 private class DictionariesPreferenceAdapter(
 	context: Context,
 	val items: MutableList<DictionaryItem> = mutableListOf()
@@ -157,6 +148,9 @@ class DictionariesPreferenceFragment : PreferenceFragment()
 	private var readOnly = true
 	private var view: ReorderableListView? = null
 	private var adapter: DictionariesPreferenceAdapter? = null
+	private val systemManager get() =
+		(this.requireActivity().application as DotterelApplication)
+		.systemManager
 
 	override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?)
 	{
@@ -321,7 +315,7 @@ class DictionariesPreferenceFragment : PreferenceFragment()
 							DictionaryItem(
 								path,
 								it.get("enabled").asBoolean(),
-								checkAccessible(this.requireContext(), path))
+								this.systemManager.openDictionary(path) != null)
 						})
 				})
 			?: listOf()
