@@ -7,6 +7,8 @@ import java.text.ParseException
 
 import kotlin.math.min
 
+import nimble.dotterel.util.CaseInsensitiveString
+
 private val TRANSLATION_PARTS_PATTERN = Regex("\\A(?:(?:[^{}\\\\]|(?:\\\\.))+|(?:\\{(?:[^{}\\\\]|(?:\\\\.))*\\}))")
 // META_FORMATTING_PATTERN groups
 // 1 - Formatting start
@@ -82,7 +84,7 @@ class TranslationProcessor(private val translator: Translator)
 		{
 			val name = commandStr.substring(0, i).toLowerCase()
 			val arg = commandStr.substring(min(i + 1, commandStr.length))
-			val command = this.system.commands[name]
+			val command = this.system.commands[CaseInsensitiveString(name)]
 			if(command != null)
 				return command(translator, arg)
 
@@ -100,7 +102,8 @@ class TranslationProcessor(private val translator: Translator)
 			val inner = part.substring(1, part.length - 1)
 
 			val a = BASE_ALIASES[inner]
-				?: this.system.aliases[inner]?.let({ TranslationString(it) })
+				?: this.system.aliases[CaseInsensitiveString(inner)]
+					?.let({ TranslationString(it) })
 			when(a)
 			{
 				is Actions -> return TranslationPart(a.actions)

@@ -3,14 +3,16 @@
 
 package nimble.dotterel.translation
 
+import nimble.dotterel.util.CaseInsensitiveString
+
 data class System(
 	val keyLayout: KeyLayout,
 	val orthography: Orthography,
 	val transforms: Map<
-		String,
+		CaseInsensitiveString,
 		(FormattedText, UnformattedText, Boolean) -> UnformattedText>,
-	val commands: Map<String, (Translator, String) -> TranslationPart>,
-	val aliases: Map<String, String>,
+	val commands: Map<CaseInsensitiveString, (Translator, String) -> TranslationPart>,
+	val aliases: Map<CaseInsensitiveString, String>,
 	val prefixStrokes: List<Stroke>,
 	val suffixStrokes: List<Stroke>,
 	val defaultDictionaries: List<String>,

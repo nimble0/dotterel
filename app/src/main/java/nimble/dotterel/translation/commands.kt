@@ -7,6 +7,8 @@ package nimble.dotterel.translation
 
 import java.util.Collections
 
+import nimble.dotterel.util.CaseInsensitiveString
+
 private val backspaceWord = KeyCombo("backspace", Modifier.CONTROL.mask)
 
 fun List<Any>.filterTextActions() =
@@ -43,7 +45,7 @@ fun transform(translator: Translator, arg: String) =
 			spaceStart = Formatting.Space.NONE,
 			spaceEnd = null,
 			orthographyEnd = null,
-			transform = translator.system.transforms[arg.toLowerCase()],
+			transform = translator.system.transforms[CaseInsensitiveString(arg)],
 			transformState = Formatting.TransformState.MAIN
 		))))
 
@@ -53,7 +55,7 @@ fun singleTransform(translator: Translator, arg: String) =
 			spaceStart = Formatting.Space.NONE,
 			spaceEnd = null,
 			orthographyEnd = null,
-			singleTransform = translator.system.transforms[arg.toLowerCase()],
+			singleTransform = translator.system.transforms[CaseInsensitiveString(arg)],
 			transformState = Formatting.TransformState.MAIN
 		))))
 

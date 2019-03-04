@@ -6,6 +6,7 @@ package nimble.dotterel.translation.systems
 import nimble.dotterel.*
 import nimble.dotterel.translation.*
 import nimble.dotterel.translation.RegexOrthography.Replacement
+import nimble.dotterel.util.CaseInsensitiveString
 
 val IRELAND_LAYOUT = KeyLayout(
 	"#1S2TK3PW4HR-5A0O*EU-6FR7PB8LG9TSDZ",
@@ -40,7 +41,7 @@ val IRELAND_SYSTEM = System(
 		Pair("uppercase", ::upperCaseTransform),
 		Pair("lowercase", ::lowerCaseTransform),
 		Pair("titlecase", ::titleCaseTransform)
-	),
+	).mapKeys({ CaseInsensitiveString(it.key) }),
 
 	commands = mapOf(
 		Pair("retro:undo", ::undoStroke),
@@ -63,7 +64,7 @@ val IRELAND_SYSTEM = System(
 		Pair("ime:switch_next", ::switchNextIme),
 		Pair("ime:switch", ::switchIme),
 		Pair("ime:show_picker", ::showImePicker)
-	),
+	).mapKeys({ CaseInsensitiveString(it.key) }),
 
 	aliases = mapOf(
 		Pair("-|", "{MODE:SINGLE_TRANSFORM:CAPITALISE}"),
@@ -91,7 +92,7 @@ val IRELAND_SYSTEM = System(
 		Pair("MODE:TITLE", "{MODE:TRANSFORM:TITLECASE}"),
 		Pair("MODE:CAMEL", "{MODE:TRANSFORM:TITLECASE}{MODE:SET_SPACE:}{^}"),
 		Pair("MODE:SNAKE", "{MODE:SET_SPACE:_}")
-	),
+	).mapKeys({ CaseInsensitiveString(it.key) }),
 
 	prefixStrokes = listOf(),
 	suffixStrokes = IRELAND_LAYOUT.parse(listOf("-Z", "-D", "-S", "-G")),
