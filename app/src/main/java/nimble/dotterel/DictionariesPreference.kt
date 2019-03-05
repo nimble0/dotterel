@@ -126,7 +126,7 @@ private class DictionariesPreferenceModalListener(
 
 	override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean
 	{
-		mode.menuInflater.inflate(R.menu.dictionaries_preference, menu)
+		mode.menuInflater.inflate(R.menu.dictionaries_context, menu)
 		this.list.allowDragging = false
 		this.list.actionMode = mode
 		return true
@@ -154,6 +154,8 @@ class DictionariesPreferenceFragment : PreferenceFragment()
 
 	override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?)
 	{
+		this.setHasOptionsMenu(true)
+
 		this.readOnly = this.arguments?.getBoolean("readOnly") ?: false
 	}
 
@@ -175,15 +177,6 @@ class DictionariesPreferenceFragment : PreferenceFragment()
 
 		this.adapter = adapter
 		this.view = listView
-
-		view.findViewById<Button>(R.id.add_dictionary).setOnClickListener({
-			this.chooseDictionaryFile()
-		})
-
-		view.findViewById<Button>(R.id.reset_dictionaries).setOnClickListener({
-			this.reset()
-			this.view?.actionMode?.finish()
-		})
 
 		return view
 	}
@@ -324,4 +317,24 @@ class DictionariesPreferenceFragment : PreferenceFragment()
 		this.adapter?.addAll(dictionaries)
 		this.adapter?.notifyDataSetChanged()
 	}
+
+	override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) =
+		inflater.inflate(R.menu.dictionaries, menu)
+
+	override fun onOptionsItemSelected(item: MenuItem): Boolean =
+		when(item.itemId)
+		{
+			R.id.add_dictionary ->
+			{
+				this.chooseDictionaryFile()
+				true
+			}
+			R.id.reset_dictionaries ->
+			{
+				this.reset()
+				this.view?.actionMode?.finish()
+				true
+			}
+			else -> super.onOptionsItemSelected(item)
+		}
 }
