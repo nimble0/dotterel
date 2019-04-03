@@ -3,6 +3,18 @@
 
 package nimble.dotterel.translation
 
+private fun countStrokes(s: String): Int
+{
+	var n = 0
+	var i = 0
+	while(i != -1)
+	{
+		++n
+		i = s.indexOf('/', i + 1)
+	}
+	return n
+}
+
 open class StandardDictionary : Dictionary
 {
 	private val entries = mutableMapOf<String, String>()
@@ -42,13 +54,13 @@ open class StandardDictionary : Dictionary
 	operator fun set(rtfcre: String, v: String)
 	{
 		if(rtfcre !in this.entries)
-			this.incrementKeySizeCount(rtfcre.split("/").size)
+			this.incrementKeySizeCount(countStrokes(rtfcre))
 		this.entries[rtfcre] = v
 	}
 	fun remove(rtfcre: String)
 	{
 		if(this.entries.remove(rtfcre) != null)
-			this.decrementKeySizeCount(rtfcre.split("/").size)
+			this.decrementKeySizeCount(countStrokes(rtfcre))
 	}
 
 	val size: Int get() = this.entries.size
