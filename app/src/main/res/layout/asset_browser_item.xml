@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This file is part of Dotterel which is released under GPL-2.0-or-later. -->
+<!-- See file <LICENSE.txt> or go to <http://www.gnu.org/licenses/> for full license details. -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:orientation="vertical"
+	android:paddingTop="10dp"
+	android:paddingBottom="10dp"
+	android:minHeight="?attr/listPreferredItemHeightSmall"
+	android:paddingStart="?attr/listPreferredItemPaddingStart"
+	android:paddingEnd="?attr/listPreferredItemPaddingEnd"
+	android:paddingLeft="?attr/listPreferredItemPaddingStart"
+	android:paddingRight="?attr/listPreferredItemPaddingEnd"
+	android:gravity="center_vertical"
+	android:layout_gravity="center_vertical">
+
+	<TextView android:id="@android:id/title"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:textAppearance="?attr/textAppearanceListItem" />
+
+	<TextView android:id="@android:id/summary"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:textAppearance="?android:attr/textAppearanceSmall"
+		android:textColor="?android:attr/textColorSecondary" />
+
+</LinearLayout>

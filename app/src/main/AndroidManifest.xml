@@ -45,6 +45,10 @@
 			</intent-filter>
 		</activity>
 
+		<activity
+			android:name=".DictionaryAssetBrowser"
+			android:label="@string/app_name" />
+
 	</application>
 
 </manifest>

@@ -15,6 +15,7 @@ import android.widget.AbsListView.*
 import com.eclipsesource.json.*
 
 import nimble.dotterel.util.toJson
+import nimble.dotterel.util.set
 
 data class DictionaryItem(
 	var path: String,
@@ -141,7 +142,39 @@ private class DictionariesPreferenceModalListener(
 	override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean = false
 }
 
+class DictionaryAssetBrowser : AssetBrowser()
+{
+	private val systemManager get() =
+		(this.application as DotterelApplication).systemManager
+
+	override fun onCreate(savedInstanceState: Bundle?)
+	{
+		super.onCreate(savedInstanceState)
+
+		this.setRoots(listOf(
+			AssetBrowserRoot(this.assets, "/dictionaries/"),
+			JsonTreeBrowserRoot(
+				JsonObject().also({ tree ->
+					for(path in this.systemManager.resources.codeDictionaries)
+					{
+						val segments = path.key.split("/")
+						if(segments.size > 1)
+							tree.set(segments, true)
+						else
+							tree.set(segments[0], true)
+					}
+				}),
+				"Code",
+				"code_dictionary",
+				"/")
+		))
+
+		this.navigate("asset:/dictionaries/")
+	}
+}
+
 private const val SELECT_DICTIONARY_FILE = 2
+private const val SELECT_ASSET_DICTIONARY_FILE = 3
 
 class DictionariesPreferenceFragment : PreferenceFragment()
 {
@@ -199,6 +232,29 @@ class DictionariesPreferenceFragment : PreferenceFragment()
 		super.onPause()
 	}
 
+	private fun chooseAssetDictionaryFile()
+	{
+		val intent = Intent(this.requireContext(), DictionaryAssetBrowser::class.java)
+		intent.type = "*/*"
+		intent.addCategory(Intent.CATEGORY_OPENABLE)
+		intent.putExtra("initialPath", "asset:/dictionaries/")
+
+		try
+		{
+			this.startActivityForResult(
+				intent,
+				SELECT_ASSET_DICTIONARY_FILE)
+		}
+		catch(e: android.content.ActivityNotFoundException)
+		{
+			Toast.makeText(
+				this.requireContext(),
+				"Please install a File Manager.",
+				Toast.LENGTH_LONG
+			).show()
+		}
+	}
+
 	private fun chooseDictionaryFile()
 	{
 		val intent = Intent(
@@ -243,6 +299,14 @@ class DictionariesPreferenceFragment : PreferenceFragment()
 									Intent.FLAG_GRANT_READ_URI_PERMISSION
 										or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
 
+						this.add(uri.toString())
+						// A resume will occur immediately after this,
+						// which will reload the preference.
+						this.save()
+					}
+				SELECT_ASSET_DICTIONARY_FILE ->
+					if(resultCode == PreferenceActivity.RESULT_OK)
+					{
 						this.add(uri.toString())
 						// A resume will occur immediately after this,
 						// which will reload the preference.
@@ -324,6 +388,11 @@ class DictionariesPreferenceFragment : PreferenceFragment()
 	override fun onOptionsItemSelected(item: MenuItem): Boolean =
 		when(item.itemId)
 		{
+			R.id.add_asset_dictionary ->
+			{
+				this.chooseAssetDictionaryFile()
+				true
+			}
 			R.id.add_dictionary ->
 			{
 				this.chooseDictionaryFile()
