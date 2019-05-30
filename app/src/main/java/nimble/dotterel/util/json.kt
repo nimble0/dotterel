@@ -3,9 +3,7 @@
 
 package nimble.dotterel.util
 
-import com.eclipsesource.json.JsonArray
-import com.eclipsesource.json.JsonObject
-import com.eclipsesource.json.JsonValue
+import com.eclipsesource.json.*
 
 @JvmName("toJsonArray")
 fun List<JsonValue>.toJson() = JsonArray()
@@ -101,45 +99,58 @@ fun <T> JsonObject.mapValues(transform: (JsonObject.Member) -> T) =
 	this.associateBy({ it.name }, { transform(it) })
 
 
+fun JsonObject.getOrNull(name: String) =
+	this.get(name)?.let({ if(it.isNull) null else it })
+
 fun JsonObject.setNotNull(name: String, value: JsonValue?)
 {
-	if(value != null)
+	if(value == null)
+		this.remove(name)
+	else
 		this.set(name, value)
 }
 fun JsonObject.setNotNull(name: String, value: Boolean?)
 {
-	if(value != null)
+	if(value == null)
+		this.remove(name)
+	else
 		this.set(name, value)
 }
 fun JsonObject.setNotNull(name: String, value: Int?)
 {
-	if(value != null)
+	if(value == null)
+		this.remove(name)
+	else
 		this.set(name, value)
 }
 fun JsonObject.setNotNull(name: String, value: Long?)
 {
-	if(value != null)
+	if(value == null)
+		this.remove(name)
+	else
 		this.set(name, value)
 }
 fun JsonObject.setNotNull(name: String, value: Float?)
 {
-	if(value != null)
+	if(value == null)
+		this.remove(name)
+	else
 		this.set(name, value)
 }
 fun JsonObject.setNotNull(name: String, value: Double?)
 {
-	if(value != null)
+	if(value == null)
+		this.remove(name)
+	else
 		this.set(name, value)
 }
 fun JsonObject.setNotNull(name: String, value: String?)
 {
-	if(value != null)
+	if(value == null)
+		this.remove(name)
+	else
 		this.set(name, value)
 }
-
-
-fun JsonObject.getOrNull(name: String) =
-	this.get(name)?.let({ if(it.isNull) null else it })
 
 
 fun JsonValue.get(path: List<String>): JsonValue? =
