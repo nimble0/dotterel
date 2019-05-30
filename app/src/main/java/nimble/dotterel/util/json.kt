@@ -153,78 +153,95 @@ fun JsonObject.setNotNull(name: String, value: String?)
 }
 
 
+private fun JsonValue.createPathStructure(path: List<String>) =
+	path.fold(this.asObject(), { acc, it ->
+		(acc.getOrNull(it)
+			?: JsonObject().also({ empty -> acc.set(it, empty) })
+			).asObject()
+	})
+
+
 fun JsonValue.get(path: List<String>): JsonValue? =
 	path.fold(
 		this as JsonValue?,
-		{ acc, it -> acc?.asObject()?.getOrNull(it) })
-
-fun JsonValue.set(path: List<String>, value: JsonValue?)
-{
-	path.subList(0, path.size - 1)
-		.fold(this.asObject(), { acc, it ->
-			(acc.getOrNull(it)
-				?: JsonObject().also({ empty -> acc.set(it, empty) })
-				).asObject()
+		{ acc, it -> acc
+			?.let({ v -> if(v.isNull) null else v })
+			?.asObject()
+			?.get(it)
 		})
+
+fun JsonValue.set(path: List<String>, value: JsonValue)
+{
+	this.createPathStructure(path.subList(0, path.size - 1))
 		.set(path.last(), value)
 }
 fun JsonValue.set(path: List<String>, value: Boolean)
 {
-	path.subList(0, path.size - 1)
-		.fold(this.asObject(), { acc, it ->
-			(acc.getOrNull(it)
-				?: JsonObject().also({ empty -> acc.set(it, empty) })
-				).asObject()
-		})
+	this.createPathStructure(path.subList(0, path.size - 1))
 		.set(path.last(), value)
 }
 fun JsonValue.set(path: List<String>, value: Int)
 {
-	path.subList(0, path.size - 1)
-		.fold(this.asObject(), { acc, it ->
-			(acc.getOrNull(it)
-				?: JsonObject().also({ empty -> acc.set(it, empty) })
-				).asObject()
-		})
+	this.createPathStructure(path.subList(0, path.size - 1))
 		.set(path.last(), value)
 }
 fun JsonValue.set(path: List<String>, value: Long)
 {
-	path.subList(0, path.size - 1)
-		.fold(this.asObject(), { acc, it ->
-			(acc.getOrNull(it)
-				?: JsonObject().also({ empty -> acc.set(it, empty) })
-				).asObject()
-		})
+	this.createPathStructure(path.subList(0, path.size - 1))
 		.set(path.last(), value)
 }
 fun JsonValue.set(path: List<String>, value: Float)
 {
-	path.subList(0, path.size - 1)
-		.fold(this.asObject(), { acc, it ->
-			(acc.getOrNull(it)
-				?: JsonObject().also({ empty -> acc.set(it, empty) })
-				).asObject()
-		})
+	this.createPathStructure(path.subList(0, path.size - 1))
 		.set(path.last(), value)
 }
 fun JsonValue.set(path: List<String>, value: Double)
 {
-	path.subList(0, path.size - 1)
-		.fold(this.asObject(), { acc, it ->
-			(acc.getOrNull(it)
-				?: JsonObject().also({ empty -> acc.set(it, empty) })
-				).asObject()
-		})
+	this.createPathStructure(path.subList(0, path.size - 1))
 		.set(path.last(), value)
 }
 fun JsonValue.set(path: List<String>, value: String?)
 {
-	path.subList(0, path.size - 1)
-		.fold(this.asObject(), { acc, it ->
-			(acc.getOrNull(it)
-				?: JsonObject().also({ empty -> acc.set(it, empty) })
-				).asObject()
-		})
+	this.createPathStructure(path.subList(0, path.size - 1))
 		.set(path.last(), value)
+}
+
+
+fun JsonObject.getOrNull(path: List<String>) =
+	this.get(path)?.let({ if(it.isNull) null else it })
+
+fun JsonValue.setNotNull(path: List<String>, value: JsonValue?)
+{
+	this.createPathStructure(path.subList(0, path.size - 1))
+		.setNotNull(path.last(), value)
+}
+fun JsonValue.setNotNull(path: List<String>, value: Boolean?)
+{
+	this.createPathStructure(path.subList(0, path.size - 1))
+		.setNotNull(path.last(), value)
+}
+fun JsonValue.setNotNull(path: List<String>, value: Int?)
+{
+	this.createPathStructure(path.subList(0, path.size - 1))
+		.setNotNull(path.last(), value)
+}
+fun JsonValue.setNotNull(path: List<String>, value: Long?)
+{
+	this.createPathStructure(path.subList(0, path.size - 1))
+		.setNotNull(path.last(), value)
+}
+fun JsonValue.setNotNull(path: List<String>, value: Float?)
+{
+	this.createPathStructure(path.subList(0, path.size - 1))
+		.setNotNull(path.last(), value)
+}
+fun JsonValue.setNotNull(path: List<String>, value: Double?)
+{
+	this.createPathStructure(path.subList(0, path.size - 1))
+		.setNotNull(path.last(), value)
+}
+fun JsonValue.setNotNull(path: List<String>, value: String?)
+{
+	this.createPathStructure(path.subList(0, path.size - 1))
+		.setNotNull(path.last(), value)
 }
