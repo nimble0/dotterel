@@ -142,26 +142,6 @@ fun JsonObject.getOrNull(name: String) =
 	this.get(name)?.let({ if(it.isNull) null else it })
 
 
-// Does not copy value parameter
-fun JsonObject.get(name: String, value: JsonObject): JsonObject =
-	this.getOrNull(name)?.asObject() ?: value.also({ this.set(name, it) })
-// Does not copy value parameter
-fun JsonObject.get(name: String, value: JsonArray): JsonArray =
-	this.getOrNull(name)?.asArray() ?: value.also({ this.set(name, it) })
-fun JsonObject.get(name: String, value: Boolean): Boolean =
-	this.getOrNull(name)?.asBoolean() ?: value.also({ this.set(name, it) })
-fun JsonObject.get(name: String, value: Int): Int =
-	this.getOrNull(name)?.asInt() ?: value.also({ this.set(name, it) })
-fun JsonObject.get(name: String, value: Long): Long =
-	this.getOrNull(name)?.asLong() ?: value.also({ this.set(name, it) })
-fun JsonObject.get(name: String, value: Float): Float =
-	this.getOrNull(name)?.asFloat() ?: value.also({ this.set(name, it) })
-fun JsonObject.get(name: String, value: Double): Double =
-	this.getOrNull(name)?.asDouble() ?: value.also({ this.set(name, it) })
-fun JsonObject.get(name: String, value: String): String =
-	this.getOrNull(name)?.asString() ?: value.also({ this.set(name, it) })
-
-
 fun JsonValue.get(path: List<String>): JsonValue? =
 	path.fold(
 		this as JsonValue?,
