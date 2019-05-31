@@ -96,6 +96,8 @@ class SystemManager(
 					{
 						path.endsWith(".regex.json") ->
 							RegexOrthography.fromJson(it)
+						path.endsWith(".simple.json") ->
+							SimpleOrthography.fromJson(it)
 						else -> null
 					}
 				})
