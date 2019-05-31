@@ -57,6 +57,7 @@
 	},
 
 	"orthographies": [
+		{"path": "asset:/orthography/english.simple.json", "enabled": true},
 		{"path": "asset:/orthography/english.regex.json", "enabled": true}
 	],
 
