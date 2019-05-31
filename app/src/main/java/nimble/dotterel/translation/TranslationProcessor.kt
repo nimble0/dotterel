@@ -150,7 +150,7 @@ class TranslationProcessor(private val translator: Translator)
 				val formatting = Formatting(
 					spaceStart = spaceStart,
 					spaceEnd = spaceEnd,
-					orthography = this.system.orthography.orthography,
+					orthography = this.system.orthographies,
 					orthographyStart = orthographyStart,
 					orthographyEnd = orthographyEnd,
 					transformState = singleTransformState
@@ -165,7 +165,7 @@ class TranslationProcessor(private val translator: Translator)
 			return TranslationPart(listOf(UnformattedText(
 				0,
 				part,
-				Formatting(orthography = this.system.orthography.orthography))))
+				Formatting(orthography = this.system.orthographies))))
 	}
 
 	fun process(translation: String): TranslationPart =

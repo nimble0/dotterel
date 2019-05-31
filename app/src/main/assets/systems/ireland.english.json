@@ -56,7 +56,9 @@
 		"transformState": "NORMAL"
 	},
 
-	"orthography": "asset:/orthography/english.json",
+	"orthographies": [
+		{"path": "asset:/orthography/english.regex.json", "enabled": true}
+	],
 
 	"dictionaries": [
 		{"path": "asset:/dictionaries/main.json", "enabled": true},

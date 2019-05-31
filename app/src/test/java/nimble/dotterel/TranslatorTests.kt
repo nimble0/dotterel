@@ -75,11 +75,16 @@ private val testSystem = NULL_SYSTEM.copy(
 		Pair("MODE:CAMEL", "{MODE:TRANSFORM:TITLECASE}{MODE:SET_SPACE:}{^}"),
 		Pair("MODE:SNAKE", "{MODE:SET_SPACE:_}")
 	).mapKeys({ CaseInsensitiveString(it.key) }),
-	orthography = SystemOrthography("", RegexOrthography(mutableListOf(
-			RegexOrthography.Replacement(Regex("(?<=[bcdfghjklmnpqrstvwxz] ?)y\uffffs"), "ies"),
-			RegexOrthography.Replacement(Regex("(?<=s|sh|x|z|zh ?)\uffffs"), "es"),
-			RegexOrthography.Replacement(Regex("ie\uffffing"), "ying")
-		))),
+	orthographies = SystemOrthographies(listOf(
+		SystemOrthography(
+			"",
+			true,
+			RegexOrthography(mutableListOf(
+				RegexOrthography.Replacement(Regex("(?<=[bcdfghjklmnpqrstvwxz] ?)y\uffffs"), "ies"),
+				RegexOrthography.Replacement(Regex("(?<=s|sh|x|z|zh ?)\uffffs"), "es"),
+				RegexOrthography.Replacement(Regex("ie\uffffing"), "ying")
+			)))
+	)),
 	defaultFormatting = Formatting(
 		space = " ",
 		transform = ::noneTransform

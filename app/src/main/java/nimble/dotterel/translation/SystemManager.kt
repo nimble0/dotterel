@@ -87,7 +87,15 @@ class SystemManager(
 			return this.resources.openInputStream(path)
 				?.bufferedReader()
 				?.let({ Json.parse(it).asArray() })
-				?.let({ RegexOrthography.fromJson(it) })
+				?.let({
+					when
+					{
+						path.endsWith(".regex.json") ->
+							RegexOrthography.fromJson(it)
+						else -> null
+					}
+				})
+
 		}
 		catch(e: java.lang.NullPointerException)
 		{
