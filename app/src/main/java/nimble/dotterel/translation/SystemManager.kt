@@ -41,6 +41,8 @@ class SystemManager(
 
 	private var cachedDictionaries: MutableMap<String, WeakReference<Dictionary>> =
 		mutableMapOf()
+	private var cachedOrthographies: MutableMap<String, WeakReference<Orthography>> =
+		mutableMapOf()
 
 	fun openDictionary(path: String): Dictionary?
 	{
@@ -80,8 +82,13 @@ class SystemManager(
 
 		return null
 	}
-	fun openOrthography(path: String): Orthography? =
-		try
+	fun openOrthography(path: String): Orthography?
+	{
+		val cached = this.cachedOrthographies[path]?.get()
+		if(cached != null)
+			return cached
+
+		return try
 		{
 			this.resources.openInputStream(path)
 				?.let({
@@ -92,12 +99,19 @@ class SystemManager(
 						else -> null
 					}
 				})
+				?.also({ orthography: Orthography ->
+					this.cachedOrthographies = this.cachedOrthographies
+						.filterValues({ it.get() != null })
+						.toMutableMap()
+					this.cachedOrthographies[path] = WeakReference(orthography)
+				})
 		}
 		catch(e: FileParseException)
 		{
 			this.log("Error loading $path: ${e.message}")
 			null
 		}
+	}
 
 	fun openSystem(path: String): System?
 	{
