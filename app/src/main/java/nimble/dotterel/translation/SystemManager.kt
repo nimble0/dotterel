@@ -80,13 +80,10 @@ class SystemManager(
 
 		return null
 	}
-	fun openOrthography(path: String): Orthography?
-	{
+	fun openOrthography(path: String): Orthography? =
 		try
 		{
-			return this.resources.openInputStream(path)
-				?.bufferedReader()
-				?.let({ Json.parse(it).asArray() })
+			this.resources.openInputStream(path)
 				?.let({
 					when
 					{
@@ -95,19 +92,12 @@ class SystemManager(
 						else -> null
 					}
 				})
-
 		}
-		catch(e: java.lang.NullPointerException)
+		catch(e: FileParseException)
 		{
-			this.log("Invalid type found while reading orthography $path")
+			this.log("Error loading $path: ${e.message}")
+			null
 		}
-		catch(e: java.lang.UnsupportedOperationException)
-		{
-			this.log("Invalid type found while reading orthography $path")
-		}
-
-		return null
-	}
 
 	fun openSystem(path: String): System?
 	{
