@@ -98,6 +98,8 @@ class SystemManager(
 							RegexOrthography.fromJson(it)
 						path.endsWith(".simple.json") ->
 							SimpleOrthography.fromJson(it)
+						path.endsWith(".regex_wl.json") ->
+							RegexWithWordListOrthography.fromJson(it)
 						else -> null
 					}
 				})
