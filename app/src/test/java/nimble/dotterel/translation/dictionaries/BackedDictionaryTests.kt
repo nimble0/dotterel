@@ -7,6 +7,8 @@ import io.kotlintest.matchers.shouldBe
 import io.kotlintest.specs.FunSpec
 
 import nimble.dotterel.translation.KeyLayout
+import nimble.dotterel.translation.Stroke
+import nimble.dotterel.util.CaseInsensitiveString
 
 class BackedDictionaryTests : FunSpec
 ({
@@ -63,5 +65,56 @@ class BackedDictionaryTests : FunSpec
 
 		dictionary["HEL/HROE"] = "hell low"
 		dictionary["HEL/HROE"] shouldBe "hell low"
+	}
+
+	test("reverseGet")
+	{
+		dictionary["HEL"] = "hell"
+		dictionary["HEL/HROE"] = "hello"
+		dictionary["H-L"] = "hello"
+		dictionary["KHRARBG"] = "clark"
+		dictionary["KHRA*RBG"] = "Clark"
+		dictionary["KPRAOEPL"] = "extreme"
+
+		dictionary.reverseGet("hell") shouldBe setOf("HEL")
+			.map({ layout.parse(it.split('/')) }).toSet()
+		dictionary.reverseGet("hello") shouldBe setOf("HEL/HROE", "H-L")
+			.map({ layout.parse(it.split('/')) }).toSet()
+		dictionary.reverseGet("clark") shouldBe setOf("KHRARBG")
+			.map({ layout.parse(it.split('/')) }).toSet()
+		dictionary.reverseGet("Clark") shouldBe setOf("KHRA*RBG")
+			.map({ layout.parse(it.split('/')) }).toSet()
+		dictionary.reverseGet("extreme") shouldBe setOf("KPRAOEPL")
+			.map({ layout.parse(it.split('/')) }).toSet()
+		dictionary.reverseGet("missing") shouldBe setOf<List<Stroke>>()
+
+		dictionary.findTranslations(CaseInsensitiveString("hell")) shouldBe
+			setOf("hell")
+		dictionary.findTranslations(CaseInsensitiveString("hello")) shouldBe
+			setOf("hello")
+		dictionary.findTranslations(CaseInsensitiveString("clark")) shouldBe
+			setOf("clark", "Clark")
+		dictionary.findTranslations(CaseInsensitiveString("Clark")) shouldBe
+			setOf("clark", "Clark")
+		dictionary.findTranslations(CaseInsensitiveString("extreme")) shouldBe
+			setOf("extreme")
+		dictionary.findTranslations(CaseInsensitiveString("missing")) shouldBe
+			setOf<String>()
+
+		dictionary.remove("HEL/HROE")
+		dictionary.remove("KHRARBG")
+
+		dictionary.reverseGet("hello") shouldBe setOf("H-L")
+			.map({ layout.parse(it.split('/')) }).toSet()
+		dictionary.reverseGet("clark") shouldBe setOf<List<Stroke>>()
+		dictionary.reverseGet("Clark") shouldBe setOf("KHRA*RBG")
+			.map({ layout.parse(it.split('/')) }).toSet()
+
+		dictionary.findTranslations(CaseInsensitiveString("hello")) shouldBe
+			setOf("hello")
+		dictionary.findTranslations(CaseInsensitiveString("clark")) shouldBe
+			setOf("Clark")
+		dictionary.findTranslations(CaseInsensitiveString("Clark")) shouldBe
+			setOf("Clark")
 	}
 })

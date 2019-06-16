@@ -3,6 +3,11 @@
 
 package nimble.dotterel.translation.dictionaries
 
+import java.util.Locale
+
+import nimble.collections.BasicMultiMap
+import nimble.dotterel.util.CaseInsensitiveString
+
 private fun countStrokes(s: String): Int
 {
 	var n = 0
@@ -24,6 +29,10 @@ open class BackingDictionary
 	private val keySizeCounts = mutableListOf<Int>()
 	val longestKey: Int get() = this.keySizeCounts.size
 
+	private val reverseEntries = BasicMultiMap<String, String>()
+	private val caseInsensitiveReverseEntries =
+		BasicMultiMap<CaseInsensitiveString, String>()
+
 	private fun incrementKeySizeCount(s: Int)
 	{
 		while(this.keySizeCounts.size < s)
@@ -37,21 +46,46 @@ open class BackingDictionary
 			this.keySizeCounts.removeAt(this.keySizeCounts.lastIndex)
 	}
 
+	private fun removeReverseTranslation(strokes: String, translation: String)
+	{
+		this.reverseEntries.remove(translation, strokes)
+		if(this.reverseEntries[translation].isEmpty())
+			this.caseInsensitiveReverseEntries.remove(
+				CaseInsensitiveString(translation),
+				translation)
+	}
+
 	operator fun get(k: String): String? = this.entries[k]
 
 	operator fun set(k: String, v: String)
 	{
-		val translation = this.entries[k]
-
-		if(translation == null)
+		val oldTranslation = this.entries.put(k, v)
+		if(oldTranslation == null)
 			this.incrementKeySizeCount(countStrokes(k))
+		else
+			this.removeReverseTranslation(k, oldTranslation)
 
-		this.entries[k] = v
+		this.reverseEntries.put(v, k)
+		if(v != v.toLowerCase(Locale.getDefault()))
+			this.caseInsensitiveReverseEntries
+				.put(CaseInsensitiveString(v.toLowerCase(Locale.getDefault())), v)
 	}
+
 	fun remove(k: String)
 	{
-		this.entries.remove(k) ?: return
+		val translation = this.entries.remove(k) ?: return
 
 		this.decrementKeySizeCount(countStrokes(k))
+		this.removeReverseTranslation(k, translation)
 	}
+
+	fun reverseGet(s: String): Set<String> = this.reverseEntries[s].toSet()
+	fun findTranslations(s: CaseInsensitiveString): Set<String> =
+		(this.caseInsensitiveReverseEntries[s]
+			+ s.value.toLowerCase(Locale.getDefault()).let({
+				if(this.reverseEntries.containsKey(it))
+					setOf(it)
+				else
+					setOf()
+			}))
 }
