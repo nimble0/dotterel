@@ -68,6 +68,7 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 
 	var translator = Translator(
 		NULL_SYSTEM,
+		dotterel = this,
 		log = object : nimble.dotterel.translation.Log
 		{
 			override fun info(message: String) { Log.i("Dotterel Translation", message) }
