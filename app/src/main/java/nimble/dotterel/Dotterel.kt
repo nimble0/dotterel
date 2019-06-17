@@ -209,6 +209,8 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 
 	override fun onCreate()
 	{
+		// Theme isn't correctly set from XML
+		this.setTheme(R.style.AppTheme)
 		super.onCreate()
 
 		setDefaultSettings(this)
