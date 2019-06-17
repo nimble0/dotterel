@@ -10,7 +10,8 @@ import java.io.InputStream
 import java.io.OutputStream
 
 import nimble.dotterel.translation.*
-import nimble.dotterel.translation.dictionaries.StandardDictionary
+import nimble.dotterel.translation.dictionaries.BackingDictionary
+import nimble.dotterel.translation.dictionaries.BackedDictionary
 import nimble.dotterel.translation.orthographies.RegexOrthography
 import nimble.dotterel.util.CaseInsensitiveString
 
@@ -43,7 +44,7 @@ private val testSystem = NULL_SYSTEM.copy(
 	{
 		override val transforms = TRANSFORMS
 		override val commands = COMMANDS
-		override val codeDictionaries: Map<String, Dictionary> = mapOf()
+		override val codeDictionaries: Map<String, (KeyLayout) -> Dictionary> = mapOf()
 
 		override fun openInputStream(path: String): InputStream? = null
 		override fun openOutputStream(path: String): OutputStream? = null
@@ -95,9 +96,10 @@ private val testSystem = NULL_SYSTEM.copy(
 
 class TranslatorTests : FunSpec
 ({
-	val dictionary = StandardDictionary()
+	val dictionary = BackedDictionary(testLayout, BackingDictionary())
 	val translator = Translator(testSystem.copy(
 		dictionaries = SystemDictionaries(
+			testLayout,
 			listOf(SystemDictionary("", true, dictionary)))
 	))
 
@@ -154,6 +156,7 @@ class TranslatorTests : FunSpec
 	{
 		val testSystem2 = testSystem.copy(
 			dictionaries = SystemDictionaries(
+				testLayout,
 				listOf(SystemDictionary("", true, dictionary))),
 			prefixStrokes = testSystem.keyLayout.parse(listOf("#", "#S"))
 		)
@@ -199,6 +202,7 @@ class TranslatorTests : FunSpec
 	{
 		val testSystem2 = testSystem.copy(
 			dictionaries = SystemDictionaries(
+				testLayout,
 				listOf(SystemDictionary("", true, dictionary))),
 			prefixStrokes = listOf(testSystem.keyLayout.parse("#"))
 		)

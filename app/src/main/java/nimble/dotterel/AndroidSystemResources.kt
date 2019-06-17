@@ -14,7 +14,7 @@ import nimble.dotterel.translation.dictionaries.NumbersDictionary
 import nimble.dotterel.util.CaseInsensitiveString
 
 private val CODE_DICTIONARIES = mapOf(
-	Pair("Numbers", NumbersDictionary())
+	Pair("Numbers", { keyLayout: KeyLayout -> NumbersDictionary(keyLayout) })
 )
 
 private val ANDROID_COMMANDS = mapOf(

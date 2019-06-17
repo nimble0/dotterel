@@ -27,7 +27,7 @@ interface SystemResources
 	val commands: Map<
 		CaseInsensitiveString,
 		(Translator, String) -> TranslationPart>
-	val codeDictionaries: Map<String, Dictionary>
+	val codeDictionaries: Map<String, (KeyLayout) -> Dictionary>
 
 	fun openInputStream(path: String): InputStream?
 	fun openOutputStream(path: String): OutputStream?
@@ -46,23 +46,25 @@ class SystemManager(
 		(Translator, String) -> TranslationPart>
 		get() = this.resources.commands
 
-	private var cachedDictionaries: MutableMap<String, WeakReference<Dictionary>> =
+	private var cachedDictionaries: MutableMap<
+		Pair<String, KeyLayout>,
+		WeakReference<Dictionary>> =
 		mutableMapOf()
 	private val cachedDictionariesMutex = Mutex()
 	private var cachedOrthographies: MutableMap<String, WeakReference<Orthography>> =
 		mutableMapOf()
 	private val cachedOrthographiesMutex = Mutex()
 
-	fun openDictionary(path: String): Dictionary? =
-		runBlocking() { this@SystemManager.parallelOpenDictionary(path) }
+	fun openDictionary(keyLayout: KeyLayout, path: String): Dictionary? =
+		runBlocking() { this@SystemManager.parallelOpenDictionary(keyLayout, path) }
 	fun openOrthography(path: String): Orthography? =
 		runBlocking() { this@SystemManager.parallelOpenOrthography(path) }
 
-	suspend fun parallelOpenDictionary(path: String): Dictionary?
+	suspend fun parallelOpenDictionary(keyLayout: KeyLayout, path: String): Dictionary?
 	{
 		val cached = this.cachedDictionariesMutex.withLock()
 		{
-			this.cachedDictionaries[path]?.get()
+			this.cachedDictionaries[Pair(path, keyLayout)]?.get()
 		}
 		if(cached != null)
 		{
@@ -77,7 +79,9 @@ class SystemManager(
 			{
 				"code_dictionary" ->
 				{
-					val dictionary = this.resources.codeDictionaries[path.substringAfter(":/")]
+					val dictionary = this.resources
+						.codeDictionaries[path.substringAfter(":/")]
+						?.invoke(keyLayout)
 					if(dictionary == null)
 						this.log.error("Code dictionary $path not found")
 					else
@@ -90,14 +94,14 @@ class SystemManager(
 					val loadTime = measureTimeMillis()
 					{
 						dictionary = this.resources.openInputStream(path)
-							?.let({ JsonDictionary(it) })
+							?.let({ JsonDictionary.load(it, keyLayout) })
 							?.also({ dictionary: Dictionary ->
 								this.cachedDictionariesMutex.withLock()
 								{
 									this.cachedDictionaries = this.cachedDictionaries
 										.filterValues({ it.get() != null })
 										.toMutableMap()
-									this.cachedDictionaries[path] =
+									this.cachedDictionaries[Pair(path, keyLayout)] =
 										WeakReference(dictionary)
 								}
 							})
@@ -129,7 +133,7 @@ class SystemManager(
 			return cached
 		}
 
-		return try
+		try
 		{
 			var orthography: Orthography? = null
 			val loadTime = measureTimeMillis()
@@ -161,13 +165,14 @@ class SystemManager(
 				this.log.error("Orthography $path not found")
 			else
 				this.log.info("Loaded orthography $path in ${loadTime}ms")
-			orthography
+			return orthography
 		}
 		catch(e: FileParseException)
 		{
 			this.log.error("Error loading $path: ${e.message}")
-			null
 		}
+
+		return null
 	}
 
 	fun openSystem(path: String): System?
@@ -241,7 +246,7 @@ val NULL_SYSTEM_MANAGER = SystemManager(
 			CaseInsensitiveString,
 			(Translator, String) -> TranslationPart> =
 			mapOf()
-		override val codeDictionaries: Map<String, Dictionary> = mapOf()
+		override val codeDictionaries: Map<String, (KeyLayout) -> Dictionary> = mapOf()
 
 		override fun openInputStream(path: String): InputStream? = null
 		override fun openOutputStream(path: String): OutputStream? = null

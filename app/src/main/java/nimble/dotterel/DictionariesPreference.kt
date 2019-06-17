@@ -14,6 +14,8 @@ import android.widget.AbsListView.*
 
 import com.eclipsesource.json.*
 
+import nimble.dotterel.translation.EMPTY_KEY_LAYOUT
+import nimble.dotterel.translation.KeyLayout
 import nimble.dotterel.util.toJson
 import nimble.dotterel.util.set
 import nimble.dotterel.util.ui.ReorderableListAdapter
@@ -366,7 +368,14 @@ class DictionariesPreferenceFragment : PreferenceFragment()
 	private fun load()
 	{
 		val preference = this.preference!!
-		val dictionaries = (preference.preferenceDataStore as? JsonDataStore)
+		val dataStore = (preference.preferenceDataStore as? JsonDataStore)
+		val keyLayout = dataStore
+			?.safeGet(
+				"keyLayout",
+				EMPTY_KEY_LAYOUT,
+				{ KeyLayout(it.asObject()) })
+			?: EMPTY_KEY_LAYOUT
+		val dictionaries = dataStore
 			?.safeGet(
 				preference.key,
 				null,
@@ -378,7 +387,7 @@ class DictionariesPreferenceFragment : PreferenceFragment()
 							DictionaryItem(
 								path,
 								it.get("enabled").asBoolean(),
-								this.systemManager.openDictionary(path) != null)
+								this.systemManager.openDictionary(keyLayout, path) != null)
 						})
 				})
 			?: listOf()

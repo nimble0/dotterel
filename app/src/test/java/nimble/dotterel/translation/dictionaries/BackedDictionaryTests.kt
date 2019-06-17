@@ -6,9 +6,25 @@ package nimble.dotterel.translation.dictionaries
 import io.kotlintest.matchers.shouldBe
 import io.kotlintest.specs.FunSpec
 
-class StandardDictionaryTests : FunSpec
+import nimble.dotterel.translation.KeyLayout
+
+class BackedDictionaryTests : FunSpec
 ({
-	val dictionary = StandardDictionary()
+	val layout = KeyLayout(
+		"#1S2TK3PW4HR-5A0O*EU-6FR7PB8LG9TSDZ",
+		mapOf(
+			Pair("1-", listOf("#-", "S-")),
+			Pair("2-", listOf("#-", "T-")),
+			Pair("3-", listOf("#-", "P-")),
+			Pair("4-", listOf("#-", "H-")),
+			Pair("5-", listOf("#-", "A-")),
+			Pair("0-", listOf("#-", "O-")),
+			Pair("-6", listOf("#-", "-F")),
+			Pair("-7", listOf("#-", "-P")),
+			Pair("-8", listOf("#-", "-L")),
+			Pair("-9", listOf("#-", "-T")))
+	)
+	val dictionary = BackedDictionary(layout, BackingDictionary())
 
 	test("longestKey")
 	{
@@ -20,7 +36,7 @@ class StandardDictionaryTests : FunSpec
 		dictionary["EBGS/TAT/EUBG"] = "ecstatic"
 		dictionary.longestKey shouldBe 3
 
-		dictionary["HEL/LOE"] = "hello"
+		dictionary["HEL/HROE"] = "hello"
 		dictionary["TPHO/W-R"] = "nowhere"
 		dictionary.longestKey shouldBe 3
 
@@ -33,19 +49,19 @@ class StandardDictionaryTests : FunSpec
 		dictionary.remove("TPHO/W-R")
 		dictionary.longestKey shouldBe 2
 
-		dictionary["HEL/LOE"] = "hello"
-		dictionary.remove("HEL/LOE")
+		dictionary["HEL/HROE"] = "hello"
+		dictionary.remove("HEL/HROE")
 		dictionary.longestKey shouldBe 0
 	}
 
 	test("get")
 	{
 		dictionary["HEL"] = "hell"
-		dictionary["HEL/LOE"] = "hello"
+		dictionary["HEL/HROE"] = "hello"
 		dictionary["HEL"] shouldBe "hell"
-		dictionary["HEL/LOE"] shouldBe "hello"
+		dictionary["HEL/HROE"] shouldBe "hello"
 
-		dictionary["HEL/LOE"] = "hell low"
-		dictionary["HEL/LOE"] shouldBe "hell low"
+		dictionary["HEL/HROE"] = "hell low"
+		dictionary["HEL/HROE"] shouldBe "hell low"
 	}
 })

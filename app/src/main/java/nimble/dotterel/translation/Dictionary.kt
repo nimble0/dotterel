@@ -5,6 +5,7 @@ package nimble.dotterel.translation
 
 interface Dictionary
 {
+	val keyLayout: KeyLayout
 	val longestKey: Int
 	operator fun get(k: List<Stroke>): String?
 }
