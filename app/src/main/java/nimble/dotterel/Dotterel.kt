@@ -3,8 +3,12 @@
 
 package nimble.dotterel
 
+import android.content.Intent
 import android.content.SharedPreferences
 import android.inputmethodservice.InputMethodService
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
@@ -280,4 +284,21 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 	private val keyListeners = mutableListOf<KeyListener>()
 	fun addKeyListener(l: KeyListener) = this.keyListeners.add(l).let({ Unit })
 	fun removeKeyListener(l: KeyListener) = this.keyListeners.remove(l).let({ Unit })
+
+	fun checkOverlayPermission(): Boolean
+	{
+		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this))
+		{
+			this.startActivity(
+				Intent(
+					Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+					Uri.parse("package:$packageName")
+				).also({ it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); })
+			)
+
+			return false
+		}
+
+		return true
+	}
 }

@@ -3,9 +3,7 @@
 
 package nimble.dotterel.util
 
-import kotlin.math.cos
-import kotlin.math.sin
-import kotlin.math.sqrt
+import kotlin.math.*
 
 data class Vector2(val x: Float, val y: Float)
 {
@@ -37,3 +35,22 @@ data class Vector2(val x: Float, val y: Float)
 		val ZERO = Vector2(0f, 0f)
 	}
 }
+
+fun lerp(a: Vector2, b: Vector2, interp: Float) = a + (b - a) * interp
+fun lerp(a: Vector2, b: Vector2, interp: Vector2) = a + (b - a).scale(interp)
+
+fun min(a: Vector2, b: Vector2) = Vector2(
+		min(a.x, b.x),
+		min(a.y, b.y)
+	)
+fun max(a: Vector2, b: Vector2) = Vector2(
+		max(a.x, b.x),
+		max(a.y, b.y)
+	)
+fun clamp(v: Vector2, minimum: Vector2, maximum: Vector2) = min(max(v, minimum), maximum)
+
+fun Vector2.map(transform: (Float) -> Float) =
+	Vector2(
+		transform(this.x),
+		transform(this.y)
+	)
