@@ -16,6 +16,18 @@ import nimble.dotterel.util.CaseInsensitiveString
 import nimble.dotterel.util.Vector2
 import nimble.dotterel.util.ui.FloatingDialog
 
+private fun relatedTranslations(translation: String) = listOf(
+	translation,        // Same
+	"{^$translation}",  // Prefix
+	"{^}$translation",
+	"{^$translation^}", // Infix
+	"{^}$translation{^}",
+	"{$translation^}",  // Suffix
+	"$translation{^}",
+	"{&$translation}",  // Fingerspell
+	"{#$translation}"   // Command
+)
+
 class LookupTranslationDialog(dotterel: Dotterel, translator: Translator) :
 	FloatingDialog(
 		dotterel,
@@ -43,10 +55,13 @@ class LookupTranslationDialog(dotterel: Dotterel, translator: Translator) :
 			override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int)
 			{
 				val translation = translationBox.text.toString().trim(' ')
+				val lookupTranslations = relatedTranslations(translation)
+					.map({ CaseInsensitiveString(it) })
 
 				lookupResultsBox.text = dictionaries
 					.map({ dictionary ->
-						dictionary.second.findTranslations(CaseInsensitiveString(translation))
+						lookupTranslations.map({ dictionary.second.findTranslations(it) })
+							.flatten()
 							.map({ translation ->
 								val results = dictionary.second.reverseGet(translation)
 									.joinToString(
