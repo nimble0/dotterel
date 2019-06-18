@@ -3,6 +3,8 @@
 
 package nimble.dotterel.translation
 
+import java.io.OutputStream
+
 import nimble.dotterel.util.CaseInsensitiveString
 
 interface Dictionary
@@ -16,6 +18,11 @@ interface MutableDictionary : Dictionary
 {
 	operator fun set(k: List<Stroke>, v: String)
 	fun remove(k: List<Stroke>)
+}
+
+interface SaveableDictionary : MutableDictionary
+{
+	fun save(output: OutputStream)
 }
 
 interface ReverseDictionary : Dictionary

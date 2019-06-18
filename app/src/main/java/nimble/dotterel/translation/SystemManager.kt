@@ -31,6 +31,7 @@ interface SystemResources
 
 	fun openInputStream(path: String): InputStream?
 	fun openOutputStream(path: String): OutputStream?
+	fun isReadOnly(path: String): Boolean
 }
 
 class SystemManager(
@@ -54,6 +55,18 @@ class SystemManager(
 	private var cachedOrthographies: MutableMap<String, WeakReference<Orthography>> =
 		mutableMapOf()
 	private val cachedOrthographiesMutex = Mutex()
+
+	private suspend fun cacheDictionary(keyLayout: KeyLayout, path: String, dictionary: Dictionary)
+	{
+		this.cachedDictionariesMutex.withLock()
+		{
+			this.cachedDictionaries = this.cachedDictionaries
+				.filterValues({ it.get() != null })
+				.toMutableMap()
+			this.cachedDictionaries[Pair(path, keyLayout)] =
+				WeakReference(dictionary)
+		}
+	}
 
 	fun openDictionary(keyLayout: KeyLayout, path: String): Dictionary? =
 		runBlocking() { this@SystemManager.parallelOpenDictionary(keyLayout, path) }
@@ -94,16 +107,14 @@ class SystemManager(
 					val loadTime = measureTimeMillis()
 					{
 						dictionary = this.resources.openInputStream(path)
-							?.let({ JsonDictionary.load(it, keyLayout) })
+							?.let({
+								if(this.resources.isReadOnly(path))
+									ImmutableJsonDictionary.load(it, keyLayout)
+								else
+									JsonDictionary.load(it, keyLayout)
+							})
 							?.also({ dictionary: Dictionary ->
-								this.cachedDictionariesMutex.withLock()
-								{
-									this.cachedDictionaries = this.cachedDictionaries
-										.filterValues({ it.get() != null })
-										.toMutableMap()
-									this.cachedDictionaries[Pair(path, keyLayout)] =
-										WeakReference(dictionary)
-								}
+								this.cacheDictionary(keyLayout, path, dictionary)
 							})
 					}
 					if(dictionary == null)
@@ -250,6 +261,7 @@ val NULL_SYSTEM_MANAGER = SystemManager(
 
 		override fun openInputStream(path: String): InputStream? = null
 		override fun openOutputStream(path: String): OutputStream? = null
+		override fun isReadOnly(path: String): Boolean = false
 	}
 )
 

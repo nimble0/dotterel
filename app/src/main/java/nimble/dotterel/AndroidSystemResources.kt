@@ -4,7 +4,10 @@
 package nimble.dotterel
 
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.util.Log
 
 import java.io.*
@@ -90,5 +93,33 @@ class AndroidSystemResources(private val context: Context) : SystemResources
 		}
 
 		return null
+	}
+
+	override fun isReadOnly(path: String): Boolean
+	{
+		val type = path.substringBefore(":")
+		return when(type)
+		{
+			"asset" -> true
+			"content" ->
+			{
+				val uri = Uri.parse(path)
+				if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+				{
+					!context.contentResolver.persistedUriPermissions
+						.filter({ it.isWritePermission })
+						.any({ it.uri == uri })
+				}
+				else
+				{
+					(this.context.checkCallingUriPermission(
+						Uri.parse(path),
+						Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+					)
+						!= PackageManager.PERMISSION_GRANTED)
+				}
+			}
+			else -> true
+		}
 	}
 }

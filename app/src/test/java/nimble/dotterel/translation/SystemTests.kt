@@ -72,6 +72,16 @@ class LocalSystemResources : SystemResources
 
 		return null
 	}
+
+	override fun isReadOnly(path: String): Boolean
+	{
+		val type = path.substringBefore(":")
+		return when(type)
+		{
+			"asset" -> true
+			else -> false
+		}
+	}
 }
 
 class SystemTests : FunSpec
