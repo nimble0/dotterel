@@ -170,7 +170,7 @@ class TranslatorTests : FunSpec
 
 		translator.applyToString("KPA/HEL/-D/-G/HEL") shouldBe " Helleding hell"
 		translator.applyToString("KPA*L/HEL/-D/-G/HEL") shouldBe " HELLEDING hell"
-		translator.applyToString("HRO*ER/H*EL/-D/-G/H*EL") shouldBe " helleding HELL"
+		translator.applyToString("HRO*ER/H*EL/-D/-G/H*EL") shouldBe " hELLeding HELL"
 	}
 
 	test("carry single transform")

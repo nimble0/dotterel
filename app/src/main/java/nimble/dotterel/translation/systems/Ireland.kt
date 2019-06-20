@@ -38,6 +38,7 @@ val IRELAND_SYSTEM = System(
 	transforms = mapOf(
 		Pair("NONE", ::noneTransform),
 		Pair("CAPITALISE", ::capitaliseTransform),
+		Pair("UNCAPITALISE", ::uncapitaliseTransform),
 		Pair("UPPERCASE", ::upperCaseTransform),
 		Pair("LOWERCASE", ::lowerCaseTransform),
 		Pair("TITLECASE", ::titleCaseTransform)
@@ -69,7 +70,7 @@ val IRELAND_SYSTEM = System(
 	aliases = mapOf(
 		Pair("-|", "{MODE:SINGLE_TRANSFORM:CAPITALISE}"),
 		Pair("<", "{MODE:SINGLE_TRANSFORM:UPPERCASE}"),
-		Pair(">", "{MODE:SINGLE_TRANSFORM:LOWERCASE}"),
+		Pair(">", "{MODE:SINGLE_TRANSFORM:UNCAPITALISE}"),
 
 		Pair(".", "{^.}{-|}"),
 		Pair("?", "{^?}{-|}"),

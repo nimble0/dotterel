@@ -14,6 +14,17 @@ fun capitaliseTransform(
 ) =
 	if(!suffix) text.copy(text = text.text.capitalize()) else text
 
+fun uncapitaliseTransform(
+	context: FormattedText,
+	text: UnformattedText,
+	suffix: Boolean
+) =
+	if(!suffix)
+		text.copy(text = text.text[0].toLowerCase().toString()
+			+ text.text.substring(1))
+	else
+		text
+
 fun upperCaseTransform(
 	context: FormattedText,
 	text: UnformattedText,
