@@ -81,7 +81,7 @@ fun resetSpace(translator: Translator, arg: String) =
 fun repeatLastStroke(translator: Translator, arg: String)
 	: TranslationPart
 {
-	var lastTranslation = translator.history.lastOrNull() ?: return TranslationPart()
+	val lastTranslation = translator.history.lastOrNull() ?: return TranslationPart()
 	val lastStroke = lastTranslation.strokes.lastOrNull() ?: return TranslationPart()
 
 	translator.apply(lastStroke)
@@ -187,7 +187,7 @@ fun retroBreakTranslation(translator: Translator, arg: String)
 fun retroToggleAsterisk(translator: Translator, arg: String)
 	: TranslationPart
 {
-	var lastTranslation = translator.pop() ?: return TranslationPart()
+	val lastTranslation = translator.pop() ?: return TranslationPart()
 	val lastStroke = lastTranslation.strokes.last()
 
 	val asteriskStroke = lastStroke.layout.parseKeys(listOf("*"))
