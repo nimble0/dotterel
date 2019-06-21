@@ -1,8 +1,13 @@
 package nimble.dotterel
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
+import android.provider.Settings
 import android.view.MenuItem
+import android.view.inputmethod.InputMethodManager
 
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.*
 import androidx.preference.PreferenceFragmentCompat
@@ -36,6 +41,21 @@ class DotterelSettings :
 				.commit()
 			this.supportActionBar?.title = rootTitle
 		}
+
+
+		// If Dotterel is not enabled as an input method, offer to open the
+		// keyboard settings screen to enable it.
+		val inputMethodManager = this.getSystemService(Context.INPUT_METHOD_SERVICE)
+			as InputMethodManager
+		val dotterelService = this.application.applicationInfo.packageName + "/.Dotterel"
+		if(inputMethodManager.enabledInputMethodList.none({ it.id == dotterelService }))
+			AlertDialog.Builder(this).also({ alert ->
+				alert.setMessage(R.string.input_method_disabled_alert)
+					.setPositiveButton(R.string.yes, { _, _ ->
+						this.startActivity(Intent(Settings.ACTION_INPUT_METHOD_SETTINGS))
+					})
+					.setNegativeButton(R.string.no, { _, _ -> })
+			}).create().show()
 	}
 
 	override fun onPreferenceStartFragment(

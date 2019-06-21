@@ -11,6 +11,10 @@
 	<string name="enable">Enable</string>
 	<string name="disable">Disable</string>
 	<string name="reset">Reset</string>
+	<string name="yes">Yes</string>
+	<string name="no">No</string>
+
+	<string name="input_method_disabled_alert">Dotterel must be enabled as an keyboard before it can be used.\n\nGo to keyboard settings screen?</string>
 
 	<string name="pref_root">Settings</string>
 
