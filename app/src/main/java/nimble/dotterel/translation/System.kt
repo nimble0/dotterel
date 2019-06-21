@@ -173,9 +173,11 @@ data class System(
 		get() = this.manager.commands
 
 	fun save() = this.manager.saveSystem(this)
-	fun saveDictionary(dictionary: SystemDictionary) =
-		this.manager.resources.openOutputStream(dictionary.path)
-			?.use({ (dictionary.dictionary as? SaveableDictionary)?.save(it) })
+	fun saveDictionary(dictionary: SystemDictionary)
+	{
+		if(dictionary.dictionary is SaveableDictionary)
+			this.manager.parallelSaveDictionary(dictionary.path, dictionary.dictionary)
+	}
 
 	companion object
 }

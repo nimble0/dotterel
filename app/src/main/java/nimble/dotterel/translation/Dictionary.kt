@@ -22,6 +22,7 @@ interface MutableDictionary : Dictionary
 
 interface SaveableDictionary : MutableDictionary
 {
+	val parallelSave: Boolean
 	fun save(output: OutputStream)
 }
 

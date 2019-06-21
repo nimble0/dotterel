@@ -11,6 +11,8 @@ import java.lang.ref.WeakReference
 
 import kotlin.system.measureTimeMillis
 
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -184,6 +186,35 @@ class SystemManager(
 		}
 
 		return null
+	}
+
+	fun saveDictionary(path: String, dictionary: SaveableDictionary)
+	{
+		try
+		{
+			val saveTime = measureTimeMillis()
+			{
+				val output = this@SystemManager.resources.openOutputStream(path)
+				if(output != null)
+					dictionary.save(output)
+			}
+			this.log.info("Saved dictionary $path in ${saveTime}ms")
+		}
+		catch(e: java.io.IOException)
+		{
+			this.log.error("IO error writing dictionary $path: $e")
+		}
+	}
+
+	fun parallelSaveDictionary(path: String, dictionary: SaveableDictionary)
+	{
+		if(dictionary.parallelSave)
+			GlobalScope.launch()
+			{
+				this@SystemManager.saveDictionary(path, dictionary)
+			}
+		else
+			this.saveDictionary(path, dictionary)
 	}
 
 	fun openSystem(path: String): System?

@@ -3,6 +3,7 @@
 
 package nimble.dotterel.translation.dictionaries
 
+import nimble.collections.facades.MapFacade
 import nimble.dotterel.translation.*
 import nimble.dotterel.util.CaseInsensitiveString
 
@@ -14,6 +15,13 @@ open class ImmutableBackedDictionary(
 	ReverseDictionary
 {
 	override val longestKey: Int get() = this.backingDictionary.longestKey
+	val entries: Map<List<Stroke>, String>
+		get() = MapFacade(
+			this.backingDictionary.entries,
+			{ it.rtfcre },
+			{ this.keyLayout.parse(it.split("/")) },
+			{ it },
+			{ it })
 
 	override fun get(k: List<Stroke>): String? = this.backingDictionary[k.rtfcre]
 

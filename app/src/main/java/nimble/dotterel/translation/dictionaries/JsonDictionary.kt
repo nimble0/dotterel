@@ -10,8 +10,9 @@ import com.eclipsesource.json.PrettyPrint
 import java.io.InputStream
 import java.io.OutputStream
 
+import kotlinx.coroutines.*
+
 import nimble.dotterel.translation.*
-import nimble.dotterel.util.toJson
 
 open class ImmutableJsonDictionary(keyLayout: KeyLayout, json: JsonObject) :
 	ImmutableBackedDictionary(
@@ -50,6 +51,8 @@ class JsonDictionary(keyLayout: KeyLayout, json: JsonObject) :
 	ImmutableJsonDictionary(keyLayout, json),
 	SaveableDictionary
 {
+	override val parallelSave = true
+
 	override fun set(k: List<Stroke>, v: String)
 	{
 		this.backingDictionary[k.rtfcre] = v
@@ -59,14 +62,21 @@ class JsonDictionary(keyLayout: KeyLayout, json: JsonObject) :
 		this.backingDictionary.remove(k.rtfcre)
 	}
 
-	override fun save(output: OutputStream) =
-		output.bufferedWriter()
-			.use({
-				this.backingDictionary.entries
-					.toSortedMap()
-					.toJson()
-					.writeTo(it, PrettyPrint.indentWithSpaces(0))
-			})
+	override fun save(output: OutputStream)
+	{
+		runBlocking()
+		{
+			val listEntries = this@JsonDictionary.backingDictionary.parallelGetEntries()
+			val json = JsonObject()
+				.also({
+					for(kv in listEntries)
+						it.add(kv.first, kv.second)
+				})
+
+			output.bufferedWriter()
+				.use({ json.writeTo(it, PrettyPrint.indentWithSpaces(0)) })
+		}
+	}
 
 	companion object
 	{
