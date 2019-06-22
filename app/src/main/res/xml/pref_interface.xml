@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This file is part of Dotterel which is released under GPL-2.0-or-later. -->
+<!-- See file <LICENSE.txt> or go to <http://www.gnu.org/licenses/> for full license details. -->
+
+
+<androidx.preference.PreferenceScreen
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:title="@string/pref_machines">
+
+	<PreferenceCategory>
+
+		<SeekBarPreference
+			android:title="Lookup Translation opacity"
+			android:defaultValue="100">
+			<extra android:name="store_type" android:value="json_preference" />
+			<extra android:name="store_path" android:value="tool/lookupTranslation" />
+			<extra android:name="key" android:value="opacity" />
+		</SeekBarPreference>
+
+	</PreferenceCategory>
+
+</androidx.preference.PreferenceScreen>

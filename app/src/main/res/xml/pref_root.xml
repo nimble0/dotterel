@@ -21,6 +21,10 @@
 	</Preference>
 
 	<Preference
+		android:fragment="nimble.dotterel.InterfacePreferenceFragment"
+		android:title="Interface" />
+
+	<Preference
 		android:fragment="nimble.dotterel.SystemsPreferenceFragment"
 		android:title="@string/pref_systems" />
 
