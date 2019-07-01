@@ -34,8 +34,12 @@ class OnScreenStenoMachine(private val app: Dotterel) :
 
 	class Factory : StenoMachine.Factory
 	{
-		override fun makeStenoMachine(app: Dotterel) =
-			OnScreenStenoMachine(app).also({ app.addEditorListener(it) })
+		override fun makeStenoMachine(app: Dotterel) = OnScreenStenoMachine(app)
+	}
+
+	init
+	{
+		this.app.addEditorListener(this)
 	}
 
 	override fun setConfig(
@@ -89,6 +93,7 @@ class OnScreenStenoMachine(private val app: Dotterel) :
 	override fun close()
 	{
 		this.app.viewId = null
+		this.app.removeEditorListener(this)
 	}
 
 	override fun setInputView(v: View?)

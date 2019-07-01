@@ -24,8 +24,12 @@ class NkroStenoMachine(private val app: Dotterel) :
 
 	class Factory : StenoMachine.Factory
 	{
-		override fun makeStenoMachine(app: Dotterel) =
-			NkroStenoMachine(app).also({ app.addKeyListener(it) })
+		override fun makeStenoMachine(app: Dotterel) = NkroStenoMachine(app)
+	}
+
+	init
+	{
+		this.app.addKeyListener(this)
 	}
 
 	override fun setConfig(
@@ -87,5 +91,8 @@ class NkroStenoMachine(private val app: Dotterel) :
 		return true
 	}
 
-	override fun close() {}
+	override fun close()
+	{
+		this.app.removeKeyListener(this)
+	}
 }

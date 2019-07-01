@@ -124,10 +124,6 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 		if(machine != null)
 		{
 			machine.close()
-			if(machine is EditorListener)
-				this.removeEditorListener(machine)
-			if(machine is KeyListener)
-				this.removeKeyListener(machine)
 			this.machines.remove(name)
 		}
 	}
