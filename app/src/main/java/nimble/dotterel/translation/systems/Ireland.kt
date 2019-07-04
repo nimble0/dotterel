@@ -37,7 +37,7 @@ val IRELAND_SYSTEM = System(
 
 	transforms = mapOf(
 		Pair("NONE", ::noneTransform),
-		Pair("CAPITALISE", ::capitialiseTransform),
+		Pair("CAPITALISE", ::capitaliseTransform),
 		Pair("UPPERCASE", ::upperCaseTransform),
 		Pair("LOWERCASE", ::lowerCaseTransform),
 		Pair("TITLECASE", ::titleCaseTransform)
