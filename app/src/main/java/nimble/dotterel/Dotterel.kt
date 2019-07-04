@@ -277,7 +277,7 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 			if(l.keyDown(event))
 				return true
 
-		return false
+		return super.onKeyDown(keyCode, event)
 	}
 	override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean
 	{
@@ -285,7 +285,7 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 			if(l.keyUp(event))
 				return true
 
-		return false
+		return super.onKeyUp(keyCode, event)
 	}
 
 	private val keyListeners = mutableListOf<KeyListener>()
