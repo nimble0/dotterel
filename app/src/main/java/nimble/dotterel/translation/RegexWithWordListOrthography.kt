@@ -59,9 +59,11 @@ class RegexWithWordListOrthography(
 					json.get("regex").asArray().map({
 						it.asObject().let({ it2 ->
 							RegexWithWordListOrthography.Replacement(
-								Regex(it2.get("l").asString()
-									+ "\uffff"
-									+ it2.get("r").asString()),
+								Regex(
+									it2.get("l").asString()
+										+ "\uffff"
+										+ it2.get("r").asString(),
+									RegexOption.IGNORE_CASE),
 								it2.get("s").asString())
 						})
 					}),

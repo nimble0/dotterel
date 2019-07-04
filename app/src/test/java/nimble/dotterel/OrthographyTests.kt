@@ -38,6 +38,8 @@ class OrthographyTests : FunSpec
 		replacements.apply("ratt", "ivette") shouldBe null
 		replacements.apply("tian", "aaa") shouldBe null
 		replacements.apply("glub", "it") shouldBe "glubiit"
+
+		replacements.apply("Nation", "aL") shouldBe "NationaL"
 	}
 
 	test("regex replacements")

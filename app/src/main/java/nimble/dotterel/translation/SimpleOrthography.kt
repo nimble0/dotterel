@@ -13,6 +13,15 @@ import kotlin.math.*
 
 import nimble.dotterel.util.toJson
 
+internal fun String.withCase(s: String): String =
+	(this.zip(s, transform = { a, b ->
+		if(b.isUpperCase())
+			a.toUpperCase()
+		else
+			a
+	}).joinToString("")
+		+ this.substring(min(s.length, this.length)))
+
 class SimpleOrthography : Orthography
 {
 	internal data class Replacement(
@@ -115,6 +124,11 @@ class SimpleOrthography : Orthography
 
 	fun remove(left: String, right: String)
 	{
+		@Suppress("NAME_SHADOWING")
+		val left = left.toLowerCase()
+		@Suppress("NAME_SHADOWING")
+		val right = right.toLowerCase()
+
 		val leftI = this.replacements.binarySearch(LeftLookupEntry(left))
 		if(leftI < 0)
 			return
@@ -129,6 +143,11 @@ class SimpleOrthography : Orthography
 
 	fun add(left: String, right: String, replacement: String)
 	{
+		@Suppress("NAME_SHADOWING")
+		val left = left.toLowerCase()
+		@Suppress("NAME_SHADOWING")
+		val right = right.toLowerCase()
+
 		val leftEntryI = this.replacements.binarySearch(LeftLookupEntry(left))
 		val leftEntry = if(leftEntryI < 0)
 			{
@@ -198,10 +217,11 @@ class SimpleOrthography : Orthography
 	}
 
 	override fun match(a: String, b: String): Orthography.Result? =
-		this.find(a, b)?.let({
+		this.find(a.toLowerCase(), b.toLowerCase())?.let({
 			Orthography.Result(
 				it.left.length,
-				it.replacement + b.substring(it.right.length, b.length))
+				it.replacement.withCase((a + b).substring(a.length - it.left.length))
+					+ b.substring(it.right.length, b.length))
 		})
 
 	fun toJson(): JsonArray =
