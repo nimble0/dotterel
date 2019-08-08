@@ -32,7 +32,8 @@ import nimble.dotterel.translation.*
 
 val MACHINES = mapOf(
 	Pair("On Screen", OnScreenStenoMachine.Factory()),
-	Pair("NKRO", NkroStenoMachine.Factory())
+	Pair("NKRO", NkroStenoMachine.Factory()),
+	Pair("Serial", SerialStenoMachine.Factory())
 )
 
 interface DotterelRunnable
