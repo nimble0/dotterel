@@ -55,6 +55,7 @@ class SystemPreferenceFragment : PreferenceFragmentCompat()
 {
 	private var path: String = ""
 	private var jsonDataStore: JsonSystemDataStore? = null
+	private var readOnly = true
 
 	override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?)
 	{
@@ -62,7 +63,7 @@ class SystemPreferenceFragment : PreferenceFragmentCompat()
 		this.setHasOptionsMenu(true)
 
 		this.path = this.arguments?.getString("path", null) ?: ""
-		val readOnly = this.arguments?.getBoolean("readOnly", false) ?: true
+		this.readOnly = this.arguments?.getBoolean("readOnly", false) ?: true
 
 		val fileDataStore = FileDataStore(this.requireContext())
 		fileDataStore.onPreferenceChanged = {
@@ -75,7 +76,7 @@ class SystemPreferenceFragment : PreferenceFragmentCompat()
 
 		for(preference in this.preferenceScreen.flatten())
 		{
-			preference.extras.putBoolean("readOnly", readOnly)
+			preference.extras.putBoolean("readOnly", this.readOnly)
 			when(preference.extras.getString("store_type"))
 			{
 				"text_file" ->
@@ -174,8 +175,13 @@ class SystemPreferenceFragment : PreferenceFragmentCompat()
 			alert.setView(input)
 		}).create().show()
 
-	override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) =
+	override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater)
+	{
 		inflater.inflate(R.menu.system, menu)
+
+		if(this.readOnly)
+			menu.findItem(R.id.rename).isEnabled = false
+	}
 
 	override fun onOptionsItemSelected(item: MenuItem): Boolean =
 		when(item.itemId)
