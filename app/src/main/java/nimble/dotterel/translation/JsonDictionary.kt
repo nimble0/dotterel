@@ -11,7 +11,7 @@ class JsonDictionary(input: InputStream) : StandardDictionary()
 {
 	init
 	{
-		for(entry in Json.parse(input.reader()).asObject())
+		for(entry in Json.parse(input.bufferedReader()).asObject())
 			this[entry.name] = entry.value.asString()
 	}
 }

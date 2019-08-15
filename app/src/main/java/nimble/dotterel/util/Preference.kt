@@ -9,21 +9,13 @@ import androidx.preference.PreferenceManager
 
 private val bindPreferenceSummaryToValueListener =
 	Preference.OnPreferenceChangeListener{ preference, value ->
-
-		val stringValue = value.toString()
-
-		when(preference)
+		val s = value?.toString()
+		preference.summary = when(preference)
 		{
 			is ListPreference ->
-			{
-				val index = preference.findIndexOfValue(stringValue)
-				preference.setSummary(
-					if(index >= 0)
-						preference.entries[index]
-					else
-						null)
-			}
-			else -> preference.summary = stringValue
+				preference.entries?.getOrNull(preference.findIndexOfValue(s))
+			else ->
+				s
 		}
 		true
 	}
@@ -31,8 +23,15 @@ private val bindPreferenceSummaryToValueListener =
 fun Preference.bindSummaryToValue()
 {
 	this.onPreferenceChangeListener = bindPreferenceSummaryToValueListener
-	bindPreferenceSummaryToValueListener.onPreferenceChange(this,
-		PreferenceManager
-			.getDefaultSharedPreferences(this.context)
-			.getString(this.key, ""))
+
+	val value = when(this)
+	{
+		is ListPreference ->
+			this.value
+		else ->
+			PreferenceManager
+				.getDefaultSharedPreferences(this.context)
+				.getString(this.key, "")
+	}
+	bindPreferenceSummaryToValueListener.onPreferenceChange(this, value)
 }

@@ -262,7 +262,7 @@ class Translator(system: System, var log: (message: String) -> Unit = { _ -> })
 					throw IllegalArgumentException(
 						"Replaced translations must match translation history buffer")
 				else
-					popFull()
+					this.popFull()
 
 			val processed = this.processor.process(this, t.raw)
 			if(!processed.empty)

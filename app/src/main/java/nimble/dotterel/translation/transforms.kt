@@ -7,7 +7,7 @@ package nimble.dotterel.translation
 
 fun noneTransform(context: FormattedText, text: UnformattedText, suffix: Boolean) = text
 
-fun capitialiseTransform(
+fun capitaliseTransform(
 	context: FormattedText,
 	text: UnformattedText,
 	suffix: Boolean

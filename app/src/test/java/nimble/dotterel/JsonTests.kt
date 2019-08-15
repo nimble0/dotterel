@@ -10,8 +10,6 @@ import io.kotlintest.matchers.shouldBe
 import io.kotlintest.matchers.shouldThrow
 import io.kotlintest.specs.FunSpec
 
-import java.lang.UnsupportedOperationException
-
 import nimble.dotterel.util.get
 import nimble.dotterel.util.set
 
@@ -40,7 +38,7 @@ class JsonTests : FunSpec
 		json.get(listOf("d", "b"))?.asObject() shouldBe JsonObject()
 		json.get(listOf("d", "b", "a")) shouldBe null
 
-		json.get(listOf<String>()) shouldBe json
+		json.get(listOf()) shouldBe json
 		json.get("a").get(listOf())?.asString() shouldBe "A"
 		shouldThrow<UnsupportedOperationException>
 		{
@@ -61,7 +59,7 @@ class JsonTests : FunSpec
 
 		shouldThrow<IndexOutOfBoundsException>
 		{
-			json.set(listOf<String>(), "a")
+			json.set(listOf(), "a")
 		}
 		shouldThrow<UnsupportedOperationException>
 		{

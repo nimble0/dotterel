@@ -152,7 +152,6 @@ private class DictionariesPreferenceAdapter(
 				@Suppress("DEPRECATION")
 				this.context.resources.getDrawable(background)
 
-
 		return v
 	}
 }
@@ -252,7 +251,7 @@ class DictionariesPreferenceFragment : PreferenceFragmentCompat()
 
 		val adapter = DictionariesPreferenceAdapter(inflater.context)
 
-		val listView = (view.findViewById(R.id.dictionaries) as ReorderableListView)
+		val listView = view.findViewById<ReorderableListView>(R.id.dictionaries)
 		listView.adapter = adapter
 		listView.choiceMode = ListView.CHOICE_MODE_MULTIPLE_MODAL
 		listView.setMultiChoiceModeListener(
