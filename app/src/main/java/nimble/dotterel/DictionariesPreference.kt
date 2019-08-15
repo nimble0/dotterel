@@ -204,9 +204,13 @@ class DictionariesPreferenceFragment : PreferenceFragment()
 
 		val listView = view.findViewById<ReorderableListView>(R.id.dictionaries)
 		listView.adapter = adapter
-		listView.choiceMode = ListView.CHOICE_MODE_MULTIPLE_MODAL
-		listView.setMultiChoiceModeListener(
-			DictionariesPreferenceModalListener(listView, adapter))
+		if(!this.readOnly)
+		{
+			listView.choiceMode = ListView.CHOICE_MODE_MULTIPLE_MODAL
+			listView.setMultiChoiceModeListener(
+				DictionariesPreferenceModalListener(listView, adapter))
+		}
+		listView.allowDragging = !this.readOnly
 
 		this.adapter = adapter
 		this.view = listView
@@ -382,8 +386,17 @@ class DictionariesPreferenceFragment : PreferenceFragment()
 		this.adapter?.notifyDataSetChanged()
 	}
 
-	override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) =
+	override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater)
+	{
 		inflater.inflate(R.menu.dictionaries, menu)
+
+		if(this.readOnly)
+		{
+			menu.findItem(R.id.add_asset_dictionary).isEnabled = false
+			menu.findItem(R.id.add_dictionary).isEnabled = false
+			menu.findItem(R.id.reset_dictionaries).isEnabled = false
+		}
+	}
 
 	override fun onOptionsItemSelected(item: MenuItem): Boolean =
 		when(item.itemId)
