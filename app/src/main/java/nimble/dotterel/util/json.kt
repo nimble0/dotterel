@@ -3,51 +3,49 @@
 
 package nimble.dotterel.util
 
-import com.eclipsesource.json.JsonArray
-import com.eclipsesource.json.JsonObject
-import com.eclipsesource.json.JsonValue
+import com.eclipsesource.json.*
 
 @JvmName("toJsonArray")
 fun List<JsonValue>.toJson() = JsonArray()
 	.also({
-		for(key in this)
-			it.add(key)
+		for(v in this)
+			it.add(v)
 	})
 @JvmName("toBooleanJsonArray")
 fun List<Boolean>.toJson() = JsonArray()
 	.also({
-		for(key in this)
-			it.add(key)
+		for(v in this)
+			it.add(v)
 	})
 @JvmName("toIntJsonArray")
 fun List<Int>.toJson() = JsonArray()
 	.also({
-		for(key in this)
-			it.add(key)
+		for(v in this)
+			it.add(v)
 	})
 @JvmName("toLongJsonArray")
 fun List<Long>.toJson() = JsonArray()
 	.also({
-		for(key in this)
-			it.add(key)
+		for(v in this)
+			it.add(v)
 	})
 @JvmName("toFloatJsonArray")
 fun List<Float>.toJson() = JsonArray()
 	.also({
-		for(key in this)
-			it.add(key)
+		for(v in this)
+			it.add(v)
 	})
 @JvmName("toDoubleJsonArray")
 fun List<Double>.toJson() = JsonArray()
 	.also({
-		for(key in this)
-			it.add(key)
+		for(v in this)
+			it.add(v)
 	})
 @JvmName("toStringJsonArray")
 fun List<String>.toJson() = JsonArray()
 	.also({
-		for(key in this)
-			it.add(key)
+		for(v in this)
+			it.add(v)
 	})
 
 
@@ -95,143 +93,155 @@ fun Map<String, String>.toJson() = JsonObject()
 	})
 
 
-fun <T> JsonObject.mapValues(transform: (JsonValue) -> T) =
-	this.associateBy({ it.name }, { transform(it.value) })
-
-
-fun JsonObject.setNotNull(name: String, value: JsonValue?)
-{
-	if(value != null)
-		this.set(name, value)
-}
-fun JsonObject.setNotNull(name: String, value: Boolean?)
-{
-	if(value != null)
-		this.set(name, value)
-}
-fun JsonObject.setNotNull(name: String, value: Int?)
-{
-	if(value != null)
-		this.set(name, value)
-}
-fun JsonObject.setNotNull(name: String, value: Long?)
-{
-	if(value != null)
-		this.set(name, value)
-}
-fun JsonObject.setNotNull(name: String, value: Float?)
-{
-	if(value != null)
-		this.set(name, value)
-}
-fun JsonObject.setNotNull(name: String, value: Double?)
-{
-	if(value != null)
-		this.set(name, value)
-}
-fun JsonObject.setNotNull(name: String, value: String?)
-{
-	if(value != null)
-		this.set(name, value)
-}
+fun <T> JsonObject.mapKeys(transform: (JsonObject.Member) -> T) =
+	this.associateBy({ transform(it) }, { it.value })
+fun <T> JsonObject.mapValues(transform: (JsonObject.Member) -> T) =
+	this.associateBy({ it.name }, { transform(it) })
 
 
 fun JsonObject.getOrNull(name: String) =
 	this.get(name)?.let({ if(it.isNull) null else it })
 
+fun JsonObject.setNotNull(name: String, value: JsonValue?)
+{
+	if(value == null)
+		this.remove(name)
+	else
+		this.set(name, value)
+}
+fun JsonObject.setNotNull(name: String, value: Boolean?)
+{
+	if(value == null)
+		this.remove(name)
+	else
+		this.set(name, value)
+}
+fun JsonObject.setNotNull(name: String, value: Int?)
+{
+	if(value == null)
+		this.remove(name)
+	else
+		this.set(name, value)
+}
+fun JsonObject.setNotNull(name: String, value: Long?)
+{
+	if(value == null)
+		this.remove(name)
+	else
+		this.set(name, value)
+}
+fun JsonObject.setNotNull(name: String, value: Float?)
+{
+	if(value == null)
+		this.remove(name)
+	else
+		this.set(name, value)
+}
+fun JsonObject.setNotNull(name: String, value: Double?)
+{
+	if(value == null)
+		this.remove(name)
+	else
+		this.set(name, value)
+}
+fun JsonObject.setNotNull(name: String, value: String?)
+{
+	if(value == null)
+		this.remove(name)
+	else
+		this.set(name, value)
+}
 
-// Does not copy value parameter
-fun JsonObject.get(name: String, value: JsonObject): JsonObject =
-	this.getOrNull(name)?.asObject() ?: value.also({ this.set(name, it) })
-// Does not copy value parameter
-fun JsonObject.get(name: String, value: JsonArray): JsonArray =
-	this.getOrNull(name)?.asArray() ?: value.also({ this.set(name, it) })
-fun JsonObject.get(name: String, value: Boolean): Boolean =
-	this.getOrNull(name)?.asBoolean() ?: value.also({ this.set(name, it) })
-fun JsonObject.get(name: String, value: Int): Int =
-	this.getOrNull(name)?.asInt() ?: value.also({ this.set(name, it) })
-fun JsonObject.get(name: String, value: Long): Long =
-	this.getOrNull(name)?.asLong() ?: value.also({ this.set(name, it) })
-fun JsonObject.get(name: String, value: Float): Float =
-	this.getOrNull(name)?.asFloat() ?: value.also({ this.set(name, it) })
-fun JsonObject.get(name: String, value: Double): Double =
-	this.getOrNull(name)?.asDouble() ?: value.also({ this.set(name, it) })
-fun JsonObject.get(name: String, value: String): String =
-	this.getOrNull(name)?.asString() ?: value.also({ this.set(name, it) })
+
+private fun JsonValue.createPathStructure(path: List<String>) =
+	path.fold(this.asObject(), { acc, it ->
+		(acc.getOrNull(it)
+			?: JsonObject().also({ empty -> acc.set(it, empty) })
+			).asObject()
+	})
 
 
 fun JsonValue.get(path: List<String>): JsonValue? =
 	path.fold(
 		this as JsonValue?,
-		{ acc, it -> acc?.asObject()?.getOrNull(it) })
-
-fun JsonValue.set(path: List<String>, value: JsonValue?)
-{
-	path.subList(0, path.size - 1)
-		.fold(this.asObject(), { acc, it ->
-			(acc.getOrNull(it)
-				?: JsonObject().also({ empty -> acc.set(it, empty) })
-				).asObject()
+		{ acc, it -> acc
+			?.let({ v -> if(v.isNull) null else v })
+			?.asObject()
+			?.get(it)
 		})
+
+fun JsonValue.set(path: List<String>, value: JsonValue)
+{
+	this.createPathStructure(path.subList(0, path.size - 1))
 		.set(path.last(), value)
 }
 fun JsonValue.set(path: List<String>, value: Boolean)
 {
-	path.subList(0, path.size - 1)
-		.fold(this.asObject(), { acc, it ->
-			(acc.getOrNull(it)
-				?: JsonObject().also({ empty -> acc.set(it, empty) })
-				).asObject()
-		})
+	this.createPathStructure(path.subList(0, path.size - 1))
 		.set(path.last(), value)
 }
 fun JsonValue.set(path: List<String>, value: Int)
 {
-	path.subList(0, path.size - 1)
-		.fold(this.asObject(), { acc, it ->
-			(acc.getOrNull(it)
-				?: JsonObject().also({ empty -> acc.set(it, empty) })
-				).asObject()
-		})
+	this.createPathStructure(path.subList(0, path.size - 1))
 		.set(path.last(), value)
 }
 fun JsonValue.set(path: List<String>, value: Long)
 {
-	path.subList(0, path.size - 1)
-		.fold(this.asObject(), { acc, it ->
-			(acc.getOrNull(it)
-				?: JsonObject().also({ empty -> acc.set(it, empty) })
-				).asObject()
-		})
+	this.createPathStructure(path.subList(0, path.size - 1))
 		.set(path.last(), value)
 }
 fun JsonValue.set(path: List<String>, value: Float)
 {
-	path.subList(0, path.size - 1)
-		.fold(this.asObject(), { acc, it ->
-			(acc.getOrNull(it)
-				?: JsonObject().also({ empty -> acc.set(it, empty) })
-				).asObject()
-		})
+	this.createPathStructure(path.subList(0, path.size - 1))
 		.set(path.last(), value)
 }
 fun JsonValue.set(path: List<String>, value: Double)
 {
-	path.subList(0, path.size - 1)
-		.fold(this.asObject(), { acc, it ->
-			(acc.getOrNull(it)
-				?: JsonObject().also({ empty -> acc.set(it, empty) })
-				).asObject()
-		})
+	this.createPathStructure(path.subList(0, path.size - 1))
 		.set(path.last(), value)
 }
 fun JsonValue.set(path: List<String>, value: String?)
 {
-	path.subList(0, path.size - 1)
-		.fold(this.asObject(), { acc, it ->
-			(acc.getOrNull(it)
-				?: JsonObject().also({ empty -> acc.set(it, empty) })
-				).asObject()
-		})
+	this.createPathStructure(path.subList(0, path.size - 1))
 		.set(path.last(), value)
+}
+
+
+fun JsonObject.getOrNull(path: List<String>) =
+	this.get(path)?.let({ if(it.isNull) null else it })
+
+fun JsonValue.setNotNull(path: List<String>, value: JsonValue?)
+{
+	this.createPathStructure(path.subList(0, path.size - 1))
+		.setNotNull(path.last(), value)
+}
+fun JsonValue.setNotNull(path: List<String>, value: Boolean?)
+{
+	this.createPathStructure(path.subList(0, path.size - 1))
+		.setNotNull(path.last(), value)
+}
+fun JsonValue.setNotNull(path: List<String>, value: Int?)
+{
+	this.createPathStructure(path.subList(0, path.size - 1))
+		.setNotNull(path.last(), value)
+}
+fun JsonValue.setNotNull(path: List<String>, value: Long?)
+{
+	this.createPathStructure(path.subList(0, path.size - 1))
+		.setNotNull(path.last(), value)
+}
+fun JsonValue.setNotNull(path: List<String>, value: Float?)
+{
+	this.createPathStructure(path.subList(0, path.size - 1))
+		.setNotNull(path.last(), value)
+}
+fun JsonValue.setNotNull(path: List<String>, value: Double?)
+{
+	this.createPathStructure(path.subList(0, path.size - 1))
+		.setNotNull(path.last(), value)
+}
+fun JsonValue.setNotNull(path: List<String>, value: String?)
+{
+	this.createPathStructure(path.subList(0, path.size - 1))
+		.setNotNull(path.last(), value)
 }
