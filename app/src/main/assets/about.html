@@ -4,7 +4,21 @@
 		<title>About Dotterel</title>
 		<style></style>
 		<script>
-			var dotterelVersion = new URL(window.location.href).searchParams.get("version");
+			function getQueryParams(queryString)
+			{
+				queryString = queryString.replace(/\+/g, " ");
+
+				var params = {};
+				var tokens = null;
+				var re = /[?&]?([^=]+)=([^&]*)/g;
+
+				while(tokens = re.exec(queryString))
+					params[decodeURIComponent(tokens[1])] = decodeURIComponent(tokens[2]);
+
+				return params;
+			}
+
+			var dotterelVersion = getQueryParams(window.location.search).version;
 		</script>
 		<style>
 			body {
