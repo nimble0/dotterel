@@ -24,7 +24,7 @@ fun keyCodeToString(keyCode: Int) =
 fun stringToKeyCode(keyCodeString: String) =
 	KeyEvent.keyCodeFromString("KEYCODE_${keyCodeString.toUpperCase()}")
 
-class KeyMapAdapter(context: Context, items: List<KeyMapping>) :
+class KeyMapAdapter(context: Context, items: List<KeyMapping>, val readOnly: Boolean) :
 	ArrayAdapter<KeyMapping>(context, R.layout.pref_key_mapping, items)
 {
 	private fun addMapping(i: Int, keyCode: String)
@@ -64,6 +64,7 @@ class KeyMapAdapter(context: Context, items: List<KeyMapping>) :
 					val keyView = (inflater.inflate(R.layout.pref_key_mapping_key, parent, false)
 						as TextView)
 					keyView.text = k
+					keyView.isEnabled = !this.readOnly
 					keyView.setOnClickListener({ this.removeMapping(position, k) })
 					it.addView(keyView)
 				}
@@ -71,6 +72,8 @@ class KeyMapAdapter(context: Context, items: List<KeyMapping>) :
 
 		v.findViewById<Button>(R.id.add_keyboard_key)
 			.also({
+				it.isEnabled = !this.readOnly
+
 				it.setOnFocusChangeListener({ _, focused ->
 					if(focused)
 					{
@@ -102,6 +105,8 @@ class KeyMapPreference(context: Context, attributes: AttributeSet) :
 {
 	private var keyLayout: KeyLayout = KeyLayout("#STKPWHR-AO*EU-FRPBLGTSDZ")
 
+	val readOnly get() = (this.extras?.getBoolean("readOnly") == true)
+
 	override val dialogFragment get() = KeyMapPreferenceFragment()
 
 	override fun getDialogLayoutResource(): Int = R.layout.pref_key_map
@@ -120,7 +125,7 @@ class KeyMapPreference(context: Context, attributes: AttributeSet) :
 
 	internal fun save(items: List<KeyMapping>)
 	{
-		if(this.extras?.getBoolean("readOnly") == true)
+		if(this.readOnly)
 			return
 
 		val layout = items.let({ mappings: List<KeyMapping> ->
@@ -170,12 +175,13 @@ class KeyMapPreferenceFragment : PreferenceDialogFragmentCompat()
 	{
 		super.onBindDialogView(view)
 
-		val preference = this.preference as? KeyMapPreference
-		preference?.updateKeyLayout()
-		this.items = preference?.load() ?: listOf()
+		val preference = (this.preference as? KeyMapPreference)!!
+		preference.updateKeyLayout()
+		this.items = preference.load()
 		view.findViewById<ListView>(R.id.main).adapter = KeyMapAdapter(
 			this.requireContext(),
-			this.items)
+			this.items,
+			preference.readOnly)
 	}
 
 	override fun onDialogClosed(positiveResult: Boolean)
