@@ -7,7 +7,6 @@ import android.os.Bundle
 
 import androidx.preference.*
 
-import nimble.dotterel.machines.ON_SCREEN_MACHINE_STYLES
 import nimble.dotterel.util.*
 import nimble.dotterel.util.DialogPreference
 
@@ -31,12 +30,10 @@ class MachinesPreferenceFragment : PreferenceFragmentCompat()
 			machinesCategory.addPreference(enabled)
 		}
 
-		val onScreenStyle = this.findPreference("machine/On Screen/style")
-			as ListPreference
-		onScreenStyle.entries = ON_SCREEN_MACHINE_STYLES.map({ it.key })
-			.toTypedArray()
-		onScreenStyle.entryValues = onScreenStyle.entries
-		onScreenStyle.bindSummaryToValue()
+		this.preferenceScreen
+			.flatten()
+			.filter({ it.extras.getBoolean("bindSummaryToValue") })
+			.forEach({ it.bindSummaryToValue() })
 	}
 
 	override fun onDisplayPreferenceDialog(preference: Preference)
@@ -45,5 +42,33 @@ class MachinesPreferenceFragment : PreferenceFragmentCompat()
 			this.displayPreferenceDialog(preference, DIALOG_FRAGMENT_TAG)
 		else
 			super.onDisplayPreferenceDialog(preference)
+	}
+
+	override fun onResume()
+	{
+		super.onResume()
+
+		val jsonDataStores = mutableMapOf<String, JsonDataStore>()
+		for(preference in this.preferenceScreen.flatten())
+		{
+			val dataStorePath = preference.extras.getString("store_path")
+			if(dataStorePath != null)
+				when(preference.extras.getString("store_type"))
+				{
+					"json_preference" ->
+					{
+						val dataStore = jsonDataStores[dataStorePath]
+							?: JsonPreferenceDataStore(
+								this.preferenceManager.sharedPreferences,
+								dataStorePath
+							).also({ jsonDataStores[dataStorePath] = it })
+						preference.key = preference.extras.getString("key")
+						preference.preferenceDataStore = dataStore
+						preference.reloadValue()
+					}
+				}
+		}
+
+		bindSystemPreferencesToActiveSystem(this)
 	}
 }

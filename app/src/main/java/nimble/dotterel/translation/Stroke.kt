@@ -10,6 +10,7 @@ data class Stroke(val layout: KeyLayout, val keys: Long)
 
 	val rtfcre: String get() = this.layout.rtfcre(this.keys)
 	val pureKeysString: String get() = this.layout.pureKeysString(this.keys)
+	val isEmpty: Boolean get() = this.keys == 0L
 
 	override fun toString() = this.rtfcre
 }

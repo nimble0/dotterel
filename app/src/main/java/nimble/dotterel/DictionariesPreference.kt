@@ -5,108 +5,30 @@ package nimble.dotterel
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.preference.*
-import android.util.*
 import android.view.*
 import android.widget.*
 import android.widget.AbsListView.*
 
-import androidx.preference.PreferenceFragmentCompat
-
 import com.eclipsesource.json.*
 
-import java.io.IOException
-
-import nimble.dotterel.translation.Dictionary
-import nimble.dotterel.translation.systems.IRELAND_SYSTEM
+import nimble.dotterel.util.toJson
 
 data class DictionaryItem(
-	var name: String,
+	var path: String,
 	var enabled: Boolean,
 	var accessible: Boolean = true)
 
-private fun checkAccessible(context: Context, path: String): Boolean
-{
-	try
+private fun checkAccessible(context: Context, path: String): Boolean =
+	when(path.substringBefore("://"))
 	{
-		val type = path.substringBefore("://")
-		val name = path.substringAfter("://")
-		return when(type)
-		{
-			"asset" ->
-			{
-				context.assets.open(name)
-				true
-			}
-			"code" ->
-				CODE_ASSETS[name] is Dictionary
-			else ->
-			{
-				context.contentResolver.openInputStream(Uri.parse(path))
-				true
-			}
-		}
+		"code_dictionary" ->
+			true
+		else ->
+			AndroidSystemResources(context).openInputStream(path) != null
 	}
-	catch(e: IOException)
-	{
-		Log.w("Dotterel", "Error reading dictionary $path")
-		return false
-	}
-	catch(e: SecurityException)
-	{
-		Log.w("Dotterel", "Permission denied reading dictionary $path")
-		return false
-	}
-	catch(e: java.lang.IllegalStateException)
-	{
-		Log.w("Dotterel", "$path is not a valid JSON dictionary")
-		return false
-	}
-	catch(e: ClassCastException)
-	{
-		Log.w("Dotterel", "$path is not of type Dictionary")
-		return false
-	}
-}
-
-fun List<DictionaryItem>.toJson(): JsonArray
-{
-	val json = JsonArray()
-	for(item in this)
-		json.add(JsonObject().also({
-			it.add("name", item.name)
-			it.add("enabled", item.enabled)
-		}))
-	return json
-}
-
-fun dictionaryListFromJson(key: String, json: String): List<DictionaryItem>
-{
-	try
-	{
-		val dictionaryList = mutableListOf<DictionaryItem>()
-		for(item in Json.parse(json).asArray())
-			dictionaryList.add(item.asObject().let({
-				DictionaryItem(
-					it.get("name").asString(),
-					it.get("enabled").asBoolean())
-			}))
-		return dictionaryList
-	}
-	catch(e: com.eclipsesource.json.ParseException)
-	{
-		Log.e("Dotterel", "Preference $key has badly formed JSON")
-	}
-	catch(e: java.lang.UnsupportedOperationException)
-	{
-		Log.e("Dotterel", "Invalid type found while reading preference $key")
-	}
-
-	return listOf()
-}
 
 private class DictionariesPreferenceAdapter(
 	context: Context,
@@ -137,7 +59,7 @@ private class DictionariesPreferenceAdapter(
 
 		v.findViewById<TextView>(R.id.path)
 			.also({
-				it.text = item.name
+				it.text = item.path
 				it.isEnabled = item.enabled
 			})
 
@@ -228,17 +150,17 @@ private class DictionariesPreferenceModalListener(
 	override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean = false
 }
 
-const val SELECT_DICTIONARY_FILE = 2
+private const val SELECT_DICTIONARY_FILE = 2
 
-class DictionariesPreferenceFragment : PreferenceFragmentCompat()
+class DictionariesPreferenceFragment : PreferenceFragment()
 {
-	private var key = "system/Ireland/dictionaries"
+	private var readOnly = true
 	private var view: ReorderableListView? = null
 	private var adapter: DictionariesPreferenceAdapter? = null
 
 	override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?)
 	{
-		this.key = "system/Ireland/dictionaries"
+		this.readOnly = this.arguments?.getBoolean("readOnly") ?: false
 	}
 
 	override fun onCreateView(
@@ -272,29 +194,22 @@ class DictionariesPreferenceFragment : PreferenceFragmentCompat()
 		return view
 	}
 
+	override fun onDestroyView()
+	{
+		this.view?.actionMode?.finish()
+		super.onDestroyView()
+	}
+
 	override fun onResume()
 	{
 		super.onResume()
-
-		val value = PreferenceManager.getDefaultSharedPreferences(this.requireContext())
-			.getString(this.key, null)
-
-		if(value != null)
-			this.load(value)
-		else
-			this.reset()
+		this.load()
 	}
 
 	override fun onPause()
 	{
 		this.save()
 		super.onPause()
-	}
-
-	override fun onDestroyView()
-	{
-		this.view?.actionMode?.finish()
-		super.onDestroyView()
 	}
 
 	private fun chooseDictionaryFile()
@@ -350,48 +265,69 @@ class DictionariesPreferenceFragment : PreferenceFragmentCompat()
 		super.onActivityResult(requestCode, resultCode, data)
 	}
 
-	fun reset()
+	private fun reset()
 	{
-		val system = IRELAND_SYSTEM
+		if(this.readOnly)
+			return
 
-		val defaultDictionaries = system.defaultDictionaries
-			.map({ DictionaryItem(it, true) })
-			.toJson()
-			.toString()
+		val preference = this.preference!!
+		(preference.preferenceDataStore as? JsonDataStore)
+			?.safePut(preference.key, null)
 
-		this.load(defaultDictionaries)
+		this.load()
 	}
 
-	fun add(uri: String)
+	private fun add(uri: String)
 	{
-		this.adapter?.run({
-			if(this.items.all({ it.name != uri }))
-				this.items.add(DictionaryItem(uri, true))
-			this.notifyDataSetChanged()
+		this.adapter?.also({
+			if(it.items.all({ dictionary -> dictionary.path != uri }))
+			{
+				it.items.add(DictionaryItem(uri, true))
+				it.notifyDataSetChanged()
+			}
 		})
 	}
 
-	fun save()
+	private fun save()
 	{
-		val value = this.adapter?.items?.toJson()
-		if(value != null)
-			PreferenceManager.getDefaultSharedPreferences(this.requireContext())
-				.edit()
-				.putString(this.key, value.toString())
-				.apply()
+		if(this.readOnly)
+			return
+
+		val dictionaries = this.adapter?.items?.map({ item ->
+				JsonObject().also({
+					it.add("path", item.path)
+					it.add("enabled", item.enabled)
+				})
+			})?.toJson()
+			?: return
+
+		val preference = this.preference!!
+		(preference.preferenceDataStore as? JsonDataStore)
+			?.safePut(preference.key, dictionaries)
 	}
 
-	fun load(value: String)
+	private fun load()
 	{
-		val newItems = dictionaryListFromJson(this.key, value)
-			.map({
-				DictionaryItem(
-					it.name,
-					it.enabled,
-					checkAccessible(this.requireContext(), it.name))
-			})
+		val preference = this.preference!!
+		val dictionaries = (preference.preferenceDataStore as? JsonDataStore)
+			?.safeGet(
+				preference.key,
+				null,
+				{ v ->
+					v.asArray()
+						.map({ it.asObject() })
+						.map({
+							val path = it.get("path").asString()
+							DictionaryItem(
+								path,
+								it.get("enabled").asBoolean(),
+								checkAccessible(this.requireContext(), path))
+						})
+				})
+			?: listOf()
+
 		this.adapter?.clear()
-		this.adapter?.addAll(newItems)
+		this.adapter?.addAll(dictionaries)
 		this.adapter?.notifyDataSetChanged()
 	}
 }

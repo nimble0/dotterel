@@ -3,9 +3,7 @@
 
 package nimble.dotterel.util
 
-import androidx.preference.ListPreference
-import androidx.preference.Preference
-import androidx.preference.PreferenceManager
+import androidx.preference.*
 
 private val bindPreferenceSummaryToValueListener =
 	Preference.OnPreferenceChangeListener{ preference, value ->
@@ -34,4 +32,64 @@ fun Preference.bindSummaryToValue()
 				.getString(this.key, "")
 	}
 	bindPreferenceSummaryToValueListener.onPreferenceChange(this, value)
+}
+
+val PreferenceGroup.preferences: List<Preference>
+	get() = (0 until this.preferenceCount)
+		.map({ this.getPreference(it) })
+
+fun Preference.flatten(): List<Preference> =
+	if(this is PreferenceGroup)
+		this.preferences.flatMap({ it.flatten() })
+	else
+		listOf(this)
+
+interface ReloadablePreference
+{
+	fun reloadValue()
+}
+
+fun Preference.reloadValue()
+{
+	when(this)
+	{
+		is ReloadablePreference ->
+			this.reloadValue()
+		is EditTextPreference ->
+		{
+			this.text = this.preferenceDataStore?.getString(this.key, null)
+				?: this.text
+			this.onPreferenceChangeListener?.onPreferenceChange(this, this.text)
+		}
+		is ListPreference ->
+		{
+			this.value = this.preferenceDataStore?.getString(this.key, null)
+				?: this.value
+			this.onPreferenceChangeListener?.onPreferenceChange(this, this.value)
+		}
+		is SeekBarPreference ->
+		{
+			this.value = this.preferenceDataStore?.getInt(this.key, this.value)
+				?: this.value
+			this.onPreferenceChangeListener?.onPreferenceChange(this, this.value)
+		}
+		is TwoStatePreference ->
+		{
+			this.isChecked = this.preferenceDataStore?.getBoolean(this.key, this.isChecked)
+				?: this.isChecked
+			this.onPreferenceChangeListener?.onPreferenceChange(this, this.isChecked)
+		}
+		is DropDownPreference ->
+		{
+			this.value = this.preferenceDataStore?.getString(this.key, null)
+				?: this.value
+			this.onPreferenceChangeListener?.onPreferenceChange(this, this.value)
+		}
+		is MultiSelectListPreference ->
+		{
+			this.values = this.preferenceDataStore?.getStringSet(this.key, null)
+				?: this.values
+			this.onPreferenceChangeListener?.onPreferenceChange(this, this.values)
+		}
+	}
 }

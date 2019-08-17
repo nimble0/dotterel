@@ -20,6 +20,7 @@
 	<color name="specialStenoKeyText">#AAA</color>
 
 	<color name="tint">#8DDD</color>
+	<color name="tint2">#8ACE</color>
 	<color name="selected">#80AF</color>
 	<color name="highlighted">#07F</color>
 	<color name="error">#8F00</color>

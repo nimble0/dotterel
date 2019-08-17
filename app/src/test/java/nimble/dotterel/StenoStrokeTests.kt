@@ -11,16 +11,14 @@ import nimble.dotterel.translation.*
 class StenoStrokeTests : FunSpec
 ({
 	val layout = KeyLayout(
-		"#1S2TK3PW4HR",
-		"5A0O*EU",
-		"6FR7PB8LG9TSDZ",
+		"#1S2TK3PW4HR-5A0O*EU-6FR7PB8LG9TSDZ",
 		mapOf(
 			Pair("1-", listOf("#-", "S-")),
 			Pair("2-", listOf("#-", "T-")),
 			Pair("3-", listOf("#-", "P-")),
 			Pair("4-", listOf("#-", "H-")),
-			Pair("5-", listOf("#-", "A-")),
-			Pair("0-", listOf("#-", "O-")),
+			Pair("5", listOf("#-", "A-")),
+			Pair("0", listOf("#-", "O-")),
 			Pair("-6", listOf("#-", "-F")),
 			Pair("-7", listOf("#-", "-P")),
 			Pair("-8", listOf("#-", "-L")),

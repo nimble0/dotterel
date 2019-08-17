@@ -7,6 +7,25 @@ package nimble.dotterel.translation
 
 import java.util.Collections
 
+import nimble.dotterel.util.CaseInsensitiveString
+
+val COMMANDS = mapOf(
+	Pair("retro:undo", ::undoStroke),
+	Pair("mode:transform", ::transform),
+	Pair("mode:single_transform", ::singleTransform),
+
+	Pair("retro:repeat_last_stroke", ::repeatLastStroke),
+	Pair("retro:last_translation", ::lastTranslation),
+	Pair("retro:last_cluster", ::lastCluster),
+	Pair("retro:move_last_cluster", ::moveLastCluster),
+	Pair("retro:break_translation", ::retroBreakTranslation),
+	Pair("retro:toggle_asterisk", ::retroToggleAsterisk),
+
+	Pair("mode:set_space", ::setSpace),
+	Pair("mode:reset_case", ::resetTransform),
+	Pair("mode:reset_space", ::resetSpace)
+).mapKeys({ CaseInsensitiveString(it.key) })
+
 private val backspaceWord = KeyCombo("backspace", Modifier.CONTROL.mask)
 
 fun List<Any>.filterTextActions() =
@@ -31,7 +50,8 @@ fun undoStroke(translator: Translator, arg: String)
 			listOf(),
 			listOf(),
 			Collections.nCopies(count, backspaceWord),
-			translator.context))
+			translator.context,
+			false))
 
 	return TranslationPart()
 }
@@ -42,7 +62,7 @@ fun transform(translator: Translator, arg: String) =
 			spaceStart = Formatting.Space.NONE,
 			spaceEnd = null,
 			orthographyEnd = null,
-			transform = translator.processor.transforms[arg],
+			transform = translator.system.transforms[CaseInsensitiveString(arg)],
 			transformState = Formatting.TransformState.MAIN
 		))))
 
@@ -52,7 +72,7 @@ fun singleTransform(translator: Translator, arg: String) =
 			spaceStart = Formatting.Space.NONE,
 			spaceEnd = null,
 			orthographyEnd = null,
-			singleTransform = translator.processor.transforms[arg],
+			singleTransform = translator.system.transforms[CaseInsensitiveString(arg)],
 			transformState = Formatting.TransformState.MAIN
 		))))
 
@@ -167,8 +187,7 @@ fun retroBreakTranslation(translator: Translator, arg: String)
 	// tailAction = "land"
 	// headActions = "swiz er"
 	val tailAction = translator.processor.process(
-		translator,
-		translator.dictionary[listOf(lastStroke)] ?: lastStroke.rtfcre)
+		translator.system.dictionaries[listOf(lastStroke)] ?: lastStroke.rtfcre)
 	val headActions = TranslationPart(
 		lastTranslation.replaces.flatMap({
 			it.actions.filterTextActions() }),

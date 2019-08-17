@@ -9,7 +9,8 @@ class HistoryTranslation(
 	val strokes: List<Stroke>,
 	val replaces: List<HistoryTranslation>,
 	val actions: List<Any>,
-	context: FormattedText)
+	context: FormattedText,
+	val allowPrefixedReplacement: Boolean)
 {
 	val formattedActions = format(context, actions)
 	val text: FormattedText

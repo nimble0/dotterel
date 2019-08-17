@@ -7,6 +7,8 @@ import java.text.ParseException
 
 import kotlin.math.min
 
+import nimble.dotterel.util.CaseInsensitiveString
+
 private val TRANSLATION_PARTS_PATTERN = Regex("\\A(?:(?:[^{}\\\\]|(?:\\\\.))+|(?:\\{(?:[^{}\\\\]|(?:\\\\.))*\\}))")
 // META_FORMATTING_PATTERN groups
 // 1 - Formatting start
@@ -71,37 +73,18 @@ data class TranslationPart(
 		TranslationPart(this.actions + b.actions, b.replaces + this.replaces)
 }
 
-class TranslationProcessor
+class TranslationProcessor(private val translator: Translator)
 {
-	val transforms = mutableMapOf<
-		String,
-		(FormattedText, UnformattedText, Boolean) -> UnformattedText>()
-	val commands = mutableMapOf<String, (Translator, String) -> TranslationPart>()
-	val aliases: MutableMap<String, AliasTranslation> = BASE_ALIASES.toMutableMap()
+	private val system get() = this.translator.system
 
-	fun resetTransforms()
-	{
-		this.transforms.clear()
-	}
-	fun resetCommands()
-	{
-		this.commands.clear()
-	}
-	fun resetAliases()
-	{
-		this.aliases.clear()
-		this.aliases.putAll(BASE_ALIASES)
-	}
-
-	private fun parseCommand(translator: Translator, commandStr: String)
-		: TranslationPart
+	private fun parseCommand(commandStr: String): TranslationPart
 	{
 		var i = commandStr.length
 		while(i != -1)
 		{
 			val name = commandStr.substring(0, i).toLowerCase()
 			val arg = commandStr.substring(min(i + 1, commandStr.length))
-			val command = this.commands[name]
+			val command = this.system.commands[CaseInsensitiveString(name)]
 			if(command != null)
 				return command(translator, arg)
 
@@ -112,18 +95,19 @@ class TranslationProcessor
 	}
 
 	@Throws(ParseException::class)
-	private fun parseTranslationPart(translator: Translator, part: String)
-		: TranslationPart
+	private fun parseTranslationPart(part: String): TranslationPart
 	{
 		if(part[0] == '{')
 		{
 			val inner = part.substring(1, part.length - 1)
 
-			val a = this.aliases[inner]
+			val a = BASE_ALIASES[inner]
+				?: this.system.aliases[CaseInsensitiveString(inner)]
+					?.let({ TranslationString(it) })
 			when(a)
 			{
 				is Actions -> return TranslationPart(a.actions)
-				is TranslationString -> return this.process(translator, a.string)
+				is TranslationString -> return this.process(a.string)
 			}
 
 			if(inner.isNotEmpty() && inner[0] == '#')
@@ -135,7 +119,7 @@ class TranslationProcessor
 				// If no formatting tokens, it's a command
 				if(formattingMatch.groupValues[1].isEmpty()
 					&& formattingMatch.groupValues[5].isEmpty())
-					return this.parseCommand(translator, inner)
+					return this.parseCommand(inner)
 
 				var spaceStart = Formatting.Space.NORMAL
 				var spaceEnd = Formatting.Space.NORMAL
@@ -166,7 +150,7 @@ class TranslationProcessor
 				val formatting = Formatting(
 					spaceStart = spaceStart,
 					spaceEnd = spaceEnd,
-					orthography = translator.system.orthography,
+					orthography = this.system.orthography.orthography,
 					orthographyStart = orthographyStart,
 					orthographyEnd = orthographyEnd,
 					transformState = singleTransformState
@@ -181,13 +165,11 @@ class TranslationProcessor
 			return TranslationPart(listOf(UnformattedText(
 				0,
 				part,
-				Formatting(orthography = translator.system.orthography))))
+				Formatting(orthography = this.system.orthography.orthography))))
 	}
 
-	fun process(translator: Translator, translation: String): TranslationPart
-	{
-		return parseTranslationParts(translation)
-			.map({ this.parseTranslationPart(translator, it) })
+	fun process(translation: String): TranslationPart =
+		parseTranslationParts(translation)
+			.map({ this.parseTranslationPart(it) })
 			.fold(TranslationPart(), { acc, it -> acc + it })
-	}
 }

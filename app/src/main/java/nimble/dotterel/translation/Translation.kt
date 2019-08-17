@@ -7,4 +7,6 @@ data class Translation(
 	val strokes: List<Stroke>,
 	val replaces: List<HistoryTranslation>,
 	val raw: String,
-	val fullMatch: Boolean)
+	val isUntranslate: Boolean,
+	val	hasPrefix: Boolean,
+	val hasSuffix: Boolean)

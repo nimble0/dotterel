@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This file is part of Dotterel which is released under GPL-2.0-or-later. -->
+<!-- See file <LICENSE.txt> or go to <http://www.gnu.org/licenses/> for full license details. -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent">
+
+	<ListView
+		android:id="@+id/systems"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:listSelector="@drawable/system_item" />
+
+	<ListView
+		android:id="@+id/builtin_systems"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:background="@color/tint" />
+
+</LinearLayout>

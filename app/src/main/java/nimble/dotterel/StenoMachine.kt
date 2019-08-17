@@ -3,12 +3,12 @@
 
 package nimble.dotterel
 
-import android.content.SharedPreferences
+import com.eclipsesource.json.JsonObject
 
 import java.io.Closeable
 
-import nimble.dotterel.translation.KeyLayout
 import nimble.dotterel.translation.Stroke
+import nimble.dotterel.translation.KeyLayout
 
 interface StenoMachine : Closeable
 {
@@ -23,9 +23,11 @@ interface StenoMachine : Closeable
 		fun applyStroke(s: Stroke)
 	}
 
-	var keyLayout: KeyLayout
+	fun setConfig(
+		keyLayout: KeyLayout,
+		config: JsonObject,
+		systemConfig: JsonObject)
+
 	// The key layout of strokes passed to strokeListener must match keyLayout
 	var strokeListener: Listener?
-
-	fun preferenceChanged(preferences: SharedPreferences, key: String)
 }

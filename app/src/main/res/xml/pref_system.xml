@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This file is part of Dotterel which is released under GPL-2.0-or-later. -->
+<!-- See file <LICENSE.txt> or go to <http://www.gnu.org/licenses/> for full license details. -->
+
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+	<Preference
+		android:title="@string/pref_dictionaries"
+		android:fragment="nimble.dotterel.DictionariesPreferenceFragment">
+		<extra android:name="store_type" android:value="json_file" />
+		<extra android:name="key" android:value="dictionaries" />
+	</Preference>
+
+	<nimble.dotterel.KeyMapPreference
+		android:title="@string/pref_machines_nkro_key_map">
+		<extra android:name="store_type" android:value="json_file" />
+		<extra android:name="key" android:value="machineConfig/NKRO/layout" />
+	</nimble.dotterel.KeyMapPreference>
+
+	<Preference
+		android:title="@string/pref_systems_json"
+		android:fragment="nimble.dotterel.EditTextFragment">
+		<extra android:name="store_type" android:value="text_file" />
+	</Preference>
+
+</androidx.preference.PreferenceScreen>

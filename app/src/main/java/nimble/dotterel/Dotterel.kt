@@ -5,7 +5,6 @@ package nimble.dotterel
 
 import android.content.SharedPreferences
 import android.inputmethodservice.InputMethodService
-import android.net.Uri
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
@@ -13,25 +12,12 @@ import android.widget.Toast
 
 import androidx.preference.PreferenceManager
 
-import java.io.IOException
+import com.eclipsesource.json.Json
+import com.eclipsesource.json.JsonObject
+import com.eclipsesource.json.ParseException
 
 import nimble.dotterel.machines.*
 import nimble.dotterel.translation.*
-import nimble.dotterel.translation.systems.IRELAND_LAYOUT
-import nimble.dotterel.translation.systems.IRELAND_SYSTEM
-import nimble.dotterel.util.BiMap
-
-val KEY_LAYOUTS = BiMap(mapOf(
-	Pair("Ireland", IRELAND_LAYOUT)
-))
-
-val SYSTEMS = BiMap(mapOf(
-	Pair("Ireland", IRELAND_SYSTEM)
-))
-
-val CODE_ASSETS = mapOf(
-	Pair("dictionaries/Numbers", NumbersDictionary())
-)
 
 val MACHINES = mapOf(
 	Pair("On Screen", OnScreenStenoMachine.Factory()),
@@ -52,6 +38,18 @@ interface DotterelRunnable
 	}
 }
 
+fun reloadSystem(sharedPreferences: SharedPreferences, system: String)
+{
+	if(system != sharedPreferences.getString("system", null))
+		return
+
+	val current = sharedPreferences.getBoolean("reloadSystem", false)
+	sharedPreferences
+		.edit()
+		.putBoolean("reloadSystem", !current)
+		.apply()
+}
+
 class Dotterel : InputMethodService(), StenoMachine.Listener
 {
 	interface EditorListener
@@ -69,12 +67,12 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 		private set
 
 	var translator = Translator(
-		IRELAND_SYSTEM,
+		NULL_SYSTEM,
 		log = { m -> Log.e("Dotterel Translation", m) })
 
-	val systemName: String get() =
-		SYSTEMS.inverted[this.translator.system]
-			?: throw IllegalStateException("System missing from systems map")
+	private val systemManager = SystemManager(
+		AndroidSystemResources(this),
+		log = { m -> Log.e("Dotterel", m) })
 
 	private val machines = mutableMapOf<String, StenoMachine>()
 
@@ -94,66 +92,61 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 			}
 		}
 
-	private fun getDictionary(path: String): Dictionary?
+	private fun loadSystem()
 	{
-		val error = { message: String ->
-			Log.e("Dotterel", message)
-			Toast.makeText(
-				this,
-				message,
-				Toast.LENGTH_LONG
-			).show()
-		}
-
-		try
-		{
-			val type = path.substringBefore("://")
-			val name = path.substringAfter("://")
-			return when(type)
-			{
-				"asset" -> JsonDictionary(this.assets.open(name))
-				"code" -> CODE_ASSETS[name] as Dictionary
-				else -> this.contentResolver.openInputStream(Uri.parse(path))
-					?.use({ JsonDictionary(it) })
-			}
-		}
-		catch(e: IOException)
-		{
-			error("IO error reading dictionary $path")
-		}
-		catch(e: SecurityException)
-		{
-			error("Permission denied reading dictionary $path")
-		}
-		catch(e: com.eclipsesource.json.ParseException)
-		{
-			error("$path is not a valid JSON dictionary")
-		}
-		catch(e: java.lang.UnsupportedOperationException)
-		{
-			error("$path is not a valid JSON dictionary")
-		}
-		catch(e: ClassCastException)
-		{
-			error("$path is not of type Dictionary")
-		}
-
-		return null
+		val system = this.preferences?.getString("system", null)
+		this.loadSystem(system)
 	}
 
-	private fun loadDictionaries()
+	fun setSystem(system: String?)
 	{
-		val key = "system/${this.systemName}/dictionaries"
-		val dictionariesPreference = this.preferences?.getString(key, null)
-			?.let({ dictionaryListFromJson(key, it) })
+		this.preferences?.edit()?.putString("system", system)?.apply()
+		this.loadSystem(system)
+	}
 
-		val dictionaries = dictionariesPreference
-			?.filter({ it.enabled })
-			?.map({ it.name })
-			?: this.translator.system.defaultDictionaries
+	private fun loadSystem(name: String?)
+	{
+		Log.i("Dotterel", "Load system $name")
 
-		this.translator.dictionary = MultiDictionary(
-			dictionaries.mapNotNull({ this.getDictionary(it) }))
+		val system = if(name == null)
+			NULL_SYSTEM
+		else
+			this.systemManager.openSystem(name) ?: return
+
+		this.translator.system = system
+		for(machine in this.machines.keys)
+			this.configureMachine(machine)
+	}
+
+	private fun configureMachine(machine: String)
+	{
+		try
+		{
+			val config = Json.parse(
+					this.preferences?.getString("machineConfig/$machine", "{}")
+				).asObject()
+			val systemConfig = this.translator.system.machineConfig[machine]
+				?.asObject()
+				?: JsonObject()
+
+			this.machines[machine]?.setConfig(
+				this.translator.system.keyLayout,
+				config,
+				systemConfig)
+		}
+		catch(e: ParseException)
+		{
+			val m = "$machine machine config has badly formed JSON"
+			Log.e("Dotterel", m)
+			Toast.makeText(this, m, Toast.LENGTH_LONG).show()
+		}
+		catch(e: IllegalArgumentException)
+		{
+			val m = ("Invalid type found while reading $machine machine"
+				+ " config for system ${this.translator.system.path}")
+			Log.e("Dotterel", m)
+			Toast.makeText(this, m, Toast.LENGTH_LONG).show()
+		}
 	}
 
 	private fun addMachine(name: String)
@@ -163,10 +156,8 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 			val machineFactory = MACHINES[name] ?: return
 			this.machines[name] = machineFactory
 				.makeStenoMachine(this)
-				.also({
-					it.keyLayout = this.translator.system.keyLayout
-					it.strokeListener = this
-				})
+				.also({ it.strokeListener = this })
+			this.configureMachine(name)
 		}
 	}
 	private fun removeMachine(name: String)
@@ -175,10 +166,6 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 		if(machine != null)
 		{
 			machine.close()
-			if(machine is EditorListener)
-				this.removeEditorListener(machine)
-			if(machine is KeyListener)
-				this.removeKeyListener(machine)
 			this.machines.remove(name)
 		}
 	}
@@ -193,34 +180,45 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 		}
 	}
 
-	private fun onPreferenceChanged(preferences: SharedPreferences, key: String)
+	private fun onPreferenceChanged(key: String)
 	{
 		when
 		{
-			key == "system/${this.systemName}/dictionaries" ->
-				this.loadDictionaries()
-			key.substring(0, "machine/".length) == "machine/" ->
-				this.loadMachines()
+			key == "system" || key == "reloadSystem" ->
+				this.loadSystem()
+			key.startsWith("machine/") ->
+			{
+				val machine = key.substring("machine/".length)
+				if(this.preferences?.getBoolean(key, false) == true)
+					this.addMachine(machine)
+				else
+					this.removeMachine(machine)
+			}
+			key.startsWith("machineConfig/") ->
+			{
+				val machine = key.substring("machineConfig/".length)
+				this.configureMachine(machine)
+			}
 		}
-
-		for(m in this.machines)
-			m.value.preferenceChanged(preferences, key)
 	}
-	private val preferenceListener = SharedPreferences.OnSharedPreferenceChangeListener({
-		preferences, key -> this.onPreferenceChanged(preferences, key) })
+	private val preferenceListener =
+		SharedPreferences.OnSharedPreferenceChangeListener({ _, key ->
+			this.onPreferenceChanged(key) })
 
 	override fun onCreate()
 	{
 		super.onCreate()
 
-		for(resource in PREFERENCE_RESOURCES)
-			PreferenceManager.setDefaultValues(this, resource, true)
+		setDefaultSettings(this)
+
 		this.preferences = PreferenceManager
 			.getDefaultSharedPreferences(this)
+		// Preference listener stored as member variable because
+		// SharedPreferences holds listeners with weak pointers.
 		this.preferences?.registerOnSharedPreferenceChangeListener(
 			this.preferenceListener)
 
-		this.loadDictionaries()
+		this.loadSystem()
 		this.loadMachines()
 	}
 

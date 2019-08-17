@@ -3,27 +3,21 @@
 
 package nimble.dotterel.translation
 
-val NULL_ORTHOGRAPHY = Orthography(listOf())
+import kotlin.math.max
 
-data class Orthography(var replacements: List<Replacement>)
+interface Orthography
 {
-	data class Replacement(val pattern: Regex, var replacement: String)
-
 	data class Result(val backspaces: Int, val text: String)
-
-	fun apply(a: String, b: String): Result?
-	{
-		// uffff is an non-character (shouldn't appear in any real unicode strings)
-		val s = a + '\uffff' + b
-		for(r in this.replacements)
-		{
-			val match = r.pattern.find(s)
-			if(match != null)
-				return Result(
-					a.length - match.range.start,
-					r.pattern.replace(s, r.replacement).substring(match.range.start))
-		}
-
-		return null
-	}
+	fun match(a: String, b: String): Result?
 }
+
+fun Orthography.apply(left: String, right: String): String? =
+	this.match(left, right)
+		?.let({ left.substring(0, max(left.length - it.backspaces, 0)) + it.text })
+
+class NullOrthography : Orthography
+{
+	override fun match(a: String, b: String): Orthography.Result? = null
+}
+
+val NULL_ORTHOGRAPHY = NullOrthography()
