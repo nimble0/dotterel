@@ -3,7 +3,9 @@
 
 package nimble.dotterel.translation
 
-import com.eclipsesource.json.JsonArray
+import com.eclipsesource.json.Json
+
+import java.io.InputStream
 
 class RegexOrthography(
 	var replacements: List<Replacement>
@@ -29,15 +31,36 @@ class RegexOrthography(
 
 	companion object
 	{
-		fun fromJson(json: JsonArray) =
-			RegexOrthography(json.map({
-				it.asObject().let({ it2 ->
-					Replacement(
-						Regex(it2.get("l").asString()
-							+ "\uffff"
-							+ it2.get("r").asString()),
-						it2.get("s").asString())
-				})
-			}))
+		fun fromJson(input: InputStream): RegexOrthography =
+			try
+			{
+				val json = input.bufferedReader()
+					.use({ Json.parse(it) })
+					.asArray()
+
+				RegexOrthography(json.map({
+					it.asObject().let({ it2 ->
+						Replacement(
+							Regex(
+								it2.get("l").asString()
+									+ "\uffff"
+									+ it2.get("r").asString(),
+								RegexOption.IGNORE_CASE),
+							it2.get("s").asString())
+					})
+				}))
+			}
+			catch(e: com.eclipsesource.json.ParseException)
+			{
+				throw FileParseException("Invalid JSON", e)
+			}
+			catch(e: java.lang.NullPointerException)
+			{
+				throw FileParseException("Missing value", e)
+			}
+			catch(e: java.lang.UnsupportedOperationException)
+			{
+				throw FileParseException("Invalid type", e)
+			}
 	}
 }

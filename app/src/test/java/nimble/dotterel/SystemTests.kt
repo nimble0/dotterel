@@ -87,7 +87,7 @@ class SystemTests : FunSpec
 		system.suffixStrokes.size shouldBe 0
 		system.aliases.size shouldBe 0
 		system.defaultFormatting shouldBe Formatting()
-		system.orthography.orthography shouldBe NULL_ORTHOGRAPHY
+		system.orthographies.orthographies.size shouldBe 0
 		system.dictionaries.dictionaries.size shouldBe 0
 		system.machineConfig["NKRO"] shouldBe null
 		system.machineConfig["On Screen"] shouldBe null
@@ -105,7 +105,7 @@ class SystemTests : FunSpec
 		system.aliases[CaseInsensitiveString("?")] shouldNotBe null
 		system.aliases[CaseInsensitiveString("!")] shouldNotBe null
 		system.defaultFormatting.space shouldBe " "
-		system.orthography.path shouldBe "asset:/orthography/english.json"
+		system.orthographies.orthographies.size shouldBe gt(0)
 		system.dictionaries.dictionaries.size shouldBe gt(0)
 		system.machineConfig["NKRO"] shouldNotBe null
 		system.machineConfig["On Screen"] shouldNotBe null
@@ -118,7 +118,8 @@ class SystemTests : FunSpec
 		system.suffixStrokes shouldBe system2.suffixStrokes
 		system.aliases shouldBe system2.aliases
 		system.defaultFormatting shouldBe system2.defaultFormatting
-		system.orthography.path shouldBe system2.orthography.path
+		(system.orthographies.orthographies.map({ Pair(it.enabled, it.path) })
+			shouldBe system2.orthographies.orthographies.map({ Pair(it.enabled, it.path) }))
 		(system.dictionaries.dictionaries.map({ Pair(it.enabled, it.path) })
 			shouldBe system2.dictionaries.dictionaries.map({ Pair(it.enabled, it.path) }))
 		system.machineConfig.json shouldBe system2.machineConfig.json
@@ -135,7 +136,7 @@ class SystemTests : FunSpec
 		system1.suffixStrokes shouldBe base.suffixStrokes
 		system1.aliases shouldBe base.aliases
 		system1.defaultFormatting shouldBe base.defaultFormatting
-		system1.orthography shouldBe base.orthography
+		system1.orthographies shouldBe base.orthographies
 		system1.dictionaries shouldBe base.dictionaries
 		system1.machineConfig["NKRO"] shouldNotBe null
 		system1.machineConfig["On Screen"] shouldNotBe null
@@ -159,7 +160,7 @@ class SystemTests : FunSpec
 		system2.suffixStrokes shouldBe suffixStrokes
 		system2.aliases shouldBe aliases
 		system2.defaultFormatting shouldBe base.defaultFormatting
-		system2.orthography shouldBe base.orthography
+		system2.orthographies shouldBe base.orthographies
 		system2.dictionaries shouldBe base.dictionaries
 		system2.machineConfig["NKRO"] shouldNotBe null
 		system2.machineConfig["On Screen"] shouldNotBe null
@@ -176,7 +177,7 @@ class SystemTests : FunSpec
 				0,
 				base.dictionaries.dictionaries.size - 1)
 		)
-		val orthography = SystemOrthography("", NULL_ORTHOGRAPHY)
+		val orthographies = SystemOrthographies(listOf())
 		val machineConfig = JsonObject().also({
 			it.set("On Screen", Json.NULL)
 			it.set("TX Bolt", JsonObject())
@@ -185,7 +186,7 @@ class SystemTests : FunSpec
 			base,
 			null,
 			NULL_SYSTEM_MANAGER,
-			orthography = orthography,
+			orthographies = orthographies,
 			dictionaries = dictionaries,
 			defaultFormatting = defaultFormatting,
 			machineConfig = machineConfig)
@@ -195,7 +196,7 @@ class SystemTests : FunSpec
 		system3.suffixStrokes shouldBe base.suffixStrokes
 		system3.aliases shouldBe base.aliases
 		system3.defaultFormatting shouldBe defaultFormatting
-		system3.orthography shouldBe orthography
+		system3.orthographies shouldBe orthographies
 		system3.dictionaries shouldBe dictionaries
 		system3.machineConfig["NKRO"] shouldNotBe null
 		system3.machineConfig["On Screen"] shouldBe null

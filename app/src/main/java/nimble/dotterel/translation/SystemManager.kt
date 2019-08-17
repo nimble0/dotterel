@@ -41,6 +41,8 @@ class SystemManager(
 
 	private var cachedDictionaries: MutableMap<String, WeakReference<Dictionary>> =
 		mutableMapOf()
+	private var cachedOrthographies: MutableMap<String, WeakReference<Orthography>> =
+		mutableMapOf()
 
 	fun openDictionary(path: String): Dictionary?
 	{
@@ -82,23 +84,37 @@ class SystemManager(
 	}
 	fun openOrthography(path: String): Orthography?
 	{
-		try
-		{
-			return this.resources.openInputStream(path)
-				?.bufferedReader()
-				?.let({ Json.parse(it).asArray() })
-				?.let({ RegexOrthography.fromJson(it) })
-		}
-		catch(e: java.lang.NullPointerException)
-		{
-			this.log("Invalid type found while reading orthography $path")
-		}
-		catch(e: java.lang.UnsupportedOperationException)
-		{
-			this.log("Invalid type found while reading orthography $path")
-		}
+		val cached = this.cachedOrthographies[path]?.get()
+		if(cached != null)
+			return cached
 
-		return null
+		return try
+		{
+			this.resources.openInputStream(path)
+				?.let({
+					when
+					{
+						path.endsWith(".regex.json") ->
+							RegexOrthography.fromJson(it)
+						path.endsWith(".simple.json") ->
+							SimpleOrthography.fromJson(it)
+						path.endsWith(".regex_wl.json") ->
+							RegexWithWordListOrthography.fromJson(it)
+						else -> null
+					}
+				})
+				?.also({ orthography: Orthography ->
+					this.cachedOrthographies = this.cachedOrthographies
+						.filterValues({ it.get() != null })
+						.toMutableMap()
+					this.cachedOrthographies[path] = WeakReference(orthography)
+				})
+		}
+		catch(e: FileParseException)
+		{
+			this.log("Error loading $path: ${e.message}")
+			null
+		}
 	}
 
 	fun openSystem(path: String): System?

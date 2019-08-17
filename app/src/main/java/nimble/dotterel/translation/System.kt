@@ -17,6 +17,7 @@ data class SystemDictionary(
 
 data class SystemOrthography(
 	val path: String,
+	val enabled: Boolean,
 	val orthography: Orthography)
 
 data class SystemDictionaries(
@@ -35,6 +36,19 @@ data class SystemDictionaries(
 			.asSequence()
 			.mapNotNull({ if(it.enabled) it.dictionary[k] else null })
 			.firstOrNull()
+}
+
+data class SystemOrthographies(
+	val orthographies: List<SystemOrthography> = listOf()
+) :
+	Orthography
+{
+	override fun match(a: String, b: String) =
+		this.orthographies
+			.filter({ it.enabled })
+			.fold<SystemOrthography, Orthography.Result?>(
+				null,
+				{ acc, it -> acc ?: it.orthography.match(a, b) })
 }
 
 class MachineConfig(
@@ -65,7 +79,7 @@ class System(
 
 	defaultFormatting: Formatting? = null,
 
-	orthography: SystemOrthography? = null,
+	orthographies: SystemOrthographies? = null,
 
 	dictionaries: SystemDictionaries? = null,
 
@@ -104,7 +118,7 @@ class System(
 			this.save()
 		}
 
-	var _orthography: SystemOrthography? = orthography
+	var _orthographies: SystemOrthographies? = orthographies
 		set(v)
 		{
 			field = v
@@ -154,11 +168,11 @@ class System(
 			?: Formatting()
 		set(v) { this._defaultFormatting = v }
 
-	var orthography: SystemOrthography
-		get() = this._orthography
-			?: this.base?.orthography
-			?: SystemOrthography("", NULL_ORTHOGRAPHY)
-		set(v) { this._orthography = v }
+	var orthographies: SystemOrthographies
+		get() = this._orthographies
+			?: this.base?.orthographies
+			?: SystemOrthographies(listOf())
+		set(v) { this._orthographies = v }
 
 	var dictionaries: SystemDictionaries
 		get() = this._dictionaries
@@ -187,7 +201,7 @@ fun System.copy(
 
 	defaultFormatting: Formatting? = this.defaultFormatting,
 
-	orthography: SystemOrthography? = this.orthography,
+	orthographies: SystemOrthographies? = this.orthographies,
 
 	dictionaries: SystemDictionaries? = this.dictionaries,
 
@@ -207,7 +221,7 @@ fun System.copy(
 
 		defaultFormatting,
 
-		orthography,
+		orthographies,
 
 		dictionaries,
 
@@ -240,7 +254,17 @@ fun System.toJson() = JsonObject().also({ system ->
 				})
 			})
 	)
-	system.setNotNull("orthography", this.orthography.path)
+	system.setNotNull(
+		"orthographies",
+		this._orthographies?.orthographies
+			?.map({ d ->
+				JsonObject().also({
+					it.set("path", d.path)
+					it.set("enabled", d.enabled)
+				})
+			})
+			?.toJson()
+	)
 	system.setNotNull(
 		"dictionaries",
 		this._dictionaries?.dictionaries
@@ -300,11 +324,18 @@ fun nimble.dotterel.translation.System.Companion.fromJson(
 						?: Formatting.TransformState.NORMAL)
 			}),
 
-		orthography = json.getOrNull("orthography")?.asString()
-			?.let({ SystemOrthography(
-				it,
-				manager.openOrthography(it) ?: NULL_ORTHOGRAPHY)
-			}),
+		orthographies = json.getOrNull("orthographies")?.asArray()
+			?.map({ it.asObject() })
+			?.mapNotNull({
+				manager.openOrthography(it.get("path").asString())
+					?.let({ orthography ->
+						SystemOrthography(
+							it.get("path").asString(),
+							it.get("enabled").asBoolean(),
+							orthography)
+					})
+			})
+			?.let({ SystemOrthographies(it) }),
 
 		dictionaries = json.getOrNull("dictionaries")?.asArray()
 			?.map({ it.asObject() })

@@ -1,0 +1,35 @@
+[
+{"l": "([aeiou]c)", "r": "ly", "s": "$1ally"},
+{"l": "(ion)", "r": "ly", "s": "$1ally"},
+{"l": "(.*ur)e", "r": "ly", "s": "$1ally"},
+
+{"l": "(t)e", "r": "(ry|ries)", "s": "$1o$2"},
+
+{"l": "([naeiou])te?", "r": "(cy|cies)", "s": "$1$2"},
+
+{"l": "(s|sh|x|z|zh)", "r": "s([^\\w]|$)", "s": "$1es$2"},
+{"l": "((?:oa|ea|i|ee|oo|au|ou|l|n|(?<![gin]a)r|t)ch)", "r": "s([^\\w]|$)", "s": "$1es$2"},
+{"l": "([bcdfghjklmnpqrstvwxz])y", "r": "s([^\\w]|$)", "s": "$1ies$2"},
+
+{"l": "(\\w)ie", "r": "ing", "s": "$1ying"},
+{"l": "(\\w[cdfghlmnpr])y", "r": "ist", "s": "$1ist"},
+{"l": "(\\w[bcdfghjklmnpqrstvwxz])y", "r": "([abcdefghjklnopqrstuxz])", "s": "$1i$2"},
+
+{"l": "(\\w[^aeiou]it)", "r": "er(s?)", "s": "$1or$2"},
+{"l": "(\\wct)", "r": "er(s?)", "s": "$1or$2"},
+{"l": "(\\w[^aeiou]is)e", "r": "er(s?)", "s": "$1or$2"},
+{"l": "(\\w[aeiou][bcdfghjklmnprstvwxyz]+at)e", "r": "er(s?)", "s": "$1or$2"},
+
+{"l": "(\\w[bcdfghjklmnpqrstuvwxz])e", "r": "([aeoy])", "s": "$1$2"},
+{"l": "(\\w[bcdfghjklmnpqrstuvwxz])e", "r": "([aeiouy]\\w)", "s": "$1$2"},
+
+{"l": "([aoieuy](?:pod|log))", "r": "([aoieuy])", "s": "$1$2"},
+{"l": "((?:[bcdfghjklmnprstvwxyz]|qu)[ae]l)", "r": "y", "s": "$1ly"},
+{"l": "((?:^|\\W)(?:[bcdfghjklmnprstvwxyz]+|[bcdfghjklmnprstvwxyz]*qu)[aeiou])([bdfgklmnprstz])", "r": "(ed|en|er|ier|est|ing|y|ie|ies|iest|iness|ish|abl[ey]|ability|abilities)", "s": "$1$2$2$3"},
+
+{"l": "((?:[bcdfghjklmnprstvwxyz]|qu)a)([gbmptv])", "r": "(ed|en|er|ier|est|ing|y|ie|ies|iest|iness|ish|abl[ey]|ability|abilities)", "s": "$1$2$2$3"},
+{"l": "((?:[bcdfghjklmnprstvwxyz]|qu)e)([gbpv])", "r": "(ed|en|er|ier|est|ing|y|ie|ies|iest|iness|ish|abl[ey]|ability|abilities)", "s": "$1$2$2$3"},
+{"l": "((?:[bcdfghjklmnprstvwxyz]|qu)i)([gbmpv])", "r": "(ed|en|er|ier|est|ing|y|ie|ies|iest|iness|ish|abl[ey]|ability|abilities)", "s": "$1$2$2$3"},
+{"l": "((?:[bcdfghjklmnprstvwxyz]|qu)o)([gbdlv])", "r": "(ed|en|er|ier|est|ing|y|ie|ies|iest|iness|ish|abl[ey]|ability|abilities)", "s": "$1$2$2$3"},
+{"l": "([bcdfghjklmnprstvwxyz]u)([gbdlmntv])", "r": "(ed|en|er|ier|est|ing|y|ie|ies|iest|iness|ish|abl[ey]|ability|abilities)", "s": "$1$2$2$3"}
+]
