@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This file is part of Dotterel which is released under GPL-2.0-or-later. -->
+<!-- See file <LICENSE.txt> or go to <http://www.gnu.org/licenses/> for full license details. -->
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto">
+
+	<group
+		android:id="@+id/select_root"
+		app:showAsAction="always"
+		android:title="@string/asset_browser_select_root"
+		android:icon="@android:drawable/ic_menu_more"/>
+
+</menu>

@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
 
 import androidx.core.app.NotificationCompat
@@ -19,12 +20,18 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
+import nimble.dotterel.translation.SystemManager
+
 private const val LOG_FILE_NAME = "log"
 private const val MAX_LOG_FILES = 10
 
 @Suppress("UNUSED")
 class DotterelApplication : Application()
 {
+	val systemManager = SystemManager(
+		AndroidSystemResources(this),
+		log = { m -> Log.e("Dotterel", m) })
+
 	override fun onCreate()
 	{
 		super.onCreate()

@@ -70,10 +70,6 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 		NULL_SYSTEM,
 		log = { m -> Log.e("Dotterel Translation", m) })
 
-	private val systemManager = SystemManager(
-		AndroidSystemResources(this),
-		log = { m -> Log.e("Dotterel", m) })
-
 	private val machines = mutableMapOf<String, StenoMachine>()
 
 	private var viewCreated = false
@@ -111,7 +107,10 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 		val system = if(name == null)
 			NULL_SYSTEM
 		else
-			this.systemManager.openSystem(name) ?: return
+			(this.application as DotterelApplication)
+				.systemManager
+				.openSystem(name)
+				?: return
 
 		this.translator.system = system
 		for(machine in this.machines.keys)

@@ -16,6 +16,8 @@
 	<string name="yes">Yes</string>
 	<string name="no">No</string>
 
+	<string name="asset_browser_select_root">Select root</string>
+
 	<string name="input_method_disabled_alert">Dotterel must be enabled as an keyboard before it can be used.\n\nGo to keyboard settings screen?</string>
 
 	<string name="pref_active_system">Active system</string>
@@ -23,6 +25,7 @@
 	<string name="pref_root">Settings</string>
 
 	<string name="pref_dictionaries">Dictionaries</string>
+	<string name="pref_dictionaries_add_asset_dictionary">Add asset</string>
 
 	<string name="pref_systems">Systems</string>
 	<string name="pref_systems_active_system_item">%1$s (active)</string>
