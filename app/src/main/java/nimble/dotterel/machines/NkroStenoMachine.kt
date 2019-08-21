@@ -3,6 +3,7 @@
 
 package nimble.dotterel.machines
 
+import android.content.Context
 import android.view.KeyEvent
 
 import com.eclipsesource.json.JsonObject
@@ -26,7 +27,8 @@ class NkroStenoMachine(private val app: Dotterel) :
 
 	class Factory : StenoMachine.Factory
 	{
-		override fun makeStenoMachine(app: Dotterel) = NkroStenoMachine(app)
+		override fun availableMachines(context: Context): List<String> = listOf("")
+		override fun makeStenoMachine(app: Dotterel, id: String) = NkroStenoMachine(app)
 	}
 
 	init
@@ -46,7 +48,7 @@ class NkroStenoMachine(private val app: Dotterel) :
 
 			this.strokeOnFirstUp = config.get("strokeOnFirstUp")?.asBoolean() ?: false
 
-			val mapping = systemConfig
+			val mapping = systemConfig["NKRO"]!!.asObject()
 				.get("layout").asObject()
 				.mapValues({ it.value.asArray().map({ key -> key.asString() }) })
 

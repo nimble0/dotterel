@@ -74,5 +74,45 @@
 		<item>Swipe</item>
 	</string-array>
 
+	<string name="pref_machines_serial_baudrate">Baudrate</string>
+	<string name="pref_machines_serial_data_bits">Data bits</string>
+	<string name="pref_machines_serial_stop_bits">Stop bits</string>
+	<string name="pref_machines_serial_parity">Parity</string>
+	<string name="pref_machines_serial_flow_control">Flow control</string>
+	<string name="pref_machines_serial_protocol">Protocol</string>
+
+	<string-array name="serial_data_bits">
+		<item>5</item>
+		<item>6</item>
+		<item>7</item>
+		<item>8</item>
+	</string-array>
+
+	<string-array name="serial_stop_bits">
+		<item>1</item>
+		<item>1.5</item>
+		<item>2</item>
+	</string-array>
+
+	<string-array name="serial_parity">
+		<item>None</item>
+		<item>Odd</item>
+		<item>Even</item>
+		<item>Mark</item>
+		<item>Space</item>
+	</string-array>
+
+	<string-array name="serial_flow_control">
+		<item>Off</item>
+		<item>RTS/CTS</item>
+		<item>DSR/DTR</item>
+		<item>XOn/XOff</item>
+	</string-array>
+
+	<string-array name="serial_protocol">
+		<item>TxBolt</item>
+		<item>GeminiPr</item>
+	</string-array>
+
 	<string-array name="empty" />
 </resources>

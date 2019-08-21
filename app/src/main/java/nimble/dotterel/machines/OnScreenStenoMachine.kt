@@ -36,7 +36,8 @@ class OnScreenStenoMachine(private val app: Dotterel) :
 
 	class Factory : StenoMachine.Factory
 	{
-		override fun makeStenoMachine(app: Dotterel) = OnScreenStenoMachine(app)
+		override fun availableMachines(context: Context): List<String> = listOf("")
+		override fun makeStenoMachine(app: Dotterel, id: String) = OnScreenStenoMachine(app)
 	}
 
 	override fun setConfig(
@@ -49,7 +50,8 @@ class OnScreenStenoMachine(private val app: Dotterel) :
 			this.keyLayout = keyLayout
 
 			val style = config.getString("style", null)!!
-			val styleConfig = systemConfig.get(listOf("styles", style))?.asObject()
+			val styleConfig = systemConfig["On Screen"]
+				.get(listOf("styles", style))?.asObject()
 				?: JsonObject()
 			val viewLayout = styleConfig.getString("viewLayout", null)
 

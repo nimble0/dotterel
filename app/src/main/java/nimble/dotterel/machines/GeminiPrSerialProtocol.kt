@@ -3,6 +3,8 @@
 
 package nimble.dotterel.machines
 
+import nimble.dotterel.util.toUnsignedInt
+
 private const val BYTES_PER_STROKE = 6
 
 class GeminiPrSerialProtocol(socket: SerialSocket) : StenoSerialProtocol(socket)

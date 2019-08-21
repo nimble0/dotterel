@@ -3,27 +3,41 @@
 
 package nimble.dotterel.machines
 
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbDeviceConnection
 import android.hardware.usb.UsbManager
 import android.os.Build
+import android.util.Log
+import android.widget.Toast
 
+import com.eclipsesource.json.Json
 import com.eclipsesource.json.JsonObject
-import nimble.dotterel.Dotterel
 
 import java.io.Closeable
 
+import nimble.dotterel.Dotterel
 import nimble.dotterel.StenoMachine
 import nimble.dotterel.translation.KeyLayout
 import nimble.dotterel.translation.KeyMap
 import nimble.dotterel.translation.Stroke
 
 val UsbDevice.id: String
-	get() = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-			this.serialNumber ?: ""
-		else
-			"${this.vendorId}:${this.productId}"
+	get() = when
+	{
+		Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ->
+			"${this.manufacturerName} ${this.productName} ${this.version}" +
+				" (${this.vendorId.toString(16)}:${this.productId.toString(16)})" +
+				" : ${this.serialNumber}"
+		Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ->
+			"${this.manufacturerName} ${this.productName}" +
+				" (${this.vendorId.toString(16)}:${this.productId.toString(16)})" +
+				" : ${this.serialNumber}"
+		else ->
+			"ID ${this.vendorId.toString(16)}:0x${this.productId.toString(16)}"
+	}
 
 val SERIAL_LIBRARIES = mapOf(
 	Pair("felHr", { device: UsbDevice, connection: UsbDeviceConnection -> FelHrSerialSocket(device, connection) })
@@ -39,14 +53,24 @@ enum class DataBits
 	_5,
 	_6,
 	_7,
-	_8
+	_8;
+
+	companion object
+	{
+		fun valueOf2(s: String) = DataBits.valueOf("_$s")
+	}
 }
 
 enum class StopBits
 {
 	_1,
 	_1_5,
-	_2
+	_2;
+
+	companion object
+	{
+		fun valueOf2(s: String) = StopBits.valueOf("_${s.replace(".", "_")}")
+	}
 }
 
 enum class Parity
@@ -55,7 +79,12 @@ enum class Parity
 	ODD,
 	EVEN,
 	MARK,
-	SPACE
+	SPACE;
+
+	companion object
+	{
+		fun valueOf2(s: String) = Parity.valueOf(s.toUpperCase())
+	}
 }
 
 enum class FlowControl
@@ -63,14 +92,29 @@ enum class FlowControl
 	OFF,
 	RTS_CTS,
 	DSR_DTR,
-	XON_XOFF
+	XON_XOFF;
+
+	companion object
+	{
+		fun valueOf2(s: String) = FlowControl.valueOf(s.replace("/", "_").toUpperCase())
+	}
 }
 
-class SerialStenoMachine : StenoMachine
-{
-	val id: String = "Serial"
+private val DEFAULT_SERIAL_CONFIG = Json.parse("""{
+	"library": "felHr",
+	"protocol": "TxBolt"
+}""").asObject()
 
-	private var usbManager: UsbManager? = null
+private const val ACTION_USB_PERMISSION = "nimble.dotterel.USB_PERMISSION"
+
+class SerialStenoMachine(
+	private val app: Dotterel,
+	val id: String
+) :
+	StenoMachine,
+	Dotterel.IntentListener
+{
+	private val usbManager: UsbManager = this.app.getSystemService(Context.USB_SERVICE) as UsbManager
 	private var device: UsbDevice? = null
 
 	private var socket: SerialSocket? = null
@@ -78,35 +122,62 @@ class SerialStenoMachine : StenoMachine
 
 	class Factory : StenoMachine.Factory
 	{
-		fun availableMachines(app: Dotterel): List<String>
-		{
-			val usbManager = app.getSystemService(Context.USB_SERVICE) as UsbManager
-
-			usbManager.deviceList.keys
-		}
-		override fun makeStenoMachine(app: Dotterel) = NkroStenoMachine(app)
+		override fun availableMachines(context: Context): List<String> =
+			(context.getSystemService(Context.USB_SERVICE) as UsbManager)
+				.deviceList
+				.values
+				.map({ it.id })
+		override fun makeStenoMachine(app: Dotterel, id: String) = SerialStenoMachine(app, id)
 	}
 
-	override fun setConfig(keyLayout: KeyLayout, config: JsonObject, systemConfig: JsonObject)
+	override fun setConfig(
+		keyLayout: KeyLayout,
+		config: JsonObject,
+		systemConfig: JsonObject)
 	{
-		@Suppress("NAME_SHADOWING")
-		val config = config.get(this.id).asObject()
+		try
+		{
+			@Suppress("NAME_SHADOWING")
+			val config = config.get(this.id)?.asObject() ?: JsonObject()
 
-		this.device = this.usbManager?.deviceList?.values?.find({ it.id == this.id })
-		this.socket = SERIAL_LIBRARIES[config.get("library").asString()]
-			?.invoke(
-				this.device!!,
-				this.usbManager?.openDevice(this.device!!)!!)
-			?.also({
-				it.baudRate = config.get("baudRate").asInt()
-				it.dataBits = DataBits.valueOf("_" + config.get("dataBits").asString())
-				it.stopBits = StopBits.valueOf("_" + config.get("stopBits").asString())
-				it.parity = Parity.valueOf(config.get("parity").asString())
-				it.flowControl = FlowControl.valueOf(config.get("flowControl").asString())
-			})
+			val device = this.usbManager.deviceList?.values?.find({ it.id == this.id })!!
+			this.device = device
+			if(!this.usbManager.hasPermission(device))
+			{
+				this.requestUserPermission()
+				return
+			}
+			else
+				Log.i("Dotterel", "USB device access permission granted for ${this.id}")
 
-		this.protocol = PROTOCOLS[config.get("protocol").asString()]?.invoke(this.socket!!)
-			?.also({ it.keyLayout = keyLayout })
+			this.socket = SERIAL_LIBRARIES[config.get("library")?.asString() ?: DEFAULT_SERIAL_CONFIG.get("library").asString()]
+				?.invoke(
+					this.device!!,
+					this.usbManager.openDevice(device)!!)
+				?.also({ socket ->
+					config.get("baudRate")?.also({ v -> socket.baudRate = v.asInt() })
+					config.get("dataBits")?.also({ v -> socket.dataBits = DataBits.valueOf2(v.asString()) })
+					config.get("stopBits")?.also({ v -> socket.stopBits = StopBits.valueOf2(v.asString()) })
+					config.get("parity")?.also({ v -> socket.parity = Parity.valueOf2(v.asString()) })
+					config.get("flowControl")?.also({ v -> socket.flowControl = FlowControl.valueOf2(v.asString()) })
+				})
+
+			this.protocol = PROTOCOLS[config.get("protocol")?.asString() ?: DEFAULT_SERIAL_CONFIG.get("protocol").asString()]
+				?.invoke(this.socket!!)
+				?.also({
+					it.keyLayout = keyLayout
+					it.strokeListener = this.strokeListener
+				})
+			this.socket?.protocol = this.protocol
+		}
+		catch(e: java.lang.NullPointerException)
+		{
+			throw IllegalArgumentException(e)
+		}
+		catch(e: java.lang.UnsupportedOperationException)
+		{
+			throw IllegalArgumentException(e)
+		}
 	}
 
 	override var strokeListener: StenoMachine.Listener? = null
@@ -119,6 +190,37 @@ class SerialStenoMachine : StenoMachine
 	override fun close()
 	{
 		this.socket?.close()
+	}
+
+	private fun requestUserPermission()
+	{
+		Log.i("Dotterel", "Requesting USB device access permission for ${this.id}")
+
+		this.app.addIntentListener(ACTION_USB_PERMISSION, this)
+		val pendingIntent = PendingIntent.getBroadcast(
+			this.app,
+			0,
+			Intent(ACTION_USB_PERMISSION),
+			0)
+		this.usbManager.requestPermission(this.device, pendingIntent)
+	}
+
+	override fun onIntent(context: Context, intent: Intent)
+	{
+		when(intent.action)
+		{
+			ACTION_USB_PERMISSION ->
+			{
+				if(intent.extras?.getBoolean(UsbManager.EXTRA_PERMISSION_GRANTED) == true)
+					this.app.configureMachine(Pair("Serial", this.id))
+				else
+				{
+					val m = "USB device access permission not granted for ${this.id}"
+					Log.e("Dotterel", m)
+					Toast.makeText(this.app, m, Toast.LENGTH_LONG).show()
+				}
+			}
+		}
 	}
 }
 
@@ -155,7 +257,7 @@ interface SerialSocket : Closeable
 	var parity: Parity
 	var flowControl: FlowControl
 
-	val protocol: SerialProtocol?
+	var protocol: SerialProtocol?
 
 	fun send(data: ByteArray)
 	override fun close()

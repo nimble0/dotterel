@@ -3,8 +3,8 @@
 
 package nimble.dotterel
 
-import android.content.Intent
-import android.content.SharedPreferences
+import android.content.*
+import android.hardware.usb.UsbManager
 import android.inputmethodservice.InputMethodService
 import android.net.Uri
 import android.os.Build
@@ -30,11 +30,23 @@ import nimble.dotterel.stenoAppliers.DefaultStenoApplier
 import nimble.dotterel.stenoAppliers.RawStenoStenoApplier
 import nimble.dotterel.translation.*
 
-val MACHINES = mapOf(
+val MACHINE_FACTORIES = mapOf(
 	Pair("On Screen", OnScreenStenoMachine.Factory()),
 	Pair("NKRO", NkroStenoMachine.Factory()),
 	Pair("Serial", SerialStenoMachine.Factory())
 )
+
+fun combineNameId(name: String, id: String) =
+	(name.replace("/", "\\/")
+		+ if(id != "") ("/" + id.replace("/", "\\/")) else "")
+
+fun combineNameId(nameId: Pair<String, String>) =
+	combineNameId(nameId.first, nameId.second)
+
+fun splitNameId(nameId: String) =
+	nameId.split(Regex("(?<!\\\\)/"))
+		.map({ it.replace("\\/", "/") })
+		.let({ Pair(it[0], if(it.size > 1) it[1] else "") })
 
 interface DotterelRunnable
 {
@@ -83,6 +95,11 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 		fun onUpdateSelection(old: IntRange, new: IntRange)
 	}
 
+	interface IntentListener
+	{
+		fun onIntent(context: Context, intent: Intent)
+	}
+
 	var preferences: SharedPreferences? = null
 		private set
 
@@ -100,7 +117,7 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 		DefaultStenoApplier()
 	)
 
-	private val machines = mutableMapOf<String, StenoMachine>()
+	private val machines = mutableMapOf<Pair<String, String>, StenoMachine>()
 
 	private var viewCreated = false
 	var view: View? = null
@@ -147,66 +164,68 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 			this.configureMachine(machine)
 	}
 
-	private fun configureMachine(machine: String)
+	fun configureMachine(nameId: Pair<String, String>)
 	{
 		try
 		{
 			val config = Json.parse(
-					this.preferences?.getString("machineConfig/$machine", "{}")
+					this.preferences?.getString("machineConfig/${nameId.first}", "{}")
 				).asObject()
-			val systemConfig = this.translator.system.machineConfig[machine]
-				?.asObject()
-				?: JsonObject()
 
-			this.machines[machine]?.setConfig(
+			this.machines[nameId]?.setConfig(
 				this.translator.system.keyLayout,
 				config,
-				systemConfig)
+				this.translator.system.machineConfig)
 		}
 		catch(e: ParseException)
 		{
-			val m = "$machine machine config has badly formed JSON"
+			val m = "$nameId machine config has badly formed JSON"
 			Log.e("Dotterel", m)
 			Toast.makeText(this, m, Toast.LENGTH_LONG).show()
 		}
 		catch(e: IllegalArgumentException)
 		{
-			val m = ("Invalid type found while reading $machine machine"
+			val m = ("Invalid type found while reading $nameId machine"
 				+ " config for system ${this.translator.system.path}")
 			Log.e("Dotterel", m)
 			Toast.makeText(this, m, Toast.LENGTH_LONG).show()
 		}
 	}
 
-	private fun addMachine(name: String)
+	private fun addMachine(nameId: Pair<String, String>)
 	{
-		if(name !in this.machines)
+		Log.i("Dotterel", "Loading machine $nameId")
+		if(nameId !in this.machines)
 		{
-			val machineFactory = MACHINES[name] ?: return
-			this.machines[name] = machineFactory
-				.makeStenoMachine(this)
+			val machineFactory = MACHINE_FACTORIES[nameId.first] ?: return
+			this.machines[nameId] = machineFactory
+				.makeStenoMachine(this, nameId.second)
 				.also({ it.strokeListener = this })
-			this.configureMachine(name)
+			this.configureMachine(nameId)
 		}
 	}
-	private fun removeMachine(name: String)
+	private fun removeMachine(nameId: Pair<String, String>)
 	{
-		val machine = this.machines[name]
+		Log.i("Dotterel", "Unloading machine $nameId")
+		val machine = this.machines[nameId]
 		if(machine != null)
 		{
 			machine.close()
-			this.machines.remove(name)
+			this.machines.remove(nameId)
 		}
 	}
 	private fun loadMachines()
 	{
-		for(m in MACHINES)
-		{
-			if(this.preferences?.getBoolean("machine/${m.key}", false) == true)
-				this.addMachine(m.key)
-			else
-				this.removeMachine(m.key)
-		}
+		for(factory in MACHINE_FACTORIES)
+			for(id in factory.value.availableMachines(this))
+			{
+				val nameId = Pair(factory.key, id)
+
+				if(this.preferences?.getBoolean("machine/${combineNameId(nameId)}", false) == true)
+					this.addMachine(nameId)
+				else
+					this.removeMachine(nameId)
+			}
 	}
 
 	private fun onPreferenceChanged(key: String)
@@ -217,16 +236,16 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 				this.loadSystem()
 			key.startsWith("machine/") ->
 			{
-				val machine = key.substring("machine/".length)
+				val nameId = splitNameId(key.substring("machine/".length))
 				if(this.preferences?.getBoolean(key, false) == true)
-					this.addMachine(machine)
+					this.addMachine(nameId)
 				else
-					this.removeMachine(machine)
+					this.removeMachine(nameId)
 			}
 			key.startsWith("machineConfig/") ->
 			{
-				val machine = key.substring("machineConfig/".length)
-				this.configureMachine(machine)
+				val nameId = splitNameId(key.substring("machineConfig/".length))
+				this.configureMachine(nameId)
 			}
 		}
 	}
@@ -248,6 +267,7 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 		// SharedPreferences holds listeners with weak pointers.
 		this.preferences?.registerOnSharedPreferenceChangeListener(
 			this.preferenceListener)
+		this.registerReceiver(this.broadcastReceiver, IntentFilter())
 
 		this.loadSystem()
 		this.loadMachines()
@@ -380,4 +400,37 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 			l.onUpdateSelection(old, new)
 	}
 	private val inputStateListeners = mutableListOf<InputStateListener>(ContextSwitcher(this))
+
+	private val broadcastReceiver = object : BroadcastReceiver()
+	{
+		val intentListeners: MutableMap<String, MutableSet<IntentListener>> = mutableMapOf()
+
+		override fun onReceive(context: Context, intent: Intent)
+		{
+			val action = intent.action ?: return
+			this.intentListeners[action]?.forEach({ it.onIntent(context, intent) })
+		}
+	}
+	private fun registerBroadcastReceiver()
+	{
+		this.unregisterReceiver(this.broadcastReceiver)
+		this.registerReceiver(
+			this.broadcastReceiver,
+			IntentFilter().also({
+				for(a in this.broadcastReceiver.intentListeners)
+					it.addAction(a.key)
+			}))
+	}
+	fun addIntentListener(action: String, listener: IntentListener)
+	{
+		this.broadcastReceiver.intentListeners
+			.getOrPut(action, { mutableSetOf() })
+			.add(listener)
+		this.registerBroadcastReceiver()
+	}
+	fun removeIntentListener(action: String, listener: IntentListener)
+	{
+		this.broadcastReceiver.intentListeners[action]?.remove(listener)
+		this.registerBroadcastReceiver()
+	}
 }

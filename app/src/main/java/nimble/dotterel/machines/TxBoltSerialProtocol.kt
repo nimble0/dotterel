@@ -3,6 +3,8 @@
 
 package nimble.dotterel.machines
 
+import nimble.dotterel.util.toUnsignedInt
+
 class TxBoltSerialProtocol(socket: SerialSocket) : StenoSerialProtocol(socket)
 {
 	override val keys = listOf(

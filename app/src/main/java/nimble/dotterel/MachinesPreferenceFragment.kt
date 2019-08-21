@@ -21,13 +21,30 @@ class MachinesPreferenceFragment : PreferenceFragmentCompat()
 
 		val machinesCategory = this.preferenceScreen
 			.findPreference<PreferenceCategory>("machines")!!
-		for(m in MACHINES)
+
+		for(factory in MACHINE_FACTORIES)
+			for(id in factory.value.availableMachines(this.requireContext()))
+			{
+				val nameId = Pair(factory.key, id)
+
+				val enabled = SwitchPreference(this.preferenceScreen.context)
+				enabled.title = combineNameId(nameId)
+				enabled.key = "machine/${combineNameId(nameId)}"
+				enabled.setDefaultValue(false)
+				machinesCategory.addPreference(enabled)
+			}
+
+		for(id in MACHINE_FACTORIES["Serial"]!!.availableMachines(this.requireContext()))
 		{
-			val enabled = SwitchPreference(this.preferenceScreen.context)
-			enabled.key = "machine/${m.key}"
-			enabled.title = m.key
-			enabled.setDefaultValue(false)
-			machinesCategory.addPreference(enabled)
+			this.addPreferencesFromResource(R.xml.pref_serial_machine)
+			this.findPreference<Preference>("serial_machine")!!.also({
+				it.title = combineNameId("Serial", id)
+
+				for(p in it.flatten())
+				{
+					p.extras.putString("key", "$id/" + p.extras.getString("key"))
+				}
+			})
 		}
 
 		this.preferenceScreen

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This file is part of Dotterel which is released under GPL-2.0-or-later. -->
+<!-- See file <LICENSE.txt> or go to <http://www.gnu.org/licenses/> for full license details. -->
+
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+	<PreferenceCategory
+		android:key="serial_machine">
+
+		<EditTextPreference
+			android:title="@string/pref_machines_serial_baudrate">
+			<extra android:name="store_type" android:value="json_preference" />
+			<extra android:name="store_path" android:value="machineConfig/Serial" />
+			<extra android:name="key" android:value="baudrate" />
+		</EditTextPreference>
+
+		<ListPreference
+			android:title="@string/pref_machines_serial_data_bits"
+			android:entries="@array/serial_data_bits"
+			android:entryValues="@array/serial_data_bits">
+			<extra android:name="store_type" android:value="json_preference" />
+			<extra android:name="store_path" android:value="machineConfig/Serial" />
+			<extra android:name="key" android:value="dataBits" />
+		</ListPreference>
+
+		<ListPreference
+			android:title="@string/pref_machines_serial_stop_bits"
+			android:entries="@array/serial_stop_bits"
+			android:entryValues="@array/serial_stop_bits">
+			<extra android:name="store_type" android:value="json_preference" />
+			<extra android:name="store_path" android:value="machineConfig/Serial" />
+			<extra android:name="key" android:value="stopBits" />
+		</ListPreference>
+
+		<ListPreference
+			android:title="@string/pref_machines_serial_parity"
+			android:entries="@array/serial_parity"
+			android:entryValues="@array/serial_parity">
+			<extra android:name="store_type" android:value="json_preference" />
+			<extra android:name="store_path" android:value="machineConfig/Serial" />
+			<extra android:name="key" android:value="parity" />
+		</ListPreference>
+
+		<ListPreference
+			android:title="@string/pref_machines_serial_flow_control"
+			android:entries="@array/serial_flow_control"
+			android:entryValues="@array/serial_flow_control">
+			<extra android:name="store_type" android:value="json_preference" />
+			<extra android:name="store_path" android:value="machineConfig/Serial" />
+			<extra android:name="key" android:value="flowControl" />
+		</ListPreference>
+
+		<ListPreference
+			android:title="@string/pref_machines_serial_protocol"
+			android:entries="@array/serial_protocol"
+			android:entryValues="@array/serial_protocol">
+			<extra android:name="store_type" android:value="json_preference" />
+			<extra android:name="store_path" android:value="machineConfig/Serial" />
+			<extra android:name="key" android:value="protocol" />
+		</ListPreference>
+
+		<!--<nimble.dotterel.KeyMapPreference-->
+			<!--android:key="layout"-->
+			<!--android:title="@string/pref_machines_serial_key_map">-->
+			<!--<extra android:name="type" android:value="system" />-->
+			<!--<extra android:name="store_type" android:value="json_file" />-->
+		<!--</nimble.dotterel.KeyMapPreference>-->
+
+	</PreferenceCategory>
+
+</androidx.preference.PreferenceScreen>

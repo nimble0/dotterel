@@ -3,6 +3,8 @@
 
 package nimble.dotterel
 
+import android.content.Context
+
 import com.eclipsesource.json.JsonObject
 
 import java.io.Closeable
@@ -14,7 +16,8 @@ interface StenoMachine : Closeable
 {
 	interface Factory
 	{
-		fun makeStenoMachine(app: Dotterel): StenoMachine
+		fun availableMachines(context: Context): List<String>
+		fun makeStenoMachine(app: Dotterel, id: String): StenoMachine
 	}
 
 	interface Listener
