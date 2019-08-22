@@ -8,7 +8,7 @@ android {
 	compileSdkVersion 28
 	defaultConfig {
 		applicationId "nimble.dotterel"
-		minSdkVersion 16
+		minSdkVersion 17
 		targetSdkVersion 28
 		versionCode 5
 		versionName "0.3.0-dev"
@@ -41,6 +41,7 @@ dependencies {
 	implementation 'androidx.preference:preference:1.1.0'
 	implementation 'com.eclipsesource.minimal-json:minimal-json:0.9.5'
 	implementation 'com.github.felHR85:UsbSerial:6.0.6'
+	implementation 'com.github.kai-morich:usb-serial-for-android:1.7.0'
 	testImplementation 'io.kotlintest:kotlintest:2.0.7'
 	androidTestImplementation 'androidx.test:runner:1.2.0'
 	androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'

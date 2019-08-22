@@ -273,6 +273,12 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 		this.loadMachines()
 	}
 
+	override fun onDestroy()
+	{
+		this.unregisterReceiver(this.broadcastReceiver)
+		super.onDestroy()
+	}
+
 	override fun onCreateInputView(): View?
 	{
 		this.viewCreated = true

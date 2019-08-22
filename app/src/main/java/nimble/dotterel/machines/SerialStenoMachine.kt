@@ -20,9 +20,11 @@ import java.io.Closeable
 
 import nimble.dotterel.Dotterel
 import nimble.dotterel.StenoMachine
+import nimble.dotterel.stringToKeyCode
 import nimble.dotterel.translation.KeyLayout
 import nimble.dotterel.translation.KeyMap
 import nimble.dotterel.translation.Stroke
+import nimble.dotterel.util.mapValues
 
 val UsbDevice.id: String
 	get() = when
@@ -39,14 +41,25 @@ val UsbDevice.id: String
 			"ID ${this.vendorId.toString(16)}:0x${this.productId.toString(16)}"
 	}
 
-val SERIAL_LIBRARIES = mapOf(
-	Pair("felHr", { device: UsbDevice, connection: UsbDeviceConnection -> FelHrSerialSocket(device, connection) })
+val SERIAL_LIBRARIES = mapOf<String, (UsbDevice, UsbDeviceConnection) -> SerialSocket>(
+	Pair(
+		"felHr",
+		{ device: UsbDevice, connection: UsbDeviceConnection ->
+			FelHrSerialSocket(device, connection)
+		}),
+	Pair(
+		"usb-serial-for-android",
+		{ device: UsbDevice, connection: UsbDeviceConnection ->
+			UsbForAndroidSerialSocket(device, connection)
+		})
 )
 
 val PROTOCOLS = mapOf<String, (SerialSocket) -> StenoSerialProtocol>(
 	Pair("TxBolt", { socket: SerialSocket -> TxBoltSerialProtocol(socket) }),
 	Pair("GeminiPr", { socket: SerialSocket -> GeminiPrSerialProtocol(socket) })
 )
+
+val BAUDRATE_DEFAULT = 9200
 
 enum class DataBits
 {
@@ -57,6 +70,7 @@ enum class DataBits
 
 	companion object
 	{
+		val DEFAULT = _8
 		fun valueOf2(s: String) = DataBits.valueOf("_$s")
 	}
 }
@@ -69,6 +83,7 @@ enum class StopBits
 
 	companion object
 	{
+		val DEFAULT = _1
 		fun valueOf2(s: String) = StopBits.valueOf("_${s.replace(".", "_")}")
 	}
 }
@@ -83,6 +98,7 @@ enum class Parity
 
 	companion object
 	{
+		val DEFAULT = NONE
 		fun valueOf2(s: String) = Parity.valueOf(s.toUpperCase())
 	}
 }
@@ -96,12 +112,13 @@ enum class FlowControl
 
 	companion object
 	{
+		val DEFAULT = OFF
 		fun valueOf2(s: String) = FlowControl.valueOf(s.replace("/", "_").toUpperCase())
 	}
 }
 
 private val DEFAULT_SERIAL_CONFIG = Json.parse("""{
-	"library": "felHr",
+	"library": "usb-serial-for-android",
 	"protocol": "TxBolt"
 }""").asObject()
 
@@ -162,11 +179,25 @@ class SerialStenoMachine(
 					config.get("flowControl")?.also({ v -> socket.flowControl = FlowControl.valueOf2(v.asString()) })
 				})
 
+			val mapping = systemConfig["TxBolt"]!!.asObject()
+				.get("layout").asObject()
+				.mapValues({ it.value.asArray().map({ key -> key.asString() }) })
+
 			this.protocol = PROTOCOLS[config.get("protocol")?.asString() ?: DEFAULT_SERIAL_CONFIG.get("protocol").asString()]
 				?.invoke(this.socket!!)
-				?.also({
-					it.keyLayout = keyLayout
-					it.strokeListener = this.strokeListener
+				?.also({ protocol ->
+					protocol.keyLayout = keyLayout
+					protocol.keyMap = KeyMap(
+						keyLayout,
+						mapping,
+						{
+							val b = protocol.keys.indexOf(it)
+							if(b == -1)
+								null
+							else
+								b
+						})
+					protocol.strokeListener = this.strokeListener
 				})
 			this.socket?.protocol = this.protocol
 		}
@@ -230,16 +261,17 @@ abstract class StenoSerialProtocol(override val socket: SerialSocket) : SerialPr
 
 	var strokeListener: StenoMachine.Listener? = null
 	var keyLayout: KeyLayout = KeyLayout("")
-
-	private var keyMap: KeyMap<Int> = KeyMap(KeyLayout(""), mapOf(), { 0 })
+	var keyMap: KeyMap<Int> = KeyMap(KeyLayout(""), mapOf(), { 0 })
 
 	private fun keysToStroke(keys: Long): Stroke =
-		(0 until MAX_KEYS).fold(Stroke(this.keyLayout, 0L), { acc, it ->
-			if(keys or (1L shl it) != 0L)
-				acc + this.keyMap.parse(it)
-			else
-				acc
-		})
+		(0 until this.keys.size).fold(
+			Stroke(this.keyLayout, 0L),
+			{ acc, it ->
+				if(keys and (1L shl it) != 0L)
+					acc + this.keyMap.parse(it)
+				else
+					acc
+			})
 
 	fun applyStroke(keys: Long) =
 		this.strokeListener?.applyStroke(this.keysToStroke(keys))

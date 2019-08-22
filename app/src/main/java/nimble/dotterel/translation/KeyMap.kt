@@ -6,13 +6,16 @@ package nimble.dotterel.translation
 class KeyMap<T>(
 	val layout: KeyLayout,
 	map: Map<String, List<String>>,
-	transform: (String) -> T)
+	transform: (String) -> T?)
 {
 	val map: Map<T, Stroke> = map.let({
 		val invertedMap = mutableMapOf<T, Stroke>()
 		for(mapping in it)
 			for(key in mapping.value)
-				invertedMap[transform(key)] = this.layout.parse(mapping.key)
+			{
+				val key2 = transform(key) ?: continue
+				invertedMap[key2] = this.layout.parse(mapping.key)
+			}
 		invertedMap
 	})
 
