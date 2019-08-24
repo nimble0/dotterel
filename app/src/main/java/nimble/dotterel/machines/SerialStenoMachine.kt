@@ -20,11 +20,11 @@ import java.io.Closeable
 
 import nimble.dotterel.Dotterel
 import nimble.dotterel.StenoMachine
-import nimble.dotterel.stringToKeyCode
 import nimble.dotterel.translation.KeyLayout
 import nimble.dotterel.translation.KeyMap
 import nimble.dotterel.translation.Stroke
 import nimble.dotterel.util.mapValues
+import java.io.IOException
 
 val UsbDevice.id: String
 	get() = when
@@ -123,6 +123,7 @@ private val DEFAULT_SERIAL_CONFIG = Json.parse("""{
 }""").asObject()
 
 private const val ACTION_USB_PERMISSION = "nimble.dotterel.USB_PERMISSION"
+private const val ACTION_USB_DETACHED = "android.hardware.usb.action.USB_DEVICE_DETACHED"
 
 class SerialStenoMachine(
 	private val app: Dotterel,
@@ -145,6 +146,11 @@ class SerialStenoMachine(
 				.values
 				.map({ it.id })
 		override fun makeStenoMachine(app: Dotterel, id: String) = SerialStenoMachine(app, id)
+	}
+
+	init
+	{
+		this.app.addIntentListener(ACTION_USB_DETACHED, this)
 	}
 
 	override fun setConfig(
@@ -209,6 +215,10 @@ class SerialStenoMachine(
 		{
 			throw IllegalArgumentException(e)
 		}
+		catch(e: IOException)
+		{
+			Log.e("Dotterel", "Error opening serial socket ${this.id}: $e")
+		}
 	}
 
 	override var strokeListener: StenoMachine.Listener? = null
@@ -250,6 +260,9 @@ class SerialStenoMachine(
 					Log.e("Dotterel", m)
 					Toast.makeText(this.app, m, Toast.LENGTH_LONG).show()
 				}
+			}
+			ACTION_USB_DETACHED ->
+			{
 			}
 		}
 	}

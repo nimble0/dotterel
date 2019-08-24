@@ -129,5 +129,9 @@ class UsbForAndroidSerialSocket(
 		this.usbSerialPort.write(data, 10)
 	}
 
-	override fun close() = this.usbSerialPort.close()
+	override fun close()
+	{
+		this.serialIoManager.stop()
+		this.usbSerialPort.close()
+	}
 }
