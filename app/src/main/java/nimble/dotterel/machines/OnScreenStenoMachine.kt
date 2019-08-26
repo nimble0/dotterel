@@ -28,7 +28,7 @@ val ON_SCREEN_MACHINE_STYLES = mapOf(
 )
 
 class OnScreenStenoMachine(private val app: Dotterel) :
-	StenoMachine, StenoMachine.Listener, Dotterel.EditorListener
+	StenoMachine, StenoMachine.Listener
 {
 	private var keyLayout: KeyLayout = KeyLayout("")
 	private var keyMap: Map<String, String> = mapOf()
@@ -37,11 +37,6 @@ class OnScreenStenoMachine(private val app: Dotterel) :
 	class Factory : StenoMachine.Factory
 	{
 		override fun makeStenoMachine(app: Dotterel) = OnScreenStenoMachine(app)
-	}
-
-	init
-	{
-		this.app.addEditorListener(this)
 	}
 
 	override fun setConfig(
@@ -70,14 +65,24 @@ class OnScreenStenoMachine(private val app: Dotterel) :
 				})
 
 			val viewId = ON_SCREEN_MACHINE_STYLES[style]?.get(viewLayout)
-
 			if(viewId == null)
 			{
 				val m = "Current system does not support On Screen machine style $style"
 				Log.w("Steno Machine", m)
 				Toast.makeText(this.app, m, Toast.LENGTH_SHORT).show()
 			}
-			this.app.viewId = viewId
+			else
+			{
+				this.app.setView(viewId)
+				val view = this.app.view
+				if(view is StenoView)
+				{
+					view.keyLayout = this.keyLayout
+					view.keyMap = this.keyMap
+					view.strokeListener = this
+					view.translator = this.app.translator
+				}
+			}
 		}
 		catch(e: java.lang.NullPointerException)
 		{
@@ -94,19 +99,7 @@ class OnScreenStenoMachine(private val app: Dotterel) :
 
 	override fun close()
 	{
-		this.app.viewId = null
-		this.app.removeEditorListener(this)
-	}
-
-	override fun setInputView(v: View?)
-	{
-		if(v is StenoView)
-		{
-			v.keyLayout = this.keyLayout
-			v.keyMap = this.keyMap
-			v.strokeListener = this
-			v.translator = this.app.translator
-		}
+		this.app.view = null
 	}
 }
 
