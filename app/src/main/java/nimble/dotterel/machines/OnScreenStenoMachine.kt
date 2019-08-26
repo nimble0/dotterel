@@ -81,6 +81,7 @@ class OnScreenStenoMachine(private val app: Dotterel) :
 					view.keyMap = this.keyMap
 					view.strokeListener = this
 					view.translator = this.app.translator
+					view.setConfig(config, styleConfig)
 				}
 			}
 		}
@@ -129,6 +130,8 @@ abstract class StenoView(context: Context, attributes: AttributeSet) :
 		get() = this.keyLayout.parseKeys(this.keys
 			.filter({ it.isSelected })
 			.mapNotNull({ this.keyMap[it.hint] }))
+
+	open fun setConfig(config: JsonObject, systemConfig: JsonObject) {}
 
 	override fun onFinishInflate()
 	{

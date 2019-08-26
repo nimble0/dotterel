@@ -12,10 +12,6 @@
 			android:key="machine/On Screen"
 			android:defaultValue="true" />
 
-		<EditTextPreference
-			android:key="machineConfig/On Screen"
-			android:defaultValue="{&quot;style&quot;: &quot;Touch&quot;}" />
-
 	</PreferenceCategory>
 
 	<PreferenceCategory
@@ -37,6 +33,22 @@
 			<extra android:name="key" android:value="style" />
 			<extra android:name="bindSummaryToValue" android:value="true" />
 		</ListPreference>
+
+		<SeekBarPreference
+			android:title="@string/pref_machines_on_screen_min_touch_radius"
+			android:max="50">
+			<extra android:name="store_type" android:value="json_preference" />
+			<extra android:name="store_path" android:value="machineConfig/On Screen" />
+			<extra android:name="key" android:value="minTouchRadius" />
+		</SeekBarPreference>
+
+		<SeekBarPreference
+			android:title="@string/pref_machines_on_screen_max_touch_radius"
+			android:max="50">
+			<extra android:name="store_type" android:value="json_preference" />
+			<extra android:name="store_path" android:value="machineConfig/On Screen" />
+			<extra android:name="key" android:value="maxTouchRadius" />
+		</SeekBarPreference>
 
 	</PreferenceCategory>
 

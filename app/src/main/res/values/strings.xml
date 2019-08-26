@@ -41,6 +41,8 @@
 	<string name="pref_machines_machines">Machines</string>
 	<string name="pref_machines_on_screen">On Screen</string>
 	<string name="pref_machines_on_screen_style">Machine style</string>
+	<string name="pref_machines_on_screen_min_touch_radius">Minimum touch radius</string>
+	<string name="pref_machines_on_screen_max_touch_radius">Maximum touch radius</string>
 	<string name="pref_machines_nkro">NKRO</string>
 	<string name="pref_machines_nkro_key_map">Key map</string>
 
