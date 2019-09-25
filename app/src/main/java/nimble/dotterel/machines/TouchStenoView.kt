@@ -170,6 +170,7 @@ class TouchStenoView(context: Context, attributes: AttributeSet) :
 			}
 			MotionEvent.ACTION_MOVE ->
 			{
+				var applyStroke = false
 				for(i in 0 until e.pointerCount)
 				{
 					val touch = this.touches[e.getPointerId(i)] ?: continue
@@ -183,12 +184,15 @@ class TouchStenoView(context: Context, attributes: AttributeSet) :
 
 						if(touch.update(position, radius))
 						{
-							this.applyStroke()
+							applyStroke = true
 							break
 						}
 					}
 				}
 				this.changeStroke()
+				// Make sure applyStroke is called after changeStroke
+				if(applyStroke)
+					this.applyStroke()
 			}
 			MotionEvent.ACTION_UP,
 			MotionEvent.ACTION_POINTER_UP,
