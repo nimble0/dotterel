@@ -50,6 +50,14 @@
 			<extra android:name="key" android:value="maxTouchRadius" />
 		</SeekBarPreference>
 
+		<SeekBarPreference
+			android:title="@string/pref_machines_on_screen_padding"
+			android:max="30">
+			<extra android:name="store_type" android:value="json_preference" />
+			<extra android:name="store_path" android:value="machineConfig/On Screen" />
+			<extra android:name="key" android:value="padding" />
+		</SeekBarPreference>
+
 	</PreferenceCategory>
 
 	<PreferenceCategory

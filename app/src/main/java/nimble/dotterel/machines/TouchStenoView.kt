@@ -8,9 +8,11 @@ import android.content.Context
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.MotionEvent
+import android.view.View
 
 import com.eclipsesource.json.JsonObject
 
+import nimble.dotterel.R
 import nimble.dotterel.util.*
 import nimble.dotterel.util.ui.position
 import nimble.dotterel.util.ui.size
@@ -68,6 +70,8 @@ class TouchStenoView(context: Context, attributes: AttributeSet) :
 
 		this.minTouchRadius = dipToPixels(config.get("minTouchRadius").asFloat())
 		this.maxTouchRadius = dipToPixels(config.get("maxTouchRadius").asFloat())
+		val padding = dipToPixels(config.get("padding").asFloat()).toInt()
+		this.findViewById<View>(R.id.keys).setPadding(padding, padding, padding, padding)
 	}
 
 	override fun onFinishInflate()
