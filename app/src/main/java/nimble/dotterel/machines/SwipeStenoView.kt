@@ -25,11 +25,21 @@ package nimble.dotterel.machines
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.*
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.StateListDrawable
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.MotionEvent
 import android.widget.TextView
 
-import nimble.dotterel.util.Vector2
+import androidx.appcompat.widget.AppCompatTextView
+import androidx.core.content.ContextCompat
+
+import kotlin.math.*
+
+import nimble.dotterel.R
+import nimble.dotterel.util.*
 
 private fun MotionEvent.getTouchLine(i: Int): List<Vector2>
 {
@@ -39,6 +49,147 @@ private fun MotionEvent.getTouchLine(i: Int): List<Vector2>
 	touchLine.add(Vector2(this.getX(i), this.getY(i)))
 
 	return touchLine
+}
+
+private class SwipeKeyDrawable(
+	private val bevels: List<Boolean>,
+	private val bevelSize: Float,
+	private val strokePaint: Paint,
+	private val fillPaint: Paint,
+	private val cornerSize: Float
+) :
+	Drawable()
+{
+	var shape: ConvexPolygon = ConvexPolygon(listOf())
+		private set
+
+	override fun setAlpha(alpha: Int) = Unit
+	override fun setColorFilter(colorFilter: ColorFilter?) = Unit
+	override fun getOpacity(): Int = PixelFormat.UNKNOWN
+
+	override fun draw(canvas: Canvas)
+	{
+		val canvasBounds = Box(
+			Vector2(this.bounds.left.toFloat(), this.bounds.top.toFloat()),
+			Vector2(this.bounds.right.toFloat(), this.bounds.bottom.toFloat()))
+
+		val bevelSize = this.bevelSize * min(canvasBounds.size.x, canvasBounds.size.y)
+		this.shape = canvasBounds
+			.toConvexPolygon()
+			.withBevels((this.bevels.map({ if(it) bevelSize else 0f })
+				+ List(max(0, canvasBounds.points.size - this.bevels.size), { 0f })))
+
+		val path = this.shape.toPathWithRoundedCorners(this.cornerSize)
+		canvas.drawPath(path, this.fillPaint)
+		canvas.drawPath(path, this.strokePaint)
+	}
+}
+
+private fun swipeKeyDrawable(
+	context: Context,
+	bevels: List<Boolean>,
+	bevelSize: Float,
+	fillColour: Int,
+	strokeColour: Int,
+	selectedFillColour: Int,
+	selectedStrokeColour: Int
+) =
+	StateListDrawable().also({ stateList ->
+		val strokePaint = Paint().also({
+			it.style = Paint.Style.STROKE
+			it.strokeWidth = TypedValue.applyDimension(
+				TypedValue.COMPLEX_UNIT_DIP,
+				1f,
+				context.resources.displayMetrics)
+			it.isAntiAlias = true
+		})
+		val fillPaint = Paint().also({
+			it.style = Paint.Style.FILL
+		})
+		val cornerSize = TypedValue.applyDimension(
+			TypedValue.COMPLEX_UNIT_DIP,
+			10f,
+			context.resources.displayMetrics)
+
+		stateList.addState(
+			intArrayOf(android.R.attr.state_activated),
+			SwipeKeyDrawable(
+				bevels,
+				bevelSize,
+				Paint(strokePaint).also({ it.color = selectedStrokeColour }),
+				Paint(fillPaint).also({ it.color = selectedFillColour }),
+				cornerSize
+			))
+		stateList.addState(
+			intArrayOf(android.R.attr.state_selected),
+			SwipeKeyDrawable(
+				bevels,
+				bevelSize,
+				Paint(strokePaint).also({ it.color = selectedStrokeColour }),
+				Paint(fillPaint).also({ it.color = selectedFillColour }),
+				cornerSize
+			))
+		stateList.addState(
+			intArrayOf(),
+			SwipeKeyDrawable(
+				bevels,
+				bevelSize,
+				Paint(strokePaint).also({ it.color = strokeColour }),
+				Paint(fillPaint).also({ it.color = fillColour }),
+				cornerSize
+			))
+	})
+
+class SwipeStenoKey(
+	context: Context,
+	attrs: AttributeSet
+) :
+	AppCompatTextView(context, attrs)
+{
+	var bevels: List<Boolean>
+	var specialKey = false
+	var bevelSize: Float = 0f
+		set(v)
+		{
+			field = v
+			this.setBackgroundResource(0)
+			this.background = if(this.specialKey)
+			{
+				swipeKeyDrawable(
+					this.context,
+					this.bevels,
+					this.bevelSize,
+					ContextCompat.getColor(this.context, R.color.specialStenoKey),
+					ContextCompat.getColor(this.context, R.color.specialStenoKeyBorder),
+					ContextCompat.getColor(this.context, R.color.specialSelectedStenoKey),
+					ContextCompat.getColor(this.context, R.color.specialSelectedStenoBorder))
+			}
+			else
+			{
+				swipeKeyDrawable(
+					this.context,
+					this.bevels,
+					this.bevelSize,
+					ContextCompat.getColor(this.context, R.color.stenoKey),
+					ContextCompat.getColor(this.context, R.color.stenoKeyBorder),
+					ContextCompat.getColor(this.context, R.color.selectedStenoKey),
+					ContextCompat.getColor(this.context, R.color.selectedStenoBorder))
+			}
+		}
+
+	init
+	{
+		val attributes = context.obtainStyledAttributes(attrs, R.styleable.SwipeStenoKey, 0, 0)
+
+		val bevelTopLeft = attributes.getBoolean(R.styleable.SwipeStenoKey_bevelTopLeft, false)
+		val bevelTopRight = attributes.getBoolean(R.styleable.SwipeStenoKey_bevelTopRight, false)
+		val bevelBottomLeft = attributes.getBoolean(R.styleable.SwipeStenoKey_bevelBottomLeft, false)
+		val bevelBottomRight = attributes.getBoolean(R.styleable.SwipeStenoKey_bevelBottomRight, false)
+		this.bevels = listOf(bevelTopLeft, bevelTopRight, bevelBottomRight, bevelBottomLeft)
+		this.specialKey = attributes.getBoolean(R.styleable.SwipeStenoKey_specialKey, false)
+
+		attributes.recycle()
+	}
 }
 
 class SwipeStenoView(context: Context, attributes: AttributeSet) :
@@ -103,5 +254,13 @@ class SwipeStenoView(context: Context, attributes: AttributeSet) :
 			}
 		}
 		return true
+	}
+
+	override fun onFinishInflate()
+	{
+		super.onFinishInflate()
+
+		for(key in this.keys)
+			(key as? SwipeStenoKey)?.bevelSize = 0.6f
 	}
 }

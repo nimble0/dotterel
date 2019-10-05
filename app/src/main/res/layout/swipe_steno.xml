@@ -46,7 +46,7 @@
 		app:layout_constraintBottom_toBottomOf="parent"
 		app:columnCount="13">
 
-		<androidx.appcompat.widget.AppCompatTextView
+		<nimble.dotterel.machines.SwipeStenoKey
 			android:tag="steno_key"
 			style="@style/StenoKey"
 			android:hint="S-"
@@ -54,66 +54,87 @@
 			app:layout_rowSpan="6"
 			app:layout_rowWeight="6" />
 
-		<androidx.appcompat.widget.AppCompatTextView
+		<nimble.dotterel.machines.SwipeStenoKey
 			android:tag="steno_key"
 			style="@style/StenoKey"
 			android:hint="T-"
-			android:text="T" />
-		<androidx.appcompat.widget.AppCompatTextView
+			android:text="T"
+			app:bevelBottomLeft="true"
+			app:bevelBottomRight="true" />
+		<nimble.dotterel.machines.SwipeStenoKey
 			android:tag="steno_key"
 			style="@style/StenoKey"
 			android:hint="P-"
-			android:text="P" />
-		<androidx.appcompat.widget.AppCompatTextView
+			android:text="P"
+			app:bevelBottomLeft="true"
+			app:bevelBottomRight="true" />
+		<nimble.dotterel.machines.SwipeStenoKey
 			android:tag="steno_key"
 			style="@style/StenoKey"
 			android:hint="H-"
-			android:text="H" />
+			android:text="H"
+			app:bevelBottomLeft="true"
+			app:bevelBottomRight="true" />
 
-		<androidx.appcompat.widget.AppCompatTextView
+		<nimble.dotterel.machines.SwipeStenoKey
 			android:tag="steno_key"
 			style="@style/SpecialStenoKey"
 			android:hint="#-"
 			android:text="#"
 			app:layout_columnSpan="2"
-			app:layout_columnWeight="2" />
-		<androidx.appcompat.widget.AppCompatTextView
+			app:layout_columnWeight="2"
+			app:bevelBottomLeft="true"
+			app:bevelBottomRight="true"
+			app:specialKey="true" />
+		<nimble.dotterel.machines.SwipeStenoKey
 			android:tag="steno_key"
 			style="@style/SpecialStenoKey"
 			android:hint="*"
 			android:text="*"
 			app:layout_columnSpan="2"
-			app:layout_columnWeight="2" />
+			app:layout_columnWeight="2"
+			app:bevelBottomLeft="true"
+			app:bevelBottomRight="true"
+			app:specialKey="true" />
 
-		<androidx.appcompat.widget.AppCompatTextView
+		<nimble.dotterel.machines.SwipeStenoKey
 			android:tag="steno_key"
 			style="@style/StenoKey"
 			android:hint="-F"
-			android:text="F" />
-		<androidx.appcompat.widget.AppCompatTextView
+			android:text="F"
+			app:bevelBottomLeft="true"
+			app:bevelBottomRight="true" />
+		<nimble.dotterel.machines.SwipeStenoKey
 			android:tag="steno_key"
 			style="@style/StenoKey"
 			android:hint="-P"
-			android:text="P" />
-		<androidx.appcompat.widget.AppCompatTextView
+			android:text="P"
+			app:bevelBottomLeft="true"
+			app:bevelBottomRight="true" />
+		<nimble.dotterel.machines.SwipeStenoKey
 			android:tag="steno_key"
 			style="@style/StenoKey"
 			android:hint="-L"
-			android:text="L" />
-		<androidx.appcompat.widget.AppCompatTextView
+			android:text="L"
+			app:bevelBottomLeft="true"
+			app:bevelBottomRight="true" />
+		<nimble.dotterel.machines.SwipeStenoKey
 			android:tag="steno_key"
 			style="@style/StenoKey"
 			android:hint="-T"
-			android:text="T" />
+			android:text="T"
+			app:bevelBottomLeft="true"
+			app:bevelBottomRight="true" />
 
-		<androidx.appcompat.widget.AppCompatTextView
+		<nimble.dotterel.machines.SwipeStenoKey
 			android:tag="steno_key"
 			style="@style/StenoKey"
 			android:hint="-D"
 			android:text="D"
 			app:layout_rowSpan="3"
-			app:layout_rowWeight="3" />
-		<androidx.appcompat.widget.AppCompatTextView
+			app:layout_rowWeight="3"
+			app:bevelBottomLeft="true" />
+		<nimble.dotterel.machines.SwipeStenoKey
 			android:tag="steno_key"
 			style="@style/StenoKey"
 			android:hint="-Z"
@@ -121,7 +142,8 @@
 			app:layout_column="12"
 			app:layout_row="3"
 			app:layout_rowSpan="3"
-			app:layout_rowWeight="3" />
+			app:layout_rowWeight="3"
+			app:bevelTopLeft="true" />
 
 		<Space
 			app:layout_column="1"
@@ -131,63 +153,89 @@
 			app:layout_rowSpan="4"
 			app:layout_rowWeight="4" />
 
-		<androidx.appcompat.widget.AppCompatTextView
+		<nimble.dotterel.machines.SwipeStenoKey
 			android:tag="steno_key"
 			style="@style/StenoKey"
 			android:hint="K-"
-			android:text="K" />
-		<androidx.appcompat.widget.AppCompatTextView
+			android:text="K"
+			app:bevelTopLeft="true"
+			app:bevelTopRight="true" />
+		<nimble.dotterel.machines.SwipeStenoKey
 			android:tag="steno_key"
 			style="@style/StenoKey"
 			android:hint="W-"
-			android:text="W" />
-		<androidx.appcompat.widget.AppCompatTextView
+			android:text="W"
+			app:bevelTopLeft="true"
+			app:bevelTopRight="true" />
+		<nimble.dotterel.machines.SwipeStenoKey
 			android:tag="steno_key"
 			style="@style/StenoKey"
 			android:hint="R-"
-			android:text="R" />
+			android:text="R"
+			app:bevelTopLeft="true"
+			app:bevelTopRight="true" />
 
-		<androidx.appcompat.widget.AppCompatTextView
+		<nimble.dotterel.machines.SwipeStenoKey
 			android:tag="steno_key"
 			style="@style/SpecialStenoKey"
 			android:hint="A-"
-			android:text="A" />
-		<androidx.appcompat.widget.AppCompatTextView
+			android:text="A"
+			app:bevelTopLeft="true"
+			app:bevelTopRight="true"
+			app:specialKey="true" />
+		<nimble.dotterel.machines.SwipeStenoKey
 			android:tag="steno_key"
 			style="@style/SpecialStenoKey"
 			android:hint="O-"
-			android:text="O" />
-		<androidx.appcompat.widget.AppCompatTextView
+			android:text="O"
+			app:bevelTopLeft="true"
+			app:bevelTopRight="true"
+			app:specialKey="true" />
+		<nimble.dotterel.machines.SwipeStenoKey
 			android:tag="steno_key"
 			style="@style/SpecialStenoKey"
 			android:hint="-E"
-			android:text="E" />
-		<androidx.appcompat.widget.AppCompatTextView
+			android:text="E"
+			app:bevelTopLeft="true"
+			app:bevelTopRight="true"
+			app:specialKey="true" />
+		<nimble.dotterel.machines.SwipeStenoKey
 			android:tag="steno_key"
 			style="@style/SpecialStenoKey"
 			android:hint="-U"
-			android:text="U" />
+			android:text="U"
+			app:bevelTopLeft="true"
+			app:bevelTopRight="true"
+			app:specialKey="true" />
 
-		<androidx.appcompat.widget.AppCompatTextView
+		<nimble.dotterel.machines.SwipeStenoKey
 			android:tag="steno_key"
 			style="@style/StenoKey"
 			android:hint="-R"
-			android:text="R" />
-		<androidx.appcompat.widget.AppCompatTextView
+			android:text="R"
+			app:bevelTopLeft="true"
+			app:bevelTopRight="true" />
+		<nimble.dotterel.machines.SwipeStenoKey
 			android:tag="steno_key"
 			style="@style/StenoKey"
 			android:hint="-B"
-			android:text="B" />
-		<androidx.appcompat.widget.AppCompatTextView
+			android:text="B"
+			app:bevelTopLeft="true"
+			app:bevelTopRight="true" />
+		<nimble.dotterel.machines.SwipeStenoKey
 			android:tag="steno_key"
 			style="@style/StenoKey"
 			android:hint="-G"
-			android:text="G" />
-		<androidx.appcompat.widget.AppCompatTextView
+			android:text="G"
+			app:bevelTopLeft="true"
+			app:bevelTopRight="true" />
+		<nimble.dotterel.machines.SwipeStenoKey
 			android:tag="steno_key"
 			style="@style/StenoKey"
 			android:hint="-S"
-			android:text="S" />
+			android:text="S"
+			app:bevelTopLeft="true"
+			app:bevelTopRight="true" />
 
 	</androidx.gridlayout.widget.GridLayout>
 
