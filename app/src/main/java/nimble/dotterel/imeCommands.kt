@@ -7,6 +7,7 @@ package nimble.dotterel
 
 import android.content.Context
 import android.util.Log
+import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 
 import nimble.dotterel.translation.TranslationPart
@@ -15,7 +16,11 @@ import nimble.dotterel.translation.Translator
 fun editorAction(translator: Translator, arg: String) =
 	TranslationPart(actions = listOf(
 		DotterelRunnable.make({ dotterel: Dotterel ->
-			dotterel.sendDefaultEditorAction(false)
+			if(dotterel.currentInputEditorInfo.actionLabel != null)
+				dotterel.sendDefaultEditorAction(false)
+			else
+				dotterel.currentInputConnection.performEditorAction(
+					EditorInfo.IME_ACTION_DONE)
 		})
 	))
 
