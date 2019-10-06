@@ -58,6 +58,14 @@
 			<extra android:name="key" android:value="padding" />
 		</SeekBarPreference>
 
+		<SeekBarPreference
+			android:title="@string/pref_machines_on_screen_swipe_bevel_size"
+			android:max="100">
+			<extra android:name="store_type" android:value="json_preference" />
+			<extra android:name="store_path" android:value="machineConfig/On Screen" />
+			<extra android:name="key" android:value="swipeBevelSize" />
+		</SeekBarPreference>
+
 	</PreferenceCategory>
 
 	<PreferenceCategory

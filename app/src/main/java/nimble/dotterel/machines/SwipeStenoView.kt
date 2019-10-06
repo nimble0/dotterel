@@ -36,6 +36,8 @@ import android.view.View
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.ContextCompat
 
+import com.eclipsesource.json.JsonObject
+
 import kotlin.math.*
 
 import nimble.dotterel.R
@@ -279,6 +281,13 @@ class SwipeStenoView(context: Context, attributes: AttributeSet) :
 
 	private val touches = mutableMapOf<Int, Touch>()
 
+	override fun setConfig(config: JsonObject, systemConfig: JsonObject)
+	{
+		val bevelSize = config.get("swipeBevelSize").asInt() / 100f
+		for(key in this.keys)
+			(key as? SwipeStenoKey)?.bevelSize = bevelSize
+	}
+
 	@SuppressLint("ClickableViewAccessibility")
 	override fun onTouchEvent(e: MotionEvent): Boolean
 	{
@@ -311,13 +320,5 @@ class SwipeStenoView(context: Context, attributes: AttributeSet) :
 			}
 		}
 		return true
-	}
-
-	override fun onFinishInflate()
-	{
-		super.onFinishInflate()
-
-		for(key in this.keys)
-			(key as? SwipeStenoKey)?.bevelSize = 0.6f
 	}
 }
