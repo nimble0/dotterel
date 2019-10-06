@@ -31,7 +31,7 @@ import android.graphics.drawable.StateListDrawable
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.MotionEvent
-import android.widget.TextView
+import android.view.View
 
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.ContextCompat
@@ -40,6 +40,8 @@ import kotlin.math.*
 
 import nimble.dotterel.R
 import nimble.dotterel.util.*
+import nimble.dotterel.util.ui.boundingBox
+import nimble.dotterel.util.ui.position
 
 private fun MotionEvent.getTouchLine(i: Int): List<Vector2>
 {
@@ -49,6 +51,34 @@ private fun MotionEvent.getTouchLine(i: Int): List<Vector2>
 	touchLine.add(Vector2(this.getX(i), this.getY(i)))
 
 	return touchLine
+}
+
+private data class KeyIntersection(
+	val key: View,
+	val intersection: Pair<Float, Float>,
+	val isBoundingBoxIntersection: Boolean
+)
+
+private fun findKeyIntersections(
+	line: LinearLine,
+	keys: Set<View>
+): List<KeyIntersection>
+{
+	val lineBoundingBox = line.boundingBox
+	return keys.filter({ lineBoundingBox.overlaps(it.boundingBox) })
+		.flatMap({ key ->
+			val bbIntersection = line.intersect(key.boundingBox)
+				?.let({ KeyIntersection(key, it, true) })
+			val shape = getKeyShape(key)
+			val intersection = if(bbIntersection != null && shape != null)
+					line.intersect(shape)
+						?.let({ KeyIntersection(key, it, false) })
+				else
+					null
+			listOfNotNull(bbIntersection, intersection)
+		})
+		.sortedWith(compareBy({ it.intersection.first }, { it.intersection.second }))
+		.filter({ it.intersection.first <= 1f && it.intersection.second > 0f })
 }
 
 private class SwipeKeyDrawable(
@@ -192,30 +222,62 @@ class SwipeStenoKey(
 	}
 }
 
+private fun getKeyShape(key: View): ConvexPolygon? =
+	((key.background as? StateListDrawable)
+		?.current as? SwipeKeyDrawable)
+		?.shape
+		?.translate(key.position)
+
 class SwipeStenoView(context: Context, attributes: AttributeSet) :
 	StenoView(context, attributes)
 {
-	private val touches = mutableMapOf<Int, Vector2>()
-
-	override fun applyStroke()
+	private class Touch(
+		var position: Vector2,
+		val keys: Set<View>)
 	{
-		super.applyStroke()
-		this.touches.clear()
-	}
+		var activate: Boolean? = null
 
-	private fun toggleKeys(start: Vector2, points: List<Vector2>)
-	{
-		var lastKey: TextView? = this.keyAt(start)
-		for(p in points)
+		init
 		{
-			val key = this.keyAt(p)
-
-			if(key != lastKey && key != null)
+			val key = this.keys.find({
+				this.position in it.boundingBox
+					&& getKeyShape(it)?.contains(this.position) == true
+			})
+			if(key != null)
+			{
 				key.isSelected = !key.isSelected
+				this.activate = key.isSelected
+			}
+		}
 
-			lastKey = key
+		fun update(position: Vector2)
+		{
+			val intersections = findKeyIntersections(
+				LinearLine(this.position, position),
+				this.keys)
+
+			var i = 0f
+			for(a in intersections)
+			{
+				if(a.intersection.first > i + 1e-4f)
+					this.activate = null
+
+				if(!a.isBoundingBoxIntersection && this.activate == null)
+					this.activate = !a.key.isSelected
+
+				val activate = this.activate
+				if(!a.isBoundingBoxIntersection && activate != null)
+					a.key.isSelected = activate
+				i = max(i, a.intersection.second)
+			}
+			if(i < 1f && intersections.isNotEmpty())
+				this.activate = null
+
+			this.position = position
 		}
 	}
+
+	private val touches = mutableMapOf<Int, Touch>()
 
 	@SuppressLint("ClickableViewAccessibility")
 	override fun onTouchEvent(e: MotionEvent): Boolean
@@ -227,22 +289,17 @@ class SwipeStenoView(context: Context, attributes: AttributeSet) :
 			MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN ->
 			{
 				val p = Vector2(e.getX(actionI), e.getY(actionI))
-				this.touches[pointerId] = p
-
-				val key = this.keyAt(p)
-				if(key != null)
-					key.isSelected = !key.isSelected
+				this.touches[pointerId] = Touch(
+					this.position + p,
+					this.keys.toSet())
 			}
 			MotionEvent.ACTION_MOVE ->
 			{
 				for(i in 0 until e.pointerCount)
 				{
 					val touch = this.touches[e.getPointerId(i)] ?: continue
-					val touchLine = e.getTouchLine(i)
-
-					this.toggleKeys(touch, touchLine)
-
-					this.touches[e.getPointerId(i)] = Vector2(e.getX(i), e.getY(i))
+					for(p in e.getTouchLine(i))
+						touch.update(this.position + p)
 				}
 				this.changeStroke()
 			}
