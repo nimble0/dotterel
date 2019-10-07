@@ -43,4 +43,29 @@ class UtilTests : FunSpec
 			listOf(1, 4, 2)
 		)
 	}
+
+	test("window with wrapping")
+	{
+		List(5, { it }).windowedWithWrapping(3) shouldBe listOf(
+			listOf(0, 1, 2),
+			listOf(1, 2, 3),
+			listOf(2, 3, 4),
+			listOf(3, 4, 0),
+			listOf(4, 0, 1)
+		)
+		List(5, { it }).windowedWithWrapping(3, 2) shouldBe listOf(
+			listOf(0, 1, 2),
+			listOf(2, 3, 4),
+			listOf(4, 0, 1)
+		)
+	}
+
+	test("rotate")
+	{
+		List(5, { it }).rotate(1) shouldBe listOf(1, 2, 3, 4, 0)
+		List(5, { it }).rotate(3) shouldBe listOf(3, 4, 0, 1, 2)
+		List(5, { it }).rotate(-1) shouldBe listOf(4, 0, 1, 2, 3)
+		List(5, { it }).rotate(7) shouldBe listOf(2, 3, 4, 0, 1)
+		List(5, { it }).rotate(-9) shouldBe listOf(1, 2, 3, 4, 0)
+	}
 })
