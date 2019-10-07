@@ -23,7 +23,6 @@
 
 package nimble.dotterel.machines
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
 import android.graphics.drawable.Drawable
@@ -288,8 +287,7 @@ class SwipeStenoView(context: Context, attributes: AttributeSet) :
 			(key as? SwipeStenoKey)?.bevelSize = bevelSize
 	}
 
-	@SuppressLint("ClickableViewAccessibility")
-	override fun onTouchEvent(e: MotionEvent): Boolean
+	override fun dispatchTouchEvent(e: MotionEvent): Boolean
 	{
 		val actionI = e.actionIndex
 		val pointerId = e.getPointerId(actionI)
@@ -319,6 +317,8 @@ class SwipeStenoView(context: Context, attributes: AttributeSet) :
 					this.applyStroke()
 			}
 		}
+
+		super.dispatchTouchEvent(e)
 		return true
 	}
 }
