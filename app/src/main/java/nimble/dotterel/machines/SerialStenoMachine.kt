@@ -10,8 +10,12 @@ import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbDeviceConnection
 import android.hardware.usb.UsbManager
 import android.os.Build
+import android.os.Handler
+import android.os.PowerManager
+import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
+import androidx.core.content.ContextCompat.getSystemService
 
 import com.eclipsesource.json.Json
 import com.eclipsesource.json.JsonObject
@@ -25,6 +29,10 @@ import nimble.dotterel.translation.KeyMap
 import nimble.dotterel.translation.Stroke
 import nimble.dotterel.util.mapValues
 import java.io.IOException
+import android.database.ContentObserver
+import android.content.ContentResolver
+
+
 
 val UsbDevice.id: String
 	get() = when
@@ -130,6 +138,7 @@ class SerialStenoMachine(
 	val id: String
 ) :
 	StenoMachine,
+	StenoMachine.Listener,
 	Dotterel.IntentListener
 {
 	private val usbManager: UsbManager = this.app.getSystemService(Context.USB_SERVICE) as UsbManager
@@ -205,6 +214,7 @@ class SerialStenoMachine(
 						})
 					protocol.strokeListener = this.strokeListener
 				})
+			this.protocol?.strokeListener = this
 			this.socket?.protocol = this.protocol
 		}
 		catch(e: java.lang.NullPointerException)
@@ -265,6 +275,17 @@ class SerialStenoMachine(
 			{
 			}
 		}
+	}
+
+	override fun applyStroke(s: Stroke)
+	{
+		this.strokeListener?.applyStroke(s)
+		this.app.userActivity.poke()
+	}
+
+	override fun changeStroke(s: Stroke)
+	{
+		this.strokeListener?.changeStroke(s)
 	}
 }
 

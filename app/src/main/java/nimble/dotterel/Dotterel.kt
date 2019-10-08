@@ -4,10 +4,13 @@
 package nimble.dotterel
 
 import android.content.*
+import android.database.ContentObserver
 import android.hardware.usb.UsbManager
 import android.inputmethodservice.InputMethodService
 import android.net.Uri
 import android.os.Build
+import android.os.Handler
+import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
 import android.view.KeyEvent
@@ -29,6 +32,8 @@ import nimble.dotterel.machines.*
 import nimble.dotterel.stenoAppliers.DefaultStenoApplier
 import nimble.dotterel.stenoAppliers.RawStenoStenoApplier
 import nimble.dotterel.translation.*
+import java.io.Closeable
+import java.lang.System
 
 val MACHINE_FACTORIES = mapOf(
 	Pair("On Screen", OnScreenStenoMachine.Factory()),
@@ -78,6 +83,64 @@ fun reloadSystem(sharedPreferences: SharedPreferences, system: String)
 		.edit()
 		.putBoolean("reloadSystem", !current)
 		.apply()
+}
+
+
+
+class UserActivity(val context: Context) : Closeable
+{
+	private var lastActivity: Long = 0L
+	private var screenTimeout: Long = 0L
+	private val wakeLock =
+		(this.context.getSystemService(Context.POWER_SERVICE) as PowerManager)
+			.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "nimble.dotterel:WAKE_LOCK")
+
+	private val screenTimeoutObserver = object : ContentObserver(Handler())
+	{
+		override fun onChange(selfChange: Boolean)
+		{
+			this@UserActivity.updateScreenTimeout()
+			this@UserActivity.checkWakeLock()
+		}
+
+		override fun deliverSelfNotifications(): Boolean = true
+	}
+
+	init
+	{
+		this.context.contentResolver.registerContentObserver(
+			Settings.System.getUriFor(Settings.System.SCREEN_OFF_TIMEOUT),
+			false,
+			this.screenTimeoutObserver)
+		this.updateScreenTimeout()
+	}
+
+	fun poke()
+	{
+
+		this.lastActivity = System.currentTimeMillis()
+		this.wakeLock.acquire(this.screenTimeout)
+	}
+
+	private fun updateScreenTimeout()
+	{
+		this.screenTimeout = Settings.System.getLong(
+			this.context.contentResolver,
+			Settings.System.SCREEN_OFF_TIMEOUT,
+			0)
+	}
+
+	private fun checkWakeLock()
+	{
+		if(System.currentTimeMillis() - this.lastActivity > this.screenTimeout)
+			this.wakeLock.release()
+	}
+
+	override fun close()
+	{
+		this.context.contentResolver.unregisterContentObserver(
+			this.screenTimeoutObserver)
+	}
 }
 
 class Dotterel : InputMethodService(), StenoMachine.Listener
@@ -134,6 +197,8 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 	{
 		this.view = viewId.let({ this.layoutInflater.inflate(it, null) })
 	}
+
+	val userActivity by lazy { UserActivity(this) }
 
 	private fun loadSystem()
 	{
@@ -268,6 +333,8 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 		this.preferences?.registerOnSharedPreferenceChangeListener(
 			this.preferenceListener)
 		this.registerReceiver(this.broadcastReceiver, IntentFilter())
+
+		this.userActivity.poke()
 
 		this.loadSystem()
 		this.loadMachines()
