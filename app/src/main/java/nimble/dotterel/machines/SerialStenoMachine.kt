@@ -280,7 +280,8 @@ class SerialStenoMachine(
 	override fun applyStroke(s: Stroke)
 	{
 		this.strokeListener?.applyStroke(s)
-		this.app.userActivity.poke()
+		this.app.poke()
+		this.app.window.window?.makeActive()
 	}
 
 	override fun changeStroke(s: Stroke)

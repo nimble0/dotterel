@@ -4,8 +4,6 @@
 package nimble.dotterel
 
 import android.content.*
-import android.database.ContentObserver
-import android.hardware.usb.UsbManager
 import android.inputmethodservice.InputMethodService
 import android.net.Uri
 import android.os.Build
@@ -22,7 +20,6 @@ import android.widget.Toast
 import androidx.preference.PreferenceManager
 
 import com.eclipsesource.json.Json
-import com.eclipsesource.json.JsonObject
 import com.eclipsesource.json.ParseException
 
 import java.io.PrintWriter
@@ -32,8 +29,6 @@ import nimble.dotterel.machines.*
 import nimble.dotterel.stenoAppliers.DefaultStenoApplier
 import nimble.dotterel.stenoAppliers.RawStenoStenoApplier
 import nimble.dotterel.translation.*
-import java.io.Closeable
-import java.lang.System
 
 val MACHINE_FACTORIES = mapOf(
 	Pair("On Screen", OnScreenStenoMachine.Factory()),
@@ -83,64 +78,6 @@ fun reloadSystem(sharedPreferences: SharedPreferences, system: String)
 		.edit()
 		.putBoolean("reloadSystem", !current)
 		.apply()
-}
-
-
-
-class UserActivity(val context: Context) : Closeable
-{
-	private var lastActivity: Long = 0L
-	private var screenTimeout: Long = 0L
-	private val wakeLock =
-		(this.context.getSystemService(Context.POWER_SERVICE) as PowerManager)
-			.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "nimble.dotterel:WAKE_LOCK")
-
-	private val screenTimeoutObserver = object : ContentObserver(Handler())
-	{
-		override fun onChange(selfChange: Boolean)
-		{
-			this@UserActivity.updateScreenTimeout()
-			this@UserActivity.checkWakeLock()
-		}
-
-		override fun deliverSelfNotifications(): Boolean = true
-	}
-
-	init
-	{
-		this.context.contentResolver.registerContentObserver(
-			Settings.System.getUriFor(Settings.System.SCREEN_OFF_TIMEOUT),
-			false,
-			this.screenTimeoutObserver)
-		this.updateScreenTimeout()
-	}
-
-	fun poke()
-	{
-
-		this.lastActivity = System.currentTimeMillis()
-		this.wakeLock.acquire(this.screenTimeout)
-	}
-
-	private fun updateScreenTimeout()
-	{
-		this.screenTimeout = Settings.System.getLong(
-			this.context.contentResolver,
-			Settings.System.SCREEN_OFF_TIMEOUT,
-			0)
-	}
-
-	private fun checkWakeLock()
-	{
-		if(System.currentTimeMillis() - this.lastActivity > this.screenTimeout)
-			this.wakeLock.release()
-	}
-
-	override fun close()
-	{
-		this.context.contentResolver.unregisterContentObserver(
-			this.screenTimeoutObserver)
-	}
 }
 
 class Dotterel : InputMethodService(), StenoMachine.Listener
@@ -198,7 +135,7 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 		this.view = viewId.let({ this.layoutInflater.inflate(it, null) })
 	}
 
-	val userActivity by lazy { UserActivity(this) }
+	private var sleepPreventor: SleepPreventor? = null
 
 	private fun loadSystem()
 	{
@@ -334,7 +271,7 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 			this.preferenceListener)
 		this.registerReceiver(this.broadcastReceiver, IntentFilter())
 
-		this.userActivity.poke()
+		this.requestOverlayPermission()
 
 		this.loadSystem()
 		this.loadMachines()
@@ -422,23 +359,6 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 	fun addKeyListener(l: KeyListener) = this.keyListeners.add(l).let({ Unit })
 	fun removeKeyListener(l: KeyListener) = this.keyListeners.remove(l).let({ Unit })
 
-	fun checkOverlayPermission(): Boolean
-	{
-		if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this))
-		{
-			this.startActivity(
-				Intent(
-					Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-					Uri.parse("package:$packageName")
-				).also({ it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); })
-			)
-
-			return false
-		}
-
-		return true
-	}
-
 	override fun onStartInput(attribute: EditorInfo, restarting: Boolean)
 	{
 		super.onStartInput(attribute, restarting)
@@ -505,5 +425,29 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 	{
 		this.broadcastReceiver.intentListeners[action]?.remove(listener)
 		this.registerBroadcastReceiver()
+	}
+
+	fun checkOverlayPermission(): Boolean =
+		Build.VERSION.SDK_INT < Build.VERSION_CODES.M
+			|| Settings.canDrawOverlays(this)
+
+	fun requestOverlayPermission()
+	{
+		if(!this.checkOverlayPermission())
+			this.startActivity(
+				Intent(
+					Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+					Uri.parse("package:$packageName")
+				).also({ it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); })
+			)
+	}
+
+	fun poke()
+	{
+		if(!this.checkOverlayPermission())
+			return
+		if(this.sleepPreventor == null)
+			this.sleepPreventor = SleepPreventor(this)
+		this.sleepPreventor?.poke()
 	}
 }
