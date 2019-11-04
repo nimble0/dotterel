@@ -9,9 +9,6 @@
 	<!-- 0x2341 / Arduino -->
 	<usb-device vendor-id="9025" />
 
-	<!-- 0x16C0 / 0x0483: Teensyduino  -->
-	<usb-device vendor-id="5824" product-id="1155" />
-
 	<!-- 0x10C4 / 0xEA60: CP210x UART Bridge -->
 	<usb-device vendor-id="4292" product-id="60000" />
 
@@ -20,4 +17,12 @@
 
 	<!-- 0x1a86 / 0x7523: Qinheng CH340 -->
 	<usb-device vendor-id="6790" product-id="29987" />
+
+	<!-- feed:1337 Georgi -->
+	<usb-device vendor-id="65261" product-id="4919" />
+
+	<!-- 10c4:ea60 TinyMod1 -->
+	<usb-device vendor-id="4292" product-id="60000" />
+	<!-- 239a:800e TinyMod2 -->
+	<usb-device vendor-id="9114" product-id="32782" />
 </resources>

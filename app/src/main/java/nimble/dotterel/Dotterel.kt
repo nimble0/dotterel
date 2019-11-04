@@ -30,10 +30,10 @@ import nimble.dotterel.stenoAppliers.DefaultStenoApplier
 import nimble.dotterel.stenoAppliers.RawStenoStenoApplier
 import nimble.dotterel.translation.*
 
-val MACHINE_FACTORIES = mapOf(
-	Pair("On Screen", OnScreenStenoMachine.Factory()),
-	Pair("NKRO", NkroStenoMachine.Factory()),
-	Pair("Serial", SerialStenoMachine.Factory())
+val MACHINE_FACTORIES = mapOf<String, () -> StenoMachine.Factory>(
+	Pair("On Screen", { OnScreenStenoMachine.Factory() }),
+	Pair("NKRO", { NkroStenoMachine.Factory() }),
+	Pair("Serial", { SerialStenoMachine.Factory() })
 )
 
 fun combineNameId(name: String, id: String) =
@@ -80,7 +80,7 @@ fun reloadSystem(sharedPreferences: SharedPreferences, system: String)
 		.apply()
 }
 
-class Dotterel : InputMethodService(), StenoMachine.Listener
+class Dotterel : InputMethodService(), StenoMachine.Listener, StenoMachineTracker
 {
 	interface KeyListener
 	{
@@ -135,7 +135,13 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 		this.view = viewId.let({ this.layoutInflater.inflate(it, null) })
 	}
 
+	override val androidContext: Context
+		get() = this
+	override val intentForwarder by lazy { IntentForwarder(this) }
+
 	private var sleepPreventor: SleepPreventor? = null
+
+	var machineFactories: Map<String, StenoMachine.Factory> = mapOf()
 
 	private fun loadSystem()
 	{
@@ -194,41 +200,49 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 		}
 	}
 
-	private fun addMachine(nameId: Pair<String, String>)
+	override fun addMachine(nameId: Pair<String, String>)
 	{
 		Log.i("Dotterel", "Loading machine $nameId")
-		if(nameId !in this.machines)
+		if(nameId in this.machines)
 		{
-			val machineFactory = MACHINE_FACTORIES[nameId.first] ?: return
-			this.machines[nameId] = machineFactory
-				.makeStenoMachine(this, nameId.second)
-				.also({ it.strokeListener = this })
-			this.configureMachine(nameId)
+			Log.i("Dotterel", "Machine $nameId already loaded")
+			return
 		}
+
+		val factory = this.machineFactories[nameId.first]
+		if(factory == null)
+		{
+			Log.i("Dotterel", "Machine factory ${nameId.first} missing")
+			return
+		}
+
+		this.machines[nameId] = factory
+			.makeStenoMachine(this, nameId.second)
+			.also({ it.strokeListener = this })
+		this.configureMachine(nameId)
 	}
-	private fun removeMachine(nameId: Pair<String, String>)
+	override fun removeMachine(nameId: Pair<String, String>)
 	{
-		Log.i("Dotterel", "Unloading machine $nameId")
 		val machine = this.machines[nameId]
 		if(machine != null)
 		{
+			Log.i("Dotterel", "Unloading machine $nameId")
 			machine.close()
 			this.machines.remove(nameId)
 		}
 	}
-	private fun loadMachines()
-	{
-		for(factory in MACHINE_FACTORIES)
-			for(id in factory.value.availableMachines(this))
-			{
-				val nameId = Pair(factory.key, id)
-
-				if(this.preferences?.getBoolean("machine/${combineNameId(nameId)}", false) == true)
-					this.addMachine(nameId)
-				else
-					this.removeMachine(nameId)
-			}
-	}
+//	fun checkMachine(nameId: Pair<String, String>)
+//	{
+//		if(this.preferences?.getBoolean("machine/${combineNameId(nameId)}", false) == true)
+//			this.addMachine(nameId)
+//		else
+//			this.removeMachine(nameId)
+//	}
+//	private fun loadMachineFactories()
+//	{
+//		for(factory in MACHINE_FACTORIES)
+//			factory.value(this)
+//	}
 
 	private fun onPreferenceChanged(key: String)
 	{
@@ -269,17 +283,18 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 		// SharedPreferences holds listeners with weak pointers.
 		this.preferences?.registerOnSharedPreferenceChangeListener(
 			this.preferenceListener)
-		this.registerReceiver(this.broadcastReceiver, IntentFilter())
 
 		this.requestOverlayPermission()
 
 		this.loadSystem()
-		this.loadMachines()
+		this.machineFactories = MACHINE_FACTORIES.mapValues({ it.value() })
+		for(f in this.machineFactories)
+			f.value.tracker = this
 	}
 
 	override fun onDestroy()
 	{
-		this.unregisterReceiver(this.broadcastReceiver)
+		this.intentForwarder.close()
 		super.onDestroy()
 	}
 
@@ -393,39 +408,6 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 			l.onUpdateSelection(old, new)
 	}
 	private val inputStateListeners = mutableListOf<InputStateListener>(ContextSwitcher(this))
-
-	private val broadcastReceiver = object : BroadcastReceiver()
-	{
-		val intentListeners: MutableMap<String, MutableSet<IntentListener>> = mutableMapOf()
-
-		override fun onReceive(context: Context, intent: Intent)
-		{
-			val action = intent.action ?: return
-			this.intentListeners[action]?.forEach({ it.onIntent(context, intent) })
-		}
-	}
-	private fun registerBroadcastReceiver()
-	{
-		this.unregisterReceiver(this.broadcastReceiver)
-		this.registerReceiver(
-			this.broadcastReceiver,
-			IntentFilter().also({
-				for(a in this.broadcastReceiver.intentListeners)
-					it.addAction(a.key)
-			}))
-	}
-	fun addIntentListener(action: String, listener: IntentListener)
-	{
-		this.broadcastReceiver.intentListeners
-			.getOrPut(action, { mutableSetOf() })
-			.add(listener)
-		this.registerBroadcastReceiver()
-	}
-	fun removeIntentListener(action: String, listener: IntentListener)
-	{
-		this.broadcastReceiver.intentListeners[action]?.remove(listener)
-		this.registerBroadcastReceiver()
-	}
 
 	fun checkOverlayPermission(): Boolean =
 		Build.VERSION.SDK_INT < Build.VERSION_CODES.M

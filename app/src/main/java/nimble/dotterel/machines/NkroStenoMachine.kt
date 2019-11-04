@@ -3,7 +3,6 @@
 
 package nimble.dotterel.machines
 
-import android.content.Context
 import android.view.KeyEvent
 
 import com.eclipsesource.json.JsonObject
@@ -27,7 +26,13 @@ class NkroStenoMachine(private val app: Dotterel) :
 
 	class Factory : StenoMachine.Factory
 	{
-		override fun availableMachines(context: Context): List<String> = listOf("")
+		override var tracker: StenoMachineTracker? = null
+			set(v)
+			{
+				field = v
+				this.tracker?.addMachine(Pair("NKRO", ""))
+			}
+
 		override fun makeStenoMachine(app: Dotterel, id: String) = NkroStenoMachine(app)
 	}
 

@@ -36,7 +36,13 @@ class OnScreenStenoMachine(private val app: Dotterel) :
 
 	class Factory : StenoMachine.Factory
 	{
-		override fun availableMachines(context: Context): List<String> = listOf("")
+		override var tracker: StenoMachineTracker? = null
+			set(v)
+			{
+				field = v
+				this.tracker?.addMachine(Pair("On Screen", ""))
+			}
+
 		override fun makeStenoMachine(app: Dotterel, id: String) = OnScreenStenoMachine(app)
 	}
 

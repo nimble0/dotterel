@@ -10,12 +10,9 @@ import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbDeviceConnection
 import android.hardware.usb.UsbManager
 import android.os.Build
-import android.os.Handler
-import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
-import androidx.core.content.ContextCompat.getSystemService
 
 import com.eclipsesource.json.Json
 import com.eclipsesource.json.JsonObject
@@ -29,9 +26,7 @@ import nimble.dotterel.translation.KeyMap
 import nimble.dotterel.translation.Stroke
 import nimble.dotterel.util.mapValues
 import java.io.IOException
-import android.database.ContentObserver
-import android.content.ContentResolver
-
+import nimble.dotterel.StenoMachineTracker
 
 
 val UsbDevice.id: String
@@ -147,19 +142,48 @@ class SerialStenoMachine(
 	private var socket: SerialSocket? = null
 	private var protocol: StenoSerialProtocol? = null
 
-	class Factory : StenoMachine.Factory
+	class Factory :
+		StenoMachine.Factory,
+		Dotterel.IntentListener
 	{
-		override fun availableMachines(context: Context): List<String> =
-			(context.getSystemService(Context.USB_SERVICE) as UsbManager)
-				.deviceList
-				.values
-				.map({ it.id })
+		override var tracker: StenoMachineTracker? = null
+			set(v)
+			{
+				field = v
+				val tracker = v ?: return
+				tracker.intentForwarder
+					.add(UsbManager.ACTION_USB_DEVICE_ATTACHED, this)
+				tracker.intentForwarder
+					.add(UsbManager.ACTION_USB_DEVICE_DETACHED, this)
+
+				(tracker.androidContext.getSystemService(Context.USB_SERVICE) as UsbManager)
+					.deviceList
+					.values
+					.map({ it.id })
+					.forEach({ tracker.addMachine(Pair("Serial", it)) })
+			}
+
 		override fun makeStenoMachine(app: Dotterel, id: String) = SerialStenoMachine(app, id)
+
+		override fun onIntent(context: Context, intent: Intent)
+		{
+			when(intent.action)
+			{
+				UsbManager.ACTION_USB_DEVICE_ATTACHED ->
+					this.tracker?.addMachine(Pair(
+						"Serial",
+						intent.getParcelableExtra<UsbDevice>(UsbManager.EXTRA_DEVICE).id))
+				UsbManager.ACTION_USB_DEVICE_DETACHED ->
+					this.tracker?.removeMachine(Pair(
+						"Serial",
+						intent.getParcelableExtra<UsbDevice>(UsbManager.EXTRA_DEVICE).id))
+			}
+		}
 	}
 
 	init
 	{
-		this.app.addIntentListener(ACTION_USB_DETACHED, this)
+		this.app.intentForwarder.add(ACTION_USB_DETACHED, this)
 	}
 
 	override fun setConfig(
@@ -247,7 +271,7 @@ class SerialStenoMachine(
 	{
 		Log.i("Dotterel", "Requesting USB device access permission for ${this.id}")
 
-		this.app.addIntentListener(ACTION_USB_PERMISSION, this)
+		this.app.intentForwarder.add(ACTION_USB_PERMISSION, this)
 		val pendingIntent = PendingIntent.getBroadcast(
 			this.app,
 			0,

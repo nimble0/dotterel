@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
 	package="nimble.dotterel">
 
 	<uses-feature android:name="android.hardware.usb.host" />
@@ -14,7 +15,8 @@
 		android:label="@string/app_name"
 		android:roundIcon="@mipmap/ic_launcher_round"
 		android:supportsRtl="true"
-		android:theme="@style/AppTheme">
+		android:theme="@style/AppTheme"
+		tools:ignore="GoogleAppIndexingWarning">
 
 		<provider
 			android:name="androidx.core.content.FileProvider"
@@ -34,6 +36,18 @@
 			<intent-filter>
 				<action android:name="android.view.InputMethod" />
 			</intent-filter>
+			<intent-filter>
+				<action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+			</intent-filter>
+			<intent-filter>
+				<action android:name="android.hardware.usb.action.USB_DEVICE_DETACHED" />
+			</intent-filter>
+			<meta-data android:name=
+				"android.hardware.usb.action.USB_DEVICE_ATTACHED"
+				android:resource="@xml/usb_device_filter" />
+			<meta-data android:name=
+				"android.hardware.usb.action.USB_DEVICE_DETACHED"
+				android:resource="@xml/usb_device_filter" />
 		</service>
 
 		<activity
@@ -50,6 +64,23 @@
 		<activity
 			android:name=".DictionaryAssetBrowser"
 			android:label="@string/app_name" />
+
+		<activity
+			android:name=".UsbEventReceiverActivity"
+			android:label="Dotterel"
+			android:theme="@style/Theme.Transparent"
+			android:noHistory="true"
+			android:excludeFromRecents="true"
+			android:taskAffinity="nimble.dotterel.UsbEventReceiver"
+			android:process=":UsbEventReceiverActivityProcess"
+			android:exported="false">
+			<intent-filter>
+				<action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+			</intent-filter>
+			<meta-data
+				android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
+				android:resource="@xml/usb_device_filter" />
+		</activity>
 
 	</application>
 
