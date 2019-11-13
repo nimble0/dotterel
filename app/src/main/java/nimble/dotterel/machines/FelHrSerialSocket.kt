@@ -99,5 +99,5 @@ class FelHrSerialSocket(
 	override var protocol: SerialProtocol? = null
 
 	override fun send(data: ByteArray) = this.device.write(data)
-	override fun close() = this.device.close()
+	override fun close() = if(this.device.isOpen) this.device.close() else Unit
 }

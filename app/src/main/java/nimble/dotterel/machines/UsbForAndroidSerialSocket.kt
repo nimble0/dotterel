@@ -5,9 +5,10 @@ package nimble.dotterel.machines
 
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbDeviceConnection
+import android.util.Log
+
 import com.hoho.android.usbserial.driver.CdcAcmSerialDriver
 import com.hoho.android.usbserial.driver.ProbeTable
-
 import com.hoho.android.usbserial.driver.UsbSerialPort
 import com.hoho.android.usbserial.driver.UsbSerialProber
 import com.hoho.android.usbserial.util.SerialInputOutputManager
@@ -53,6 +54,7 @@ class UsbForAndroidSerialSocket(
 	SerialSocket
 {
 	private val usbSerialPort: UsbSerialPort
+	private var isOpen = false
 	private var serialIoManager: SerialInputOutputManager
 
 	init
@@ -61,6 +63,7 @@ class UsbForAndroidSerialSocket(
 			?: throw Exception("Error probing serial USB device $device")
 		this.usbSerialPort = driver.ports[0]
 		this.usbSerialPort.open(connection)
+		this.isOpen = true
 
 		this.usbSerialPort.dtr = true
 		this.usbSerialPort.rts = true
@@ -71,7 +74,7 @@ class UsbForAndroidSerialSocket(
 			{
 				override fun onRunError(e: Exception)
 				{
-					throw e
+					Log.d("Dotterel Serial", "Runner stopped ${e.message}")
 				}
 
 				override fun onNewData(data: ByteArray)
@@ -131,7 +134,11 @@ class UsbForAndroidSerialSocket(
 
 	override fun close()
 	{
-		this.serialIoManager.stop()
-		this.usbSerialPort.close()
+		if(this.isOpen)
+		{
+			this.serialIoManager.stop()
+			this.usbSerialPort.close()
+			this.isOpen = false
+		}
 	}
 }

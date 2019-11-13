@@ -40,7 +40,7 @@ dependencies {
 	implementation 'androidx.constraintlayout:constraintlayout:2.0.0-beta4'
 	implementation 'androidx.preference:preference:1.1.0'
 	implementation 'com.eclipsesource.minimal-json:minimal-json:0.9.5'
-	implementation 'com.github.felHR85:UsbSerial:6.0.6'
+	implementation 'com.github.felHR85:UsbSerial:6.1.0'
 	implementation 'com.github.kai-morich:usb-serial-for-android:1.7.0'
 	testImplementation 'io.kotlintest:kotlintest:2.0.7'
 	androidTestImplementation 'androidx.test:runner:1.2.0'

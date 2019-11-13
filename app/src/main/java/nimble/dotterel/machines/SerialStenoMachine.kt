@@ -295,9 +295,6 @@ class SerialStenoMachine(
 					Toast.makeText(this.app, m, Toast.LENGTH_LONG).show()
 				}
 			}
-			ACTION_USB_DETACHED ->
-			{
-			}
 		}
 	}
 
