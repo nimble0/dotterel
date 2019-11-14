@@ -194,6 +194,13 @@ class SettingsFragment : PreferenceFragmentCompat()
 			.filter({ it.extras.getBoolean("bindSummaryToValue") })
 			.forEach({ it.bindSummaryToValue() })
 
+		this.findPreference<Preference>("permissions")!!.setIcon(
+			if(PermissionsHelper(this.requireContext()).checkAllPermissions())
+				R.drawable.ic_check_circle_24dp
+			else
+				R.drawable.ic_error_24dp
+		)
+
 		this.findPreference<ListPreference>("system")!!.also({ preference ->
 			val currentPreferenceChangeListener = preference.onPreferenceChangeListener
 			preference.onPreferenceChangeListener = Preference.OnPreferenceChangeListener()

@@ -284,8 +284,6 @@ class Dotterel : InputMethodService(), StenoMachine.Listener, StenoMachineTracke
 		this.preferences?.registerOnSharedPreferenceChangeListener(
 			this.preferenceListener)
 
-		this.requestOverlayPermission()
-
 		this.loadSystem()
 		this.machineFactories = MACHINE_FACTORIES.mapValues({ it.value() })
 		for(f in this.machineFactories)

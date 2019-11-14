@@ -50,6 +50,10 @@
 	<string name="pref_machines_nkro_key_map">Key map</string>
 	<string name="pref_machines_nkro_apply_on_stroke_up">Apply on stroke up</string>
 
+	<string name="pref_permissions">Permissions</string>
+	<string name="pref_permissions_overlays">Overlays</string>
+	<string name="pref_permissions_overlays_summary">Required for pop-up tools. Required to keep the device awake when using serial machines.</string>
+
 	<string name="pref_about">About</string>
 	<string name="pref_about_page_url">file:///android_asset/about.html</string>
 
