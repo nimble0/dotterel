@@ -3,10 +3,7 @@
 
 package nimble.dotterel.translation
 
-import com.eclipsesource.json.Json
-import com.eclipsesource.json.JsonObject
-import com.eclipsesource.json.JsonValue
-import com.eclipsesource.json.ParseException
+import com.eclipsesource.json.*
 
 import nimble.dotterel.util.*
 
@@ -14,11 +11,47 @@ data class SystemDictionary(
 	val path: String,
 	val enabled: Boolean,
 	val dictionary: Dictionary)
+{
+	fun toJson() = JsonObject().also({
+		it.set("path", this.path)
+		it.set("enabled", this.enabled)
+	})
+
+	companion object
+	{
+		fun fromJson(manager: SystemManager, json: JsonObject) =
+			manager.openDictionary(json.get("path").asString())
+				?.let({ dictionary ->
+					SystemDictionary(
+						json.get("path").asString(),
+						json.get("enabled").asBoolean(),
+						dictionary)
+				})
+	}
+}
 
 data class SystemOrthography(
 	val path: String,
 	val enabled: Boolean,
 	val orthography: Orthography)
+{
+	fun toJson() = JsonObject().also({
+		it.set("path", this.path)
+		it.set("enabled", this.enabled)
+	})
+
+	companion object
+	{
+		fun fromJson(manager: SystemManager, json: JsonObject) =
+			manager.openOrthography(json.get("path").asString())
+				?.let({ orthography ->
+					SystemOrthography(
+						json.get("path").asString(),
+						json.get("enabled").asBoolean(),
+						orthography)
+				})
+	}
+}
 
 data class SystemDictionaries(
 	val dictionaries: List<SystemDictionary> = listOf()
@@ -36,6 +69,16 @@ data class SystemDictionaries(
 			.asSequence()
 			.mapNotNull({ if(it.enabled) it.dictionary[k] else null })
 			.firstOrNull()
+
+	fun toJson() = this.dictionaries.map({ it.toJson() }).toJson()
+
+	companion object
+	{
+		fun fromJson(manager: SystemManager, json: JsonArray) =
+			json.map({ it.asObject() })
+				.mapNotNull({ SystemDictionary.fromJson(manager, it) })
+				.let({ SystemDictionaries(it) })
+	}
 }
 
 data class SystemOrthographies(
@@ -49,105 +92,69 @@ data class SystemOrthographies(
 			.fold<SystemOrthography, Orthography.Result?>(
 				null,
 				{ acc, it -> acc ?: it.orthography.match(a, b) })
-}
 
-class MachineConfig(
-	val system: System,
-	val json: JsonObject)
-{
-	operator fun get(key: String): JsonValue? =
-		(this.json[key] ?: this.system.base?.machineConfig?.get(key))
-			?.let({ if(it == Json.NULL) null else it })
-	operator fun set(key: String, value: JsonValue)
+	fun toJson() = this.orthographies.map({ it.toJson() }).toJson()
+
+	companion object
 	{
-		this.json.set(key, value)
-		this.system.save()
+		fun fromJson(manager: SystemManager, json: JsonArray) =
+			json.map({ it.asObject() })
+				.mapNotNull({ SystemOrthography.fromJson(manager, it) })
+				.let({ SystemOrthographies(it) })
 	}
 }
 
-class System(
-	val base: System?,
+fun defaultFormattingToJson(manager: SystemManager, formatting: Formatting) =
+	JsonObject().also({
+		it.set("space", formatting.space)
+		it.set("spaceStart", formatting.spaceEnd.toString())
+		it.set(
+			"transform",
+			manager.transforms.inverted()[formatting.transform]?.value)
+		it.set(
+			"singleTransform",
+			manager.transforms.inverted()[formatting.singleTransform]?.value)
+		it.set("transformState", formatting.transformState.toString())
+	})
+
+fun defaultFormattingFromJson(manager: SystemManager, json: JsonObject) =
+	Formatting(
+		space = json.getString("space", " "),
+		spaceEnd = json.getOrNull("spaceStart")?.asString()
+			?.let({ Formatting.Space.valueOf(it) })
+			?: Formatting.Space.NORMAL,
+		transform = manager.transforms[
+			json.getOrNull("transform")
+				?.asString()
+				?.let({ CaseInsensitiveString(it) })],
+		singleTransform = manager.transforms[
+			json.getOrNull("singleTransform")
+				?.asString()
+				?.let({ CaseInsensitiveString(it) })],
+		transformState = json.getOrNull("transformState")?.asString()
+			?.let({ Formatting.TransformState.valueOf(it) })
+			?: Formatting.TransformState.NORMAL)
+
+data class System(
+	val baseJson: JsonObject?,
 
 	val path: String?,
 	val manager: SystemManager,
 
-	keyLayout: KeyLayout? = null,
-	prefixStrokes: List<Stroke>? = null,
-	suffixStrokes: List<Stroke>? = null,
+	var keyLayout: KeyLayout = KeyLayout(""),
+	var prefixStrokes: List<Stroke> = listOf(),
+	var suffixStrokes: List<Stroke> = listOf(),
 
-	aliases: Map<CaseInsensitiveString, String>? = null,
+	var aliases: Map<CaseInsensitiveString, String> = mapOf(),
 
-	defaultFormatting: Formatting? = null,
+	var defaultFormatting: Formatting = Formatting(),
 
-	orthographies: SystemOrthographies? = null,
+	var orthographies: SystemOrthographies = SystemOrthographies(listOf()),
 
-	dictionaries: SystemDictionaries? = null,
+	var dictionaries: SystemDictionaries = SystemDictionaries(),
 
-	machineConfig: JsonObject = JsonObject())
+	var machineConfig: JsonObject = JsonObject())
 {
-	var _keyLayout: KeyLayout? = keyLayout
-		set(v)
-		{
-			field = v
-			this.save()
-		}
-	var _prefixStrokes: List<Stroke>? = prefixStrokes
-		set(v)
-		{
-			field = v
-			this.save()
-		}
-	var _suffixStrokes: List<Stroke>? = suffixStrokes
-		set(v)
-		{
-			field = v
-			this.save()
-		}
-
-	var _aliases: Map<CaseInsensitiveString, String>? = aliases
-		set(v)
-		{
-			field = v
-			this.save()
-		}
-
-	var _defaultFormatting: Formatting? = defaultFormatting
-		set(v)
-		{
-			field = v
-			this.save()
-		}
-
-	var _orthographies: SystemOrthographies? = orthographies
-		set(v)
-		{
-			field = v
-			this.save()
-		}
-
-	var _dictionaries: SystemDictionaries? = dictionaries
-		set(v)
-		{
-			field = v
-			this.save()
-		}
-
-	var keyLayout: KeyLayout
-		get() = this._keyLayout
-			?: this.base?.keyLayout
-			?: KeyLayout("")
-		set(v) { this._keyLayout = v }
-	var prefixStrokes: List<Stroke>
-		get() = this._prefixStrokes
-			?: this.base?.prefixStrokes
-			?: listOf()
-		set(v) { this._prefixStrokes = v }
-	var suffixStrokes: List<Stroke>
-		get() = this._suffixStrokes
-			?: this.base?.suffixStrokes
-			?: listOf()
-		set(v) { this._suffixStrokes = v }
-
 	val transforms: Map<
 		CaseInsensitiveString,
 		(FormattedText, UnformattedText, Boolean) -> UnformattedText>
@@ -156,237 +163,101 @@ class System(
 		CaseInsensitiveString,
 		(Translator, String) -> TranslationPart>
 		get() = this.manager.commands
-	var aliases: Map<CaseInsensitiveString, String>
-		get() = this._aliases
-			?: this.base?.aliases
-			?: mapOf()
-		set(v) { this._aliases = v }
-
-	var defaultFormatting: Formatting
-		get() = this._defaultFormatting
-			?: this.base?.defaultFormatting
-			?: Formatting()
-		set(v) { this._defaultFormatting = v }
-
-	var orthographies: SystemOrthographies
-		get() = this._orthographies
-			?: this.base?.orthographies
-			?: SystemOrthographies(listOf())
-		set(v) { this._orthographies = v }
-
-	var dictionaries: SystemDictionaries
-		get() = this._dictionaries
-			?: this.base?.dictionaries
-			?: SystemDictionaries()
-		set(v) { this._dictionaries = v }
-
-	val machineConfig: MachineConfig = MachineConfig(this, machineConfig)
 
 	fun save() = this.manager.saveSystem(this)
 
 	companion object
 }
 
-fun System.copy(
-	base: System? = this.base,
-
-	path: String? = this.path,
-	manager: SystemManager = this.manager,
-
-	keyLayout: KeyLayout? = this.keyLayout,
-	prefixStrokes: List<Stroke>? = this.prefixStrokes,
-	suffixStrokes: List<Stroke>? = this.suffixStrokes,
-
-	aliases: Map<CaseInsensitiveString, String>? = this.aliases,
-
-	defaultFormatting: Formatting? = this.defaultFormatting,
-
-	orthographies: SystemOrthographies? = this.orthographies,
-
-	dictionaries: SystemDictionaries? = this.dictionaries,
-
-	machineConfig: JsonObject = this.machineConfig.json
-) =
-	System(
-		base,
-
-		path,
-		manager,
-
-		keyLayout,
-		prefixStrokes,
-		suffixStrokes,
-
-		aliases,
-
-		defaultFormatting,
-
-		orthographies,
-
-		dictionaries,
-
-		machineConfig
-	)
-
 fun System.toJson() = JsonObject().also({ system ->
-	system.setNotNull("keyLayout", this._keyLayout?.toJson())
-	system.setNotNull("aliases", this._aliases?.mapKeys({ it.key.value })?.toJson())
-	system.setNotNull("prefixStrokes", this._prefixStrokes?.map({ it.rtfcre })?.toJson())
-	system.setNotNull("suffixStrokes", this._suffixStrokes?.map({ it.rtfcre })?.toJson())
+	system.setNotNull("keyLayout", this.keyLayout.toJson())
+	system.setNotNull("aliases", this.aliases.mapKeys({ it.key.value }).toJson())
+	system.setNotNull("prefixStrokes", this.prefixStrokes.map({ it.rtfcre }).toJson())
+	system.setNotNull("suffixStrokes", this.suffixStrokes.map({ it.rtfcre }).toJson())
 	system.setNotNull(
 		"defaultFormatting",
-		this._defaultFormatting
-			?.let({ formatting ->
-				JsonObject().also({
-					it.set("space", formatting.space)
-					it.set("spaceStart", formatting.spaceEnd.toString())
-					it.set(
-						"transform",
-						this.manager
-							.transforms
-							.inverted()[formatting.transform]?.value)
-					it.set(
-						"singleTransform",
-						this.manager
-							.transforms
-							.inverted()[formatting.singleTransform]?.value)
-					it.set("transformState", formatting.transformState.toString())
-				})
-			})
-	)
-	system.setNotNull(
-		"orthographies",
-		this._orthographies?.orthographies
-			?.map({ d ->
-				JsonObject().also({
-					it.set("path", d.path)
-					it.set("enabled", d.enabled)
-				})
-			})
-			?.toJson()
-	)
-	system.setNotNull(
-		"dictionaries",
-		this._dictionaries?.dictionaries
-			?.map({ d ->
-				JsonObject().also({
-					it.set("path", d.path)
-					it.set("enabled", d.enabled)
-				})
-			})
-			?.toJson()
-	)
-	system.setNotNull("machineConfig", this.machineConfig.json)
+		defaultFormattingToJson(this.manager, this.defaultFormatting))
+	system.setNotNull("orthographies", this.orthographies.toJson())
+	system.setNotNull("dictionaries", this.dictionaries.toJson())
+	system.setNotNull("machineConfig", this.machineConfig)
+
+	if(this.baseJson != null)
+	{
+		for(member in this.baseJson)
+			if(member.value == system[member.name])
+				system.remove(member.name)
+
+		val baseMachineConfig = this.baseJson["machineConfig"] as? JsonObject
+		val machineConfig = system["machineConfig"] as? JsonObject
+		if(baseMachineConfig != null && machineConfig != null)
+			for(member in baseMachineConfig)
+				if(member.value == system[member.name])
+					machineConfig.remove(member.name)
+	}
 })
 
-fun nimble.dotterel.translation.System.Companion.fromJson(
+fun System.Companion.fromJson(
 	manager: SystemManager,
-	base: System?,
+	baseJson: JsonObject?,
 	json: JsonObject
 ): System
 {
-	val keyLayout = json.getOrNull("keyLayout")?.asObject()?.let({ KeyLayout(it) })
-	val keyLayout2 = keyLayout ?: base?.keyLayout ?: NULL_SYSTEM.keyLayout
+	val mergedJson = baseJson?.also({ it.mergeSystem(json) }) ?: json
+	val keyLayout = mergedJson
+		.getOrNull("keyLayout")?.asObject()
+		?.let({ KeyLayout(it) })
+		?: NULL_SYSTEM.keyLayout
 
-	return nimble.dotterel.translation.System(
-		base = base,
+	return System(
+		baseJson = baseJson,
 		path = null,
 		manager = manager,
 		keyLayout = keyLayout,
-		prefixStrokes = json.getOrNull("prefixStrokes")?.asArray()
-			?.map({ keyLayout2.parse(it.asString()) }),
-		suffixStrokes = json.getOrNull("suffixStrokes")?.asArray()
-			?.map({ keyLayout2.parse(it.asString()) }),
+		prefixStrokes = mergedJson.getOrNull("prefixStrokes")?.asArray()
+			?.map({ keyLayout.parse(it.asString()) })
+			?: listOf(),
+		suffixStrokes = mergedJson.getOrNull("suffixStrokes")?.asArray()
+			?.map({ keyLayout.parse(it.asString()) })
+			?: listOf(),
 
-		aliases = json.getOrNull("aliases")
+		aliases = mergedJson.getOrNull("aliases")
 			?.asObject()
 			?.associateBy(
 				{ CaseInsensitiveString(it.name) },
-				{ it.value.asString() }),
+				{ it.value.asString() })
+			?: mapOf(),
 
-		defaultFormatting = json.getOrNull("defaultFormatting")?.asObject()
-			?.let({ formatting ->
-				Formatting(
-					space = formatting.getString("space", " "),
-					spaceEnd = formatting.getOrNull("spaceStart")?.asString()
-						?.let({ Formatting.Space.valueOf(it) })
-						?: Formatting.Space.NORMAL,
-					transform = manager.transforms[
-						formatting.getOrNull("transform")
-							?.asString()
-							?.let({ CaseInsensitiveString(it) })],
-					singleTransform = manager.transforms[
-						formatting.getOrNull("singleTransform")
-							?.asString()
-							?.let({ CaseInsensitiveString(it) })],
-					transformState = formatting.getOrNull("transformState")?.asString()
-						?.let({ Formatting.TransformState.valueOf(it) })
-						?: Formatting.TransformState.NORMAL)
-			}),
+		defaultFormatting = mergedJson.getOrNull("defaultFormatting")?.asObject()
+			?.let({ defaultFormattingFromJson(manager, it) })
+			?: Formatting(),
 
-		orthographies = json.getOrNull("orthographies")?.asArray()
-			?.map({ it.asObject() })
-			?.mapNotNull({
-				manager.openOrthography(it.get("path").asString())
-					?.let({ orthography ->
-						SystemOrthography(
-							it.get("path").asString(),
-							it.get("enabled").asBoolean(),
-							orthography)
-					})
-			})
-			?.let({ SystemOrthographies(it) }),
+		orthographies = mergedJson.getOrNull("orthographies")?.asArray()
+			?.let({ SystemOrthographies.fromJson(manager, it) })
+			?: SystemOrthographies(listOf()),
 
-		dictionaries = json.getOrNull("dictionaries")?.asArray()
-			?.map({ it.asObject() })
-			?.mapNotNull({
-				manager.openDictionary(it.get("path").asString())
-					?.let({ dictionary ->
-						SystemDictionary(
-							it.get("path").asString(),
-							it.get("enabled").asBoolean(),
-							dictionary)
-					})
-			})
-			?.let({ SystemDictionaries(it) }),
+		dictionaries = mergedJson.getOrNull("dictionaries")?.asArray()
+			?.let({ SystemDictionaries.fromJson(manager, it) })
+			?: SystemDictionaries(),
 
-		machineConfig = json.get("machineConfig")?.asObject() ?: JsonObject()
+		machineConfig = mergedJson.get("machineConfig")?.asObject() ?: JsonObject()
 	)
 }
 
 val NULL_SYSTEM = System(
-	base = null,
+	baseJson = null,
 	path = null,
 	manager = NULL_SYSTEM_MANAGER
 )
 
-fun mergedSystemJson(resources: SystemResources, path: String): JsonObject?
+fun JsonObject.mergeSystem(system: JsonObject)
 {
-	try
-	{
-		val loadSystem = { systemPath: String ->
-			resources.openInputStream(systemPath)
-				?.let({ Json.parse(it.bufferedReader()).asObject() })
-		}
+	for(member in system)
+		if(!member.value.isNull && member.name != "machineConfig")
+			this.set(member.name, member.value)
 
-		val system = loadSystem(path) ?: return null
-		val systems = mutableListOf(system)
-		while(true)
-		{
-			val baseSystemPath = systems.last().getString("base", null) ?: break
-			val baseSystem = loadSystem(baseSystemPath) ?: break
-			systems.add(baseSystem)
-		}
-
-		return systems.reduceRight({ it, acc ->
-			for(member in it)
-				if(!member.value.isNull)
-					acc.set(member.name, member.value)
-			acc
-		})
-	}
-	catch(e: ParseException)
-	{
-		return null
-	}
+	val machineConfig = this["machineConfig"] as? JsonObject ?: return
+	val mergeMachineConfig = system["machineConfig"] as? JsonObject ?: return
+	for(member in mergeMachineConfig)
+		if(!member.value.isNull)
+			machineConfig.set(member.name, member.value)
 }

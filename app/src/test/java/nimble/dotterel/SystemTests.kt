@@ -15,6 +15,8 @@ import java.io.*
 
 import nimble.dotterel.translation.*
 import nimble.dotterel.util.CaseInsensitiveString
+import nimble.dotterel.util.getOrNull
+import nimble.dotterel.util.toJson
 
 class LocalSystemResources : SystemResources
 {
@@ -122,14 +124,14 @@ class SystemTests : FunSpec
 			shouldBe system2.orthographies.orthographies.map({ Pair(it.enabled, it.path) }))
 		(system.dictionaries.dictionaries.map({ Pair(it.enabled, it.path) })
 			shouldBe system2.dictionaries.dictionaries.map({ Pair(it.enabled, it.path) }))
-		system.machineConfig.json shouldBe system2.machineConfig.json
+		system.machineConfig shouldBe system2.machineConfig
 	}
 
 	test("system inheritance")
 	{
 		val base = systemManager.openSystem("asset:/systems/ireland.english.json")!!
 
-		val system1 = System(base, null, NULL_SYSTEM_MANAGER)
+		val system1 = System.fromJson(systemManager, base.toJson(), JsonObject())
 
 		system1.keyLayout shouldBe base.keyLayout
 		system1.prefixStrokes shouldBe base.prefixStrokes
@@ -146,14 +148,15 @@ class SystemTests : FunSpec
 		val prefixStrokes = keyLayout.parse(listOf("A-", "C-"))
 		val suffixStrokes = keyLayout.parse(listOf("-L"))
 		val aliases = base.aliases + mapOf(Pair(CaseInsensitiveString("abc"), "cdf"))
-		val system2 = System(
-			base,
-			null,
-			NULL_SYSTEM_MANAGER,
-			keyLayout = keyLayout,
-			prefixStrokes = prefixStrokes,
-			suffixStrokes = suffixStrokes,
-			aliases = aliases)
+		val system2 = System.fromJson(
+			systemManager,
+			base.toJson(),
+			JsonObject().also({ json ->
+				json.set("keyLayout", keyLayout.toJson())
+				json.set("prefixStrokes", prefixStrokes.map({ it.rtfcre }).toJson())
+				json.set("suffixStrokes", suffixStrokes.map({ it.rtfcre }).toJson())
+				json.set("aliases", aliases.mapKeys({ it.key.value }).toJson())
+			}))
 
 		system2.keyLayout shouldBe keyLayout
 		system2.prefixStrokes shouldBe prefixStrokes
@@ -161,14 +164,15 @@ class SystemTests : FunSpec
 		system2.aliases shouldBe aliases
 		system2.defaultFormatting shouldBe base.defaultFormatting
 		system2.orthographies shouldBe base.orthographies
-		system2.dictionaries shouldBe base.dictionaries
+		(system2.dictionaries.dictionaries.map({ Pair(it.enabled, it.path) })
+			shouldBe base.dictionaries.dictionaries.map({ Pair(it.enabled, it.path) }))
 		system2.machineConfig["NKRO"] shouldNotBe null
 		system2.machineConfig["On Screen"] shouldNotBe null
 		system2.machineConfig["TX Bolt"] shouldBe null
 
 		val defaultFormatting = Formatting(
 			space = "-",
-			spaceStart = Formatting.Space.NONE,
+			spaceEnd = Formatting.Space.NONE,
 			singleTransform = systemManager.transforms[CaseInsensitiveString("CAPITALISE")],
 			transformState = Formatting.TransformState.MAIN
 		)
@@ -182,14 +186,22 @@ class SystemTests : FunSpec
 			it.set("On Screen", Json.NULL)
 			it.set("TX Bolt", JsonObject())
 		})
-		val system3 = System(
-			base,
-			null,
-			NULL_SYSTEM_MANAGER,
-			orthographies = orthographies,
-			dictionaries = dictionaries,
-			defaultFormatting = defaultFormatting,
-			machineConfig = machineConfig)
+		val system3 = System.fromJson(
+			systemManager,
+			base.toJson(),
+			JsonObject().also({ json ->
+				json.set("orthographies", orthographies.orthographies
+					.map({ d ->
+						JsonObject().also({
+							it.set("path", d.path)
+							it.set("enabled", d.enabled)
+						})
+					})
+					.toJson())
+				json.set("dictionaries", dictionaries.toJson())
+				json.set("defaultFormatting", defaultFormattingToJson(systemManager, defaultFormatting))
+				json.set("machineConfig", machineConfig)
+			}))
 
 		system3.keyLayout shouldBe base.keyLayout
 		system3.prefixStrokes shouldBe base.prefixStrokes
@@ -199,7 +211,7 @@ class SystemTests : FunSpec
 		system3.orthographies shouldBe orthographies
 		system3.dictionaries shouldBe dictionaries
 		system3.machineConfig["NKRO"] shouldNotBe null
-		system3.machineConfig["On Screen"] shouldBe null
+		system3.machineConfig["On Screen"] shouldNotBe null
 		system3.machineConfig["TX Bolt"] shouldBe JsonObject()
 	}
 })

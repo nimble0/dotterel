@@ -3,8 +3,7 @@
 
 package nimble.dotterel.translation
 
-import com.eclipsesource.json.Json
-import com.eclipsesource.json.PrettyPrint
+import com.eclipsesource.json.*
 
 import java.io.InputStream
 import java.io.OutputStream
@@ -123,12 +122,12 @@ class SystemManager(
 		{
 			val file = this.resources.openInputStream(path) ?: return null
 			val json = Json.parse(file.bufferedReader()).asObject()
-			val baseSystem = json.getString("base", null)
-				?.let({ this.openSystem(it) })
-			val system = System.fromJson(this, baseSystem, json)
+			val baseJson = json.getString("base", null)
+				?.let({ mergedSystemJson(this.resources, it) })
+			val system = System.fromJson(this, baseJson, json)
 			return system.copy(path = path)
 		}
-		catch(e: com.eclipsesource.json.ParseException)
+		catch(e: ParseException)
 		{
 			this.log("System $path has badly formed JSON")
 		}
@@ -184,3 +183,32 @@ val NULL_SYSTEM_MANAGER = SystemManager(
 		override fun openOutputStream(path: String): OutputStream? = null
 	}
 )
+
+fun mergedSystemJson(resources: SystemResources, path: String): JsonObject?
+{
+	try
+	{
+		val loadSystem = { systemPath: String ->
+			resources.openInputStream(systemPath)
+				?.let({ Json.parse(it.bufferedReader()).asObject() })
+		}
+
+		val system = loadSystem(path) ?: return null
+		val systems = mutableListOf(system)
+		while(true)
+		{
+			val baseSystemPath = systems.last().getString("base", null) ?: break
+			val baseSystem = loadSystem(baseSystemPath) ?: break
+			systems.add(baseSystem)
+		}
+
+		return systems.reduceRight({ it, acc ->
+			acc.mergeSystem(it)
+			acc
+		})
+	}
+	catch(e: ParseException)
+	{
+		return null
+	}
+}
