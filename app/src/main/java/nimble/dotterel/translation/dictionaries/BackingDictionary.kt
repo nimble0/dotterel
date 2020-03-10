@@ -5,7 +5,7 @@ package nimble.dotterel.translation.dictionaries
 
 import java.util.Locale
 
-import nimble.collections.BasicMultiMap
+import nimble.collections.BTreeMultiMap
 import nimble.dotterel.util.CaseInsensitiveString
 
 private fun countStrokes(s: String): Int
@@ -29,9 +29,9 @@ open class BackingDictionary
 	private val keySizeCounts = mutableListOf<Int>()
 	val longestKey: Int get() = this.keySizeCounts.size
 
-	private val reverseEntries = BasicMultiMap<String, String>()
+	private val reverseEntries = BTreeMultiMap<String, String>(500, 1200)
 	private val caseInsensitiveReverseEntries =
-		BasicMultiMap<CaseInsensitiveString, String>()
+		BTreeMultiMap<CaseInsensitiveString, String>(500, 1200)
 
 	private fun incrementKeySizeCount(s: Int)
 	{
