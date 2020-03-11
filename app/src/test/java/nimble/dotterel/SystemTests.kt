@@ -78,7 +78,7 @@ class LocalSystemResources : SystemResources
 
 class SystemTests : FunSpec
 ({
-	val systemManager = SystemManager(LocalSystemResources(), { println(it) })
+	val systemManager = SystemManager(LocalSystemResources())
 
 	test("empty system")
 	{

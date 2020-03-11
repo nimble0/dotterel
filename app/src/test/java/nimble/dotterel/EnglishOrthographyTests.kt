@@ -15,7 +15,7 @@ class EnglishOrthographyTests : FunSpec
 ({
 	test("")
 	{
-		val systemManager = SystemManager(LocalSystemResources(), { println(it) })
+		val systemManager = SystemManager(LocalSystemResources())
 
 		val orthography = SystemOrthographies(listOf(
 			"asset://orthography/english.simple.json",

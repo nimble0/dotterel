@@ -68,7 +68,11 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 
 	var translator = Translator(
 		NULL_SYSTEM,
-		log = { m -> Log.e("Dotterel Translation", m) })
+		log = object : nimble.dotterel.translation.Log
+		{
+			override fun info(message: String) { Log.i("Dotterel Translation", message) }
+			override fun error(message: String) { Log.e("Dotterel Translation", message) }
+		})
 
 	private val machines = mutableMapOf<String, StenoMachine>()
 

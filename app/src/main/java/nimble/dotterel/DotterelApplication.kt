@@ -30,7 +30,11 @@ class DotterelApplication : Application()
 {
 	val systemManager = SystemManager(
 		AndroidSystemResources(this),
-		log = { m -> Log.e("Dotterel", m) })
+		log = object : nimble.dotterel.translation.Log
+		{
+			override fun info(message: String) { Log.i("Dotterel", message) }
+			override fun error(message: String) { Log.e("Dotterel", message) }
+		})
 
 	override fun onCreate()
 	{

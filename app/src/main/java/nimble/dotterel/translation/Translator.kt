@@ -109,7 +109,7 @@ fun optimiseActions(context: String, actions: List<Any>): List<Any>
 
 class Translator(
 	var system: System,
-	var log: (message: String) -> Unit = {})
+	var log: Log = object : Log {})
 {
 	val processor = TranslationProcessor(this)
 
@@ -252,7 +252,7 @@ class Translator(
 		}
 		catch(e: ParseException)
 		{
-			this.log("Error parsing translation: ${t.raw}")
+			this.log.error("Error parsing translation: ${t.raw}")
 		}
 	}
 
