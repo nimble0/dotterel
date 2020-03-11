@@ -5,6 +5,8 @@ package nimble.dotterel.translation
 
 import com.eclipsesource.json.*
 
+import kotlinx.coroutines.*
+
 import nimble.dotterel.util.*
 
 data class SystemDictionary(
@@ -200,48 +202,90 @@ fun System.Companion.fromJson(
 	manager: SystemManager,
 	baseJson: JsonObject?,
 	json: JsonObject
-): System
-{
-	val mergedJson = baseJson?.also({ it.mergeSystem(json) }) ?: json
-	val keyLayout = mergedJson
-		.getOrNull("keyLayout")?.asObject()
-		?.let({ KeyLayout(it) })
-		?: NULL_SYSTEM.keyLayout
+): System =
+	runBlocking()
+	{
+		val mergedJson = baseJson?.also({ it.mergeSystem(json) }) ?: json
+		val keyLayout = mergedJson
+			.getOrNull("keyLayout")?.asObject()
+			?.let({ KeyLayout(it) })
+			?: NULL_SYSTEM.keyLayout
 
-	return System(
-		baseJson = baseJson,
-		path = null,
-		manager = manager,
-		keyLayout = keyLayout,
-		prefixStrokes = mergedJson.getOrNull("prefixStrokes")?.asArray()
-			?.map({ keyLayout.parse(it.asString()) })
-			?: listOf(),
-		suffixStrokes = mergedJson.getOrNull("suffixStrokes")?.asArray()
-			?.map({ keyLayout.parse(it.asString()) })
-			?: listOf(),
+		data class LoadingOrthography(
+			val path: String,
+			val enabled: Boolean,
+			val orthography: Deferred<Orthography?>
+		)
+		data class LoadingDictionary(
+			val path: String,
+			val enabled: Boolean,
+			val dictionary: Deferred<Dictionary?>
+		)
 
-		aliases = mergedJson.getOrNull("aliases")
-			?.asObject()
-			?.associateBy(
-				{ CaseInsensitiveString(it.name) },
-				{ it.value.asString() })
-			?: mapOf(),
+		val loadingOrthographies = mergedJson.getOrNull("orthographies")?.asArray()
+			?.map({ it.asObject() })
+			?.map({
+				val path = it.get("path").asString()
+				LoadingOrthography(
+					path,
+					it.get("enabled").asBoolean(),
+					async(Dispatchers.Default) { manager.parallelOpenOrthography(path) })
+			})
 
-		defaultFormatting = mergedJson.getOrNull("defaultFormatting")?.asObject()
-			?.let({ defaultFormattingFromJson(manager, it) })
-			?: Formatting(),
+		val loadingDictionaries = mergedJson.getOrNull("dictionaries")?.asArray()
+			?.map({ it.asObject() })
+			?.map({
+				val path = it.get("path").asString()
+				LoadingDictionary(
+					path,
+					it.get("enabled").asBoolean(),
+					async(Dispatchers.Default) { manager.parallelOpenDictionary(path) })
+			})
 
-		orthographies = mergedJson.getOrNull("orthographies")?.asArray()
-			?.let({ SystemOrthographies.fromJson(manager, it) })
-			?: SystemOrthographies(listOf()),
+		val orthographies = SystemOrthographies(
+			loadingOrthographies?.mapNotNull({ orthography ->
+				orthography.orthography.await()?.let({
+					SystemOrthography(orthography.path, orthography.enabled, it)
+				})
+			}) ?: listOf())
 
-		dictionaries = mergedJson.getOrNull("dictionaries")?.asArray()
-			?.let({ SystemDictionaries.fromJson(manager, it) })
-			?: SystemDictionaries(),
+		val dictionaries = SystemDictionaries(
+			loadingDictionaries?.mapNotNull({ dictionary ->
+				dictionary.dictionary.await()?.let({
+					SystemDictionary(dictionary.path, dictionary.enabled, it)
+				})
+			}) ?: listOf())
 
-		machineConfig = mergedJson.get("machineConfig")?.asObject() ?: JsonObject()
-	)
-}
+		System(
+			baseJson = baseJson,
+			path = null,
+			manager = manager,
+			keyLayout = keyLayout,
+			prefixStrokes = mergedJson.getOrNull("prefixStrokes")?.asArray()
+				?.map({ keyLayout.parse(it.asString()) })
+				?: listOf(),
+			suffixStrokes = mergedJson.getOrNull("suffixStrokes")?.asArray()
+				?.map({ keyLayout.parse(it.asString()) })
+				?: listOf(),
+
+			aliases = mergedJson.getOrNull("aliases")
+				?.asObject()
+				?.associateBy(
+					{ CaseInsensitiveString(it.name) },
+					{ it.value.asString() })
+				?: mapOf(),
+
+			defaultFormatting = mergedJson.getOrNull("defaultFormatting")?.asObject()
+				?.let({ defaultFormattingFromJson(manager, it) })
+				?: Formatting(),
+
+			orthographies = orthographies,
+
+			dictionaries = dictionaries,
+
+			machineConfig = mergedJson.get("machineConfig")?.asObject() ?: JsonObject()
+		)
+	}
 
 val NULL_SYSTEM = System(
 	baseJson = null,

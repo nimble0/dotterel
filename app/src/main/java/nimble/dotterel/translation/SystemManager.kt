@@ -9,6 +9,10 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.lang.ref.WeakReference
 
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+
 import nimble.dotterel.util.CaseInsensitiveString
 
 interface SystemResources
@@ -40,12 +44,22 @@ class SystemManager(
 
 	private var cachedDictionaries: MutableMap<String, WeakReference<Dictionary>> =
 		mutableMapOf()
+	private val cachedDictionariesMutex = Mutex()
 	private var cachedOrthographies: MutableMap<String, WeakReference<Orthography>> =
 		mutableMapOf()
+	private val cachedOrthographiesMutex = Mutex()
 
-	fun openDictionary(path: String): Dictionary?
+	fun openDictionary(path: String): Dictionary? =
+		runBlocking() { this@SystemManager.parallelOpenDictionary(path) }
+	fun openOrthography(path: String): Orthography? =
+		runBlocking() { this@SystemManager.parallelOpenOrthography(path) }
+
+	suspend fun parallelOpenDictionary(path: String): Dictionary?
 	{
-		val cached = this.cachedDictionaries[path]?.get()
+		val cached = this.cachedDictionariesMutex.withLock()
+		{
+			this.cachedDictionaries[path]?.get()
+		}
 		if(cached != null)
 			return cached
 
@@ -54,19 +68,24 @@ class SystemManager(
 			val type = path.substringBefore(":")
 			return when(type)
 			{
-				"code_dictionary" -> this.resources.codeDictionaries[
-					path.substringAfter(":/")]
-				else -> this.resources.openInputStream(path)
-					?.let({ input -> JsonDictionary(input) })
-					?.also({ dictionary: Dictionary ->
-						this.cachedDictionaries = this.cachedDictionaries
-							.filterValues({ it.get() != null })
-							.toMutableMap()
-						this.cachedDictionaries[path] = WeakReference(dictionary)
-					})
+				"code_dictionary" ->
+					this.resources.codeDictionaries[path.substringAfter(":/")]
+				else ->
+					this.resources.openInputStream(path)
+						?.let({ JsonDictionary(it) })
+						?.also({ dictionary: Dictionary ->
+							this.cachedDictionariesMutex.withLock()
+							{
+								this.cachedDictionaries = this.cachedDictionaries
+									.filterValues({ it.get() != null })
+									.toMutableMap()
+								this.cachedDictionaries[path] =
+									WeakReference(dictionary)
+							}
+						})
 			}
 		}
-		catch(e: com.eclipsesource.json.ParseException)
+		catch(e: ParseException)
 		{
 			this.log("Dictionary $path has badly formed JSON")
 		}
@@ -81,9 +100,12 @@ class SystemManager(
 
 		return null
 	}
-	fun openOrthography(path: String): Orthography?
+	suspend fun parallelOpenOrthography(path: String): Orthography?
 	{
-		val cached = this.cachedOrthographies[path]?.get()
+		val cached = this.cachedOrthographiesMutex.withLock()
+		{
+			this.cachedOrthographies[path]?.get()
+		}
 		if(cached != null)
 			return cached
 
@@ -103,10 +125,13 @@ class SystemManager(
 					}
 				})
 				?.also({ orthography: Orthography ->
-					this.cachedOrthographies = this.cachedOrthographies
-						.filterValues({ it.get() != null })
-						.toMutableMap()
-					this.cachedOrthographies[path] = WeakReference(orthography)
+					this.cachedOrthographiesMutex.withLock()
+					{
+						this.cachedOrthographies = this.cachedOrthographies
+							.filterValues({ it.get() != null })
+							.toMutableMap()
+						this.cachedOrthographies[path] = WeakReference(orthography)
+					}
 				})
 		}
 		catch(e: FileParseException)
