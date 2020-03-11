@@ -99,7 +99,7 @@ class DotterelSettings :
 	): Boolean
 	{
 		val fragment = this.supportFragmentManager.fragmentFactory
-			.instantiate(this.classLoader, preference.fragment, null)
+			.instantiate(this.classLoader, preference.fragment)
 		fragment.arguments = preference.extras
 		(fragment as? PreferenceFragment)?.preference = preference
 		this.supportFragmentManager
@@ -160,7 +160,7 @@ class SettingsFragment : PreferenceFragmentCompat()
 			.filter({ it.extras.getBoolean("bindSummaryToValue") })
 			.forEach({ it.bindSummaryToValue() })
 
-		(this.findPreference("system") as ListPreference).also({ preference ->
+		this.findPreference<ListPreference>("system")!!.also({ preference ->
 			val currentPreferenceChangeListener = preference.onPreferenceChangeListener
 			preference.onPreferenceChangeListener = Preference.OnPreferenceChangeListener()
 			{ p, v ->
@@ -178,7 +178,7 @@ class SettingsFragment : PreferenceFragmentCompat()
 			?.filter({ it.isFile && it.extension == "json" })
 			?.sorted()
 			?: listOf()
-		(this.findPreference("system") as ListPreference).also({ preference ->
+		this.findPreference<ListPreference>("system")!!.also({ preference ->
 			preference.entries = systems.map({ it.nameWithoutExtension }).toTypedArray()
 			preference.entryValues = systems.map({ it.absolutePath }).toTypedArray()
 

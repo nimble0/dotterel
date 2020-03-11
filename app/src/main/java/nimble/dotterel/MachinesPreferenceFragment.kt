@@ -19,8 +19,8 @@ class MachinesPreferenceFragment : PreferenceFragmentCompat()
 		this.addPreferencesFromResource(R.xml.pref_machines)
 		this.preferenceScreen.removePreference(this.findPreference("hidden"))
 
-		val machinesCategory = this.preferenceScreen.findPreference("machines")
-			as PreferenceCategory
+		val machinesCategory = this.preferenceScreen
+			.findPreference<PreferenceCategory>("machines")!!
 		for(m in MACHINES)
 		{
 			val enabled = SwitchPreference(this.preferenceScreen.context)
