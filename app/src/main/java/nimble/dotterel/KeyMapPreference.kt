@@ -12,6 +12,8 @@ import androidx.preference.*
 
 import com.eclipsesource.json.*
 
+import java.util.Locale
+
 import nimble.dotterel.translation.KeyLayout
 import nimble.dotterel.util.*
 import nimble.dotterel.util.DialogPreference
@@ -19,10 +21,10 @@ import nimble.dotterel.util.DialogPreference
 data class KeyMapping(val stenoKey: String, val keyboardKeys: MutableList<String>)
 
 fun keyCodeToString(keyCode: Int) =
-	KeyEvent.keyCodeToString(keyCode).substring("KEYCODE_".length).toLowerCase()
+	KeyEvent.keyCodeToString(keyCode).substring("KEYCODE_".length).toLowerCase(Locale.ROOT)
 
 fun stringToKeyCode(keyCodeString: String) =
-	KeyEvent.keyCodeFromString("KEYCODE_${keyCodeString.toUpperCase()}")
+	KeyEvent.keyCodeFromString("KEYCODE_${keyCodeString.toUpperCase(Locale.ROOT)}")
 
 class KeyMapAdapter(context: Context, items: List<KeyMapping>, val readOnly: Boolean) :
 	ArrayAdapter<KeyMapping>(context, R.layout.pref_key_mapping, items)

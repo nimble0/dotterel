@@ -4,6 +4,7 @@
 package nimble.dotterel.translation
 
 import java.text.ParseException
+import java.util.Locale
 
 enum class Modifier(val mask: Int)
 {
@@ -157,7 +158,7 @@ fun parseKeyCombos(keyCombos: String): List<KeyCombo>
 			{
 				val modifier = try
 				{
-					Modifier.valueOf(match.groupValues[1].toUpperCase())
+					Modifier.valueOf(match.groupValues[1].toUpperCase(Locale.ROOT))
 				}
 				catch(e: IllegalArgumentException)
 				{
@@ -180,7 +181,7 @@ fun parseKeyCombos(keyCombos: String): List<KeyCombo>
 			// Key press
 			match.groupValues[3].isNotEmpty() ->
 			{
-				val keyName = match.groupValues[3].toLowerCase()
+				val keyName = match.groupValues[3].toLowerCase(Locale.ROOT)
 				val key = KEYNAME_TO_CHAR[keyName]?.toString() ?: keyName
 				actions.add(KeyCombo(key, modifiers))
 			}

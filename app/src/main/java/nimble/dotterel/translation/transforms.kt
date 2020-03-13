@@ -5,6 +5,8 @@
 
 package nimble.dotterel.translation
 
+import java.util.Locale
+
 import nimble.dotterel.util.CaseInsensitiveString
 
 val TRANSFORMS = mapOf(
@@ -30,25 +32,21 @@ fun uncapitaliseTransform(
 	text: UnformattedText,
 	suffix: Boolean
 ) =
-	if(!suffix)
-		text.copy(text = text.text[0].toLowerCase().toString()
-			+ text.text.substring(1))
-	else
-		text
+	if(!suffix) text.copy(text = text.text.decapitalize()) else text
 
 fun upperCaseTransform(
 	context: FormattedText,
 	text: UnformattedText,
 	suffix: Boolean
 ) =
-	text.copy(text = text.text.toUpperCase())
+	text.copy(text = text.text.toUpperCase(Locale.getDefault()))
 
 fun lowerCaseTransform(
 	context: FormattedText,
 	text: UnformattedText,
 	suffix: Boolean
 ) =
-	text.copy(text = text.text.toLowerCase())
+	text.copy(text = text.text.toLowerCase(Locale.getDefault()))
 
 private val CAMEL_PATTERN = Regex("((?<=  ?).)")
 
@@ -61,5 +59,5 @@ fun titleCaseTransform(
 		text = text.text
 			.replace(
 				regex = CAMEL_PATTERN,
-				transform = { it.value.toUpperCase() })
+				transform = { it.value.capitalize() })
 			.let({ if(!suffix) it.capitalize() else it }))
