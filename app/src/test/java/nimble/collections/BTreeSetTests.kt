@@ -53,6 +53,15 @@ class BTreeSetTests : FunSpec
 		set.isOrdered() shouldBe true
 	}
 
+	test("compactAddAll")
+	{
+		val set2 = BTreeSet<String>(3, 8, { a, b -> a.compareTo(b) })
+		set.addAll(entries)
+		set2.compactAddAll(entries)
+
+		set shouldBe set2
+	}
+
 	test("iterator")
 	{
 		for(x in entries.shuffled(random))

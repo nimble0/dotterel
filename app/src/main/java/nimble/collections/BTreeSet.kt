@@ -52,6 +52,108 @@ open class BTreeSet<T>(
 			changed = this.add(x) || changed
 		return changed
 	}
+	fun compactAddAll(iterable: Iterable<T>)
+	{
+		// Make sure root is a branch node, this is to avoid branching in main loop
+		if(this.root !is BTreeBranchNode<T>)
+			this.root = BTreeBranchNode<T>(this.minSize, this.maxSize).also({
+				it.nodes[0] = this.root
+			})
+
+		val nodes = mutableListOf<BTreeBranchNode<T>>()
+		var node = this.root
+		while(node is BTreeBranchNode<T>)
+		{
+			nodes.add(0, node)
+			node = node.lastNode()
+		}
+		var leafNode = node as BTreeLeafNode<T>
+
+		val iter =  iterable.iterator()
+		if(!iter.hasNext())
+			return
+
+		// Ensure there's a initial last value
+		if(leafNode.dataSize == 0)
+			leafNode.add(leafNode.dataSize, iter.next())
+
+		@Suppress("UNCHECKED_CAST")
+		var last = leafNode.data[leafNode.dataSize - 1] as T
+		compactAdd@while(iter.hasNext())
+		{
+			val v = iter.next()
+			val compare = this.compare(last, v)
+			when
+			{
+				compare <= 0 ->
+				{
+					leafNode.add(leafNode.dataSize, v)
+					last = v
+				}
+				compare == 0 ->
+				{
+					leafNode.data[leafNode.dataSize - 1] = v
+					last = v
+				}
+				// Give up and add normally if data out of order
+				else ->
+				{
+					this.add(v)
+					break@compactAdd
+				}
+			}
+
+			// Split nodes where necessary
+			if(leafNode.isFull)
+			{
+				run()
+				{
+					val parentNode = nodes.first()
+					val split = leafNode.compactSplitRight()
+					parentNode.insertWithRightNode(parentNode.dataSize, split.first, split.second)
+					leafNode = split.second as BTreeLeafNode<T>
+				}
+
+				for(i in 0 until nodes.size - 1)
+				{
+					val childNode = nodes[i]
+					if(childNode.isFull)
+					{
+						val parentNode = nodes[i + 1]
+						val split = childNode.compactSplitRight()
+						parentNode.addLast(split.first, split.second)
+						nodes[i] = split.second as BTreeBranchNode<T>
+					}
+					else
+						continue
+				}
+
+				if(nodes.last().isFull)
+				{
+					val childNode = nodes.last()
+					if(childNode.isFull)
+					{
+						val newNode = BTreeBranchNode<T>(minSize, maxSize)
+						val split = childNode.compactSplitRight()
+						newNode.nodes[0] = childNode
+						newNode.addLast(split.first, split.second)
+						nodes[nodes.size - 1] = split.second as BTreeBranchNode<T>
+						nodes.add(newNode)
+					}
+				}
+			}
+		}
+
+		// Remove root branch node if we didn't need it
+		this.root = if(nodes.last().dataSize == 0)
+			leafNode
+		else
+			nodes.last()
+
+		// Add remaining values if we had to give up due to data being out of order
+		if(iter.hasNext())
+			this.addAll(iter.asSequence())
+	}
 
 	override fun iterator(): BTreeIterator<T> =
 		BTreeIterator(this, mutableListOf()).inc()

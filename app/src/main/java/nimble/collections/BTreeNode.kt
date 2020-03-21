@@ -24,6 +24,8 @@ interface BTreeNode<T>
 
 	fun split(i: Int): Pair<T, BTreeNode<T>>
 	fun split(): Pair<T, BTreeNode<T>> = this.split((this.dataSize - 1) / 2)
+	fun compactSplitLeft(): Pair<T, BTreeNode<T>> = this.split(1)
+	fun compactSplitRight(): Pair<T, BTreeNode<T>> = this.split(this.dataSize - 2)
 
 	fun removeFirst()
 	fun removeLast()

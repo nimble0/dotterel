@@ -52,6 +52,13 @@ class BTreeMapTests : FunSpec
 		map shouldBe map2
 	}
 
+	test("compactAdd")
+	{
+		map.compactAddAll(entries.map({ BTreeMap.Entry(it.first, it.second) }))
+		map2.putAll(entries)
+		map shouldBe map2
+	}
+
 	test("keys")
 	{
 		for(x in entries)
