@@ -4,14 +4,19 @@
 package nimble.dotterel.translation.dictionaries
 
 import com.eclipsesource.json.Json
+import com.eclipsesource.json.JsonObject
 
 import java.io.InputStream
 
 import nimble.dotterel.translation.KeyLayout
 import nimble.dotterel.translation.FileParseException
 
-class JsonDictionary(keyLayout: KeyLayout) :
-	BackedDictionary(keyLayout, BackingDictionary())
+class JsonDictionary(keyLayout: KeyLayout, json: JsonObject) :
+	BackedDictionary(
+		keyLayout,
+		BackingDictionary(
+			json.map({ Pair(it.name, it.value.asString()) })
+		))
 {
 	companion object
 	{
@@ -19,10 +24,7 @@ class JsonDictionary(keyLayout: KeyLayout) :
 		{
 			try
 			{
-				val dictionary = JsonDictionary(keyLayout)
-				for(entry in Json.parse(input.bufferedReader()).asObject())
-					dictionary[entry.name] = entry.value.asString()
-				return dictionary
+				return JsonDictionary(keyLayout, Json.parse(input.bufferedReader()).asObject())
 			}
 			catch(e: com.eclipsesource.json.ParseException)
 			{

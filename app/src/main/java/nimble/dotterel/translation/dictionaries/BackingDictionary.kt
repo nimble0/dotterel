@@ -23,7 +23,7 @@ private fun countStrokes(s: String): Int
 // Steno dictionary that uses String keys instead of List<Stroke>
 // so dictionaries can be loaded more quickly by lazily converting
 // String keys to List<Stroke>.
-open class BackingDictionary
+open class BackingDictionary()
 {
 	private val entries = mutableMapOf<String, String>()
 	private val keySizeCounts = mutableListOf<Int>()
@@ -32,6 +32,22 @@ open class BackingDictionary
 	private val reverseEntries = BTreeMultiMap<String, String>(500, 1200)
 	private val caseInsensitiveReverseEntries =
 		BTreeMultiMap<CaseInsensitiveString, String>(500, 1200)
+
+	constructor(initialEntries: Iterable<Pair<String, String>>) : this()
+	{
+		this.entries.putAll(initialEntries)
+		for(x in this.entries)
+		{
+			this.incrementKeySizeCount(countStrokes(x.key))
+
+			this.reverseEntries.put(x.value, x.key)
+			val lowerValue = x.value.toLowerCase(Locale.getDefault())
+			if(x.value != lowerValue)
+				this.caseInsensitiveReverseEntries.put(
+					CaseInsensitiveString(lowerValue),
+					x.value)
+		}
+	}
 
 	private fun incrementKeySizeCount(s: Int)
 	{
