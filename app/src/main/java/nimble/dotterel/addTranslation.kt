@@ -3,9 +3,11 @@
 
 package nimble.dotterel
 
-import android.text.Editable
-import android.text.TextWatcher
+import android.graphics.Color
+import android.graphics.Typeface
+import android.text.*
 import android.text.method.ScrollingMovementMethod
+import android.text.style.*
 import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
@@ -13,9 +15,12 @@ import android.widget.*
 
 import androidx.appcompat.widget.AppCompatImageButton
 
+import androidx.core.graphics.ColorUtils
+
 import nimble.dotterel.translation.*
 import nimble.dotterel.util.Vector2
 import nimble.dotterel.util.ui.FloatingDialog
+import nimble.dotterel.util.ui.append
 
 private fun lastWord(translator: Translator): String
 {
@@ -38,6 +43,89 @@ private fun lastWord(translator: Translator): String
 	}
 
 	return lastWord.toString()
+}
+
+private data class ExistingEntry(
+	val dictionary: String,
+	val strokes: List<Stroke>,
+	val overwritten: Boolean
+)
+
+private fun findExistingEntries(
+	translation: String,
+	dictionaries: SystemDictionaries
+): List<ExistingEntry>
+{
+	val reverseDictionaries = dictionaries.dictionaries
+		.mapNotNull({ dictionary ->
+			(dictionary.dictionary as? ReverseDictionary)
+				?.let({ Pair(dictionary.path, it) })
+		})
+
+	val strokes = mutableSetOf<List<Stroke>>()
+	return reverseDictionaries.flatMap({ dictionary ->
+		dictionary.second.reverseGet(translation)
+			.map({
+				val overwritten = dictionaries[it] != translation || it in strokes
+				strokes.add(it)
+				ExistingEntry(
+					dictionary.first,
+					it,
+					overwritten)
+			})
+	})
+}
+
+private fun formatExistingEntries(
+	results: List<ExistingEntry>,
+	disabledColour: Int
+): Spannable
+{
+	val overwrittenStyle = {
+		listOf(
+			ForegroundColorSpan(disabledColour),
+			StrikethroughSpan())
+	}
+	val strokesStyle = {
+		listOf(
+			TypefaceSpan("monospace"),
+			StyleSpan(Typeface.BOLD))
+	}
+	val dictionaryStyle = {
+		listOf(
+			StyleSpan(Typeface.ITALIC),
+			ForegroundColorSpan(disabledColour))
+	}
+
+	return results.fold(SpannableStringBuilder(), { acc, entry ->
+		acc.append(
+			entry.strokes.rtfcre,
+			strokesStyle() + if(entry.overwritten) overwrittenStyle() else listOf())
+		acc.append(
+			" (${entry.dictionary})\n",
+			dictionaryStyle() + if(entry.overwritten) overwrittenStyle() else listOf())
+
+		acc
+	})
+}
+
+private fun formatOverwriteTranslation(
+	translation: String,
+	dictionary: String,
+	dictionaryColour: Int
+): Spannable
+{
+	val translationStyle = { listOf(StyleSpan(Typeface.BOLD)) }
+	val dictionaryStyle = {
+		listOf(
+			StyleSpan(Typeface.ITALIC),
+			ForegroundColorSpan(dictionaryColour))
+	}
+
+	return SpannableStringBuilder().also({ spannable ->
+		spannable.append(translation, translationStyle())
+		spannable.append(" ($dictionary)", dictionaryStyle())
+	})
 }
 
 class AddTranslationDialog(
@@ -91,9 +179,26 @@ class AddTranslationDialog(
 
 			override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int)
 			{
+				val dictionaryColour = ColorUtils.blendARGB(
+					Color.TRANSPARENT,
+					this@AddTranslationDialog.translationBox.currentTextColor,
+					0.84f)
+
 				val strokes = system.keyLayout.parse(
 					this@AddTranslationDialog.strokesBox.text.toString().trim().split(" "))
-				overwriteEntry.text = system.dictionaries[strokes]
+				val translation = system.dictionaries[strokes]
+				if(translation != null)
+				{
+					val dictionary = system.dictionaries.dictionaries
+						.filter({ it.enabled })
+						.find({ it.dictionary[strokes] == translation })!!
+					overwriteEntry.text = formatOverwriteTranslation(
+						translation,
+						dictionary.path,
+						dictionaryColour)
+				}
+				else
+					overwriteEntry.text = ""
 			}
 		})
 
@@ -104,13 +209,17 @@ class AddTranslationDialog(
 
 			override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int)
 			{
+				val disabledColour = ColorUtils.blendARGB(
+					Color.TRANSPARENT,
+					this@AddTranslationDialog.translationBox.currentTextColor,
+					0.84f)
+
 				val translation = this@AddTranslationDialog.translationBox.text.toString().trim()
-				existingEntries.text = this@AddTranslationDialog.system.dictionaries.dictionaries
-					.mapNotNull({ (it.dictionary as? ReverseDictionary) })
-					.map({ it.reverseGet(translation) })
-					.flatten()
-					.filter({ system.dictionaries[it] == translation })
-					.joinToString(transform = { it.rtfcre })
+				existingEntries.text = formatExistingEntries(
+					findExistingEntries(
+						translation,
+						this@AddTranslationDialog.system.dictionaries),
+					disabledColour)
 			}
 		})
 
