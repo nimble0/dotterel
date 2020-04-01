@@ -16,7 +16,8 @@ import java.util.Locale
 
 import nimble.dotterel.translation.KeyLayout
 import nimble.dotterel.util.*
-import nimble.dotterel.util.DialogPreference
+import nimble.dotterel.util.ui.DialogPreference
+import nimble.dotterel.util.ui.FlowLayout
 
 data class KeyMapping(val stenoKey: String, val keyboardKeys: MutableList<String>)
 

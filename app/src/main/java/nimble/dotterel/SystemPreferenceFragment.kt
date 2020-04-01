@@ -20,9 +20,9 @@ import com.eclipsesource.json.PrettyPrint
 
 import java.io.File
 
-import nimble.dotterel.util.DialogPreference
-import nimble.dotterel.util.displayPreferenceDialog
-import nimble.dotterel.util.flatten
+import nimble.dotterel.util.ui.DialogPreference
+import nimble.dotterel.util.ui.displayPreferenceDialog
+import nimble.dotterel.util.ui.flatten
 
 private const val DIALOG_FRAGMENT_TAG = "nimble.dotterel.SystemPreferenceFragment.DIALOG"
 

@@ -15,6 +15,8 @@ import com.eclipsesource.json.JsonObject
 import nimble.dotterel.*
 import nimble.dotterel.translation.*
 import nimble.dotterel.util.*
+import nimble.dotterel.util.ui.position
+import nimble.dotterel.util.ui.size
 
 val ON_SCREEN_MACHINE_STYLES = mapOf(
 	Pair("Touch", mapOf(

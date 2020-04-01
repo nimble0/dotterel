@@ -17,8 +17,8 @@ import com.eclipsesource.json.PrettyPrint
 
 import java.io.File
 
-import nimble.dotterel.util.bindSummaryToValue
-import nimble.dotterel.util.flatten
+import nimble.dotterel.util.ui.bindSummaryToValue
+import nimble.dotterel.util.ui.flatten
 
 private val PREFERENCE_RESOURCES = listOf(
 	R.xml.pref_root,

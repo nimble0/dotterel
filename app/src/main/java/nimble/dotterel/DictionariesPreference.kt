@@ -16,6 +16,8 @@ import com.eclipsesource.json.*
 
 import nimble.dotterel.util.toJson
 import nimble.dotterel.util.set
+import nimble.dotterel.util.ui.ReorderableListAdapter
+import nimble.dotterel.util.ui.ReorderableListView
 
 data class DictionaryItem(
 	var path: String,
