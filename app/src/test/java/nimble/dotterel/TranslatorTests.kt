@@ -10,6 +10,8 @@ import java.io.InputStream
 import java.io.OutputStream
 
 import nimble.dotterel.translation.*
+import nimble.dotterel.translation.dictionaries.StandardDictionary
+import nimble.dotterel.translation.orthographies.RegexOrthography
 import nimble.dotterel.util.CaseInsensitiveString
 
 internal fun Translator.apply(strokes: String): List<Any>

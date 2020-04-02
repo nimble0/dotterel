@@ -15,6 +15,8 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
+import nimble.dotterel.translation.dictionaries.*
+import nimble.dotterel.translation.orthographies.*
 import nimble.dotterel.util.CaseInsensitiveString
 
 interface SystemResources

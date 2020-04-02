@@ -6,9 +6,9 @@ package nimble.dotterel
 import io.kotlintest.matchers.shouldBe
 import io.kotlintest.specs.FunSpec
 
-import nimble.dotterel.translation.RegexOrthography
-import nimble.dotterel.translation.RegexWithWordListOrthography
-import nimble.dotterel.translation.SimpleOrthography
+import nimble.dotterel.translation.orthographies.RegexOrthography
+import nimble.dotterel.translation.orthographies.RegexWithWordListOrthography
+import nimble.dotterel.translation.orthographies.SimpleOrthography
 import nimble.dotterel.translation.apply
 
 class OrthographyTests : FunSpec

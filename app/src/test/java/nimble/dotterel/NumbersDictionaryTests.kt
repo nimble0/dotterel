@@ -7,7 +7,7 @@ import io.kotlintest.matchers.shouldBe
 import io.kotlintest.specs.FunSpec
 
 import nimble.dotterel.translation.KeyLayout
-import nimble.dotterel.translation.NumbersDictionary
+import nimble.dotterel.translation.dictionaries.NumbersDictionary
 
 class NumbersDictionaryTests : FunSpec
 ({

@@ -8,6 +8,7 @@ import io.kotlintest.properties.*
 import io.kotlintest.specs.FunSpec
 
 import nimble.dotterel.translation.*
+import nimble.dotterel.translation.orthographies.RegexOrthography
 
 class FormattingTests : FunSpec
 ({
