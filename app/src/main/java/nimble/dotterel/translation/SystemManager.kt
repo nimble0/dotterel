@@ -160,17 +160,9 @@ class SystemManager(
 							.writeTo(it, PrettyPrint.indentWithTabs())
 					})
 		}
-		catch(e: com.eclipsesource.json.ParseException)
-		{
-			this.log("System ${system.path} has badly formed JSON")
-		}
-		catch(e: java.lang.UnsupportedOperationException)
-		{
-			this.log("Invalid type found while reading system ${system.path}")
-		}
 		catch(e: java.io.IOException)
 		{
-			this.log("IO error reading system ${system.path}: ${e.message}")
+			this.log("IO error writing system ${system.path}: ${e.message}")
 		}
 	}
 }
