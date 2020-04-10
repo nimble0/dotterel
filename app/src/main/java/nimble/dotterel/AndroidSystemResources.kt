@@ -17,11 +17,11 @@ private val CODE_DICTIONARIES = mapOf(
 )
 
 private val ANDROID_COMMANDS = mapOf(
-	Pair("IME:EDITOR_ACTION", ::editorAction),
-	Pair("IME:SWITCH_PREVIOUS", ::switchPreviousIme),
-	Pair("IME:SWITCH_NEXT", ::switchNextIme),
-	Pair("IME:SWITCH", ::switchIme),
-	Pair("IME:SHOW_PICKER", ::showImePicker)
+	Pair("IME:EDITOR_ACTION", runnableCommand(::editorAction)),
+	Pair("IME:SWITCH_PREVIOUS", runnableCommand(::switchPreviousIme)),
+	Pair("IME:SWITCH_NEXT", runnableCommand(::switchNextIme)),
+	Pair("IME:SWITCH", runnableCommand(::switchIme)),
+	Pair("IME:SHOW_PICKER", runnableCommand(::showImePicker))
 ).mapKeys({ CaseInsensitiveString(it.key) })
 
 class AndroidSystemResources(private val context: Context) : SystemResources
