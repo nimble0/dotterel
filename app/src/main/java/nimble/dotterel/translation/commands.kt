@@ -5,8 +5,6 @@
 
 package nimble.dotterel.translation
 
-import java.util.Collections
-
 import nimble.dotterel.Dotterel
 import nimble.dotterel.DotterelRunnable
 import nimble.dotterel.util.CaseInsensitiveString
@@ -61,7 +59,7 @@ fun undoStroke(translator: Translator, arg: String)
 		translator.push(HistoryTranslation(
 			listOf(),
 			listOf(),
-			Collections.nCopies(count, backspaceWord),
+			List(count, { backspaceWord }),
 			translator.context,
 			false))
 
