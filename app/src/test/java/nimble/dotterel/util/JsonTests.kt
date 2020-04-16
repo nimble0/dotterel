@@ -1,7 +1,7 @@
 // This file is part of Dotterel which is released under GPL-2.0-or-later.
 // See file <LICENSE.txt> or go to <http://www.gnu.org/licenses/> for full license details.
 
-package nimble.dotterel
+package nimble.dotterel.util
 
 import com.eclipsesource.json.Json
 import com.eclipsesource.json.JsonObject
@@ -9,9 +9,6 @@ import com.eclipsesource.json.JsonObject
 import io.kotlintest.matchers.shouldBe
 import io.kotlintest.matchers.shouldThrow
 import io.kotlintest.specs.FunSpec
-
-import nimble.dotterel.util.get
-import nimble.dotterel.util.set
 
 class JsonTests : FunSpec
 ({

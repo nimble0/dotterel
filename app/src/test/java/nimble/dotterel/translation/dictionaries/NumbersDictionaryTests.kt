@@ -1,18 +1,16 @@
 // This file is part of Dotterel which is released under GPL-2.0-or-later.
 // See file <LICENSE.txt> or go to <http://www.gnu.org/licenses/> for full license details.
 
-package nimble.dotterel
+package nimble.dotterel.translation.dictionaries
 
 import io.kotlintest.matchers.shouldBe
 import io.kotlintest.specs.FunSpec
 
 import nimble.dotterel.translation.KeyLayout
-import nimble.dotterel.translation.dictionaries.NumbersDictionary
 
 class NumbersDictionaryTests : FunSpec
 ({
-
-	test("numbers")
+	test("")
 	{
 		val layout = KeyLayout(
 			"#1S2TK3PW4HR-5A0O*EU-6FR7PB8LG9TSDZ",
