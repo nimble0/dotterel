@@ -16,5 +16,6 @@ class KeyMap<T>(
 		invertedMap
 	})
 
+	fun isMapped(key: T) = this.map.contains(key)
 	fun parse(key: T): Stroke = this.map[key]?.copy() ?: Stroke(this.layout, 0L)
 }

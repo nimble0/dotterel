@@ -17,8 +17,10 @@ class NkroStenoMachine(private val app: Dotterel) :
 	private var keyLayout: KeyLayout = KeyLayout("")
 	private var keyMap: KeyMap<Int> = KeyMap(KeyLayout(""), mapOf(), { 0 })
 	private var stroke: Stroke = Stroke(this.keyLayout, 0)
+	private var strokeOnFirstUp: Boolean = false
 
 	private val keysDown = mutableSetOf<Int>()
+	private var lastKeyUp = false
 
 	override var strokeListener: StenoMachine.Listener? = null
 
@@ -42,6 +44,8 @@ class NkroStenoMachine(private val app: Dotterel) :
 			this.keyLayout = keyLayout
 			this.stroke = Stroke(this.keyLayout, 0)
 
+			this.strokeOnFirstUp = config.get("strokeOnFirstUp")?.asBoolean() ?: false
+
 			val mapping = systemConfig
 				.get("layout").asObject()
 				.mapValues({ it.value.asArray().map({ key -> key.asString() }) })
@@ -62,31 +66,41 @@ class NkroStenoMachine(private val app: Dotterel) :
 
 	override fun keyDown(e: KeyEvent): Boolean
 	{
-		val keyStroke = this.keyMap.parse(e.keyCode)
-		if(keyStroke.isEmpty)
-			return false
-
-		if(this.stroke.keys or keyStroke.keys != this.stroke.keys)
+		return if(this.keyMap.isMapped(e.keyCode))
 		{
-			this.stroke += keyStroke
-			this.strokeListener?.changeStroke(this.stroke)
-		}
-		this.keysDown.add(e.keyCode)
+			this.keysDown.add(e.keyCode)
 
-		return true
+			this.stroke += this.keyMap.parse(e.keyCode)
+			this.strokeListener?.changeStroke(this.stroke)
+
+			this.lastKeyUp = true
+
+			true
+		}
+		else
+			false
 	}
 
 	override fun keyUp(e: KeyEvent): Boolean
 	{
-		if(e.keyCode !in this.keysDown)
+		if(!this.keysDown.remove(e.keyCode))
 			return false
 
-		this.keysDown.remove(e.keyCode)
-		if(this.keysDown.isEmpty())
+		if(this.strokeOnFirstUp)
+		{
+			if(this.lastKeyUp)
+				this.strokeListener?.applyStroke(this.stroke)
+			this.stroke = this.keysDown.fold(
+				Stroke(this.keyLayout, 0),
+				{ acc, it -> acc + this.keyMap.parse(it) })
+		}
+		else if(this.keysDown.isEmpty())
 		{
 			this.strokeListener?.applyStroke(this.stroke)
 			this.stroke = Stroke(this.keyLayout, 0)
 		}
+
+		this.lastKeyUp = false
 
 		return true
 	}

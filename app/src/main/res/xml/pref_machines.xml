@@ -72,6 +72,14 @@
 		android:key="NKRO"
 		android:title="@string/pref_machines_nkro">
 
+		<SwitchPreference
+			android:title="@string/pref_machines_nkro_apply_on_stroke_up"
+			android:defaultValue="false">
+			<extra android:name="store_type" android:value="json_preference" />
+			<extra android:name="store_path" android:value="machineConfig/NKRO" />
+			<extra android:name="key" android:value="strokeOnFirstUp" />
+		</SwitchPreference>
+
 		<nimble.dotterel.KeyMapPreference
 			android:key="machineConfig/NKRO/layout"
 			android:title="@string/pref_machines_nkro_key_map">
