@@ -115,7 +115,7 @@ class Translator(
 {
 	val processor = TranslationProcessor(this)
 
-	private val _history = mutableListOf<HistoryTranslation>()
+	var history = mutableListOf<HistoryTranslation>()
 
 	private var preBufferedContext = ""
 	private var bufferedActions = mutableListOf<Any>()
@@ -124,23 +124,19 @@ class Translator(
 		get()
 		{
 			val contextStr = StringBuilder()
-			for(h in this._history)
+			for(h in this.history)
 			{
-				contextStr.setLength(
-					Math.max(0, contextStr.length - h.replacesText.length))
+				contextStr.setLength(max(0, contextStr.length - h.replacesText.length))
 				contextStr.append(h.text.text)
 			}
 
 			return FormattedText(
 				0,
 				contextStr.toString(),
-				this._history.lastOrNull()?.text?.formatting
+				this.history.lastOrNull()?.text?.formatting
 					?: this.system.defaultFormatting
 			)
 		}
-
-	val history: List<HistoryTranslation>
-		get() = this._history
 
 	private fun lookup(
 		strokes: List<Stroke>,
@@ -196,7 +192,7 @@ class Translator(
 
 		val strokes = mutableListOf(s)
 		val replaces = mutableListOf<HistoryTranslation>()
-		for(h in this._history.reversed())
+		for(h in this.history.reversed())
 		{
 			strokes.addAll(0, h.strokes)
 			replaces.add(0, h)
@@ -220,14 +216,14 @@ class Translator(
 
 	private fun limitHistorySize()
 	{
-		val drop = this._history.size - TRANSLATION_HISTORY_SIZE
+		val drop = this.history.size - TRANSLATION_HISTORY_SIZE
 		if(drop > 0)
-			this._history.subList(0, drop).clear()
+			this.history.subList(0, drop).clear()
 	}
 
 	fun push(t: HistoryTranslation)
 	{
-		this._history.add(t)
+		this.history.add(t)
 		this.bufferedActions.addAll(t.formattedActions)
 		this.limitHistorySize()
 	}
@@ -237,7 +233,7 @@ class Translator(
 		try
 		{
 			for(h in t.replaces.asReversed())
-				if(h != this._history.last())
+				if(h != this.history.last())
 					throw IllegalArgumentException(
 						"Replaced translations must match translation history buffer")
 				else
@@ -263,7 +259,7 @@ class Translator(
 	{
 		val removed = this.popFull() ?: return null
 		for(h in removed.replaces)
-			this._history.add(h)
+			this.history.add(h)
 		this.limitHistorySize()
 		this.bufferedActions.add(removed.redoReplacedAction)
 		return removed
@@ -272,10 +268,10 @@ class Translator(
 	// Pop and don't restore replaced translations
 	fun popFull(): HistoryTranslation?
 	{
-		if(this._history.isEmpty())
+		if(this.history.isEmpty())
 			return null
 
-		val removed = this._history.removeAt(this._history.lastIndex)
+		val removed = this.history.removeAt(this.history.lastIndex)
 		this.bufferedActions.add(removed.undoAction)
 		return removed
 	}

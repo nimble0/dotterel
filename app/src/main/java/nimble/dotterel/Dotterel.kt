@@ -13,6 +13,7 @@ import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
 import android.widget.Toast
 
 import androidx.preference.PreferenceManager
@@ -69,6 +70,13 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 	{
 		fun keyDown(e: KeyEvent): Boolean
 		fun keyUp(e: KeyEvent): Boolean
+	}
+
+	interface InputStateListener
+	{
+		fun onStartInput(editorInfo: EditorInfo, restarting: Boolean)
+		fun onFinishInput()
+		fun onUpdateSelection(old: IntRange, new: IntRange)
 	}
 
 	var preferences: SharedPreferences? = null
@@ -320,4 +328,39 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 
 		return true
 	}
+
+	override fun onStartInput(attribute: EditorInfo, restarting: Boolean)
+	{
+		super.onStartInput(attribute, restarting)
+		for(l in this.inputStateListeners)
+			l.onStartInput(attribute, restarting)
+	}
+	override fun onFinishInput()
+	{
+		super.onFinishInput()
+		for(l in this.inputStateListeners)
+			l.onFinishInput()
+	}
+	override fun onUpdateSelection(
+		oldSelStart: Int,
+		oldSelEnd: Int,
+		newSelStart: Int,
+		newSelEnd: Int,
+		candidatesStart: Int,
+		candidatesEnd: Int)
+	{
+		super.onUpdateSelection(
+			oldSelStart,
+			oldSelEnd,
+			newSelStart,
+			newSelEnd,
+			candidatesStart,
+			candidatesEnd)
+
+		val old = oldSelStart until oldSelEnd
+		val new = newSelStart until newSelEnd
+		for(l in this.inputStateListeners)
+			l.onUpdateSelection(old, new)
+	}
+	private val inputStateListeners = mutableListOf<InputStateListener>(ContextSwitcher(this))
 }
