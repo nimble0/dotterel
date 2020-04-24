@@ -53,7 +53,7 @@ class ContextSwitcher(val dotterel: Dotterel) : Dotterel.InputStateListener
 		val fieldId: Int,
 		val packageName: String,
 		val inputType: Int,
-		val text: String
+		val reversedText: String
 	) :
 		Comparable<Editor>
 	{
@@ -62,7 +62,7 @@ class ContextSwitcher(val dotterel: Dotterel) : Dotterel.InputStateListener
 				editorInfo.fieldId,
 				editorInfo.packageName ?: "",
 				editorInfo.inputType,
-				text)
+				text.reversed())
 
 		fun editorInfoEquals(b: EditorInfo): Boolean =
 			this.fieldId == b.fieldId
@@ -78,7 +78,7 @@ class ContextSwitcher(val dotterel: Dotterel) : Dotterel.InputStateListener
 			this.fieldId.fallThroughCompareTo(other.fieldId)
 				?: this.packageName.fallThroughCompareTo(other.packageName)
 				?: this.inputType.fallThroughCompareTo(other.inputType)
-				?: this.text.reversed().compareTo(other.text.reversed())
+				?: this.reversedText.compareTo(other.reversedText)
 	}
 
 	// Sorted map to allow finding partially matched context
@@ -97,9 +97,9 @@ class ContextSwitcher(val dotterel: Dotterel) : Dotterel.InputStateListener
 		val v2 = if(insertIter.hasNext()) insertIter.value() else null
 		return listOfNotNull(v, v2)
 			.filter({ it.key.editorInfoEquals(editor) })
-			.maxBy({ it.key.text.commonSuffixWith(editor.text).length })
+			.maxBy({ it.key.reversedText.commonPrefixWith(editor.reversedText).length })
 			?.let({
-				if(it.key.text.commonSuffixWith(editor.text).isEmpty())
+				if(it.key.reversedText.commonPrefixWith(editor.reversedText).isEmpty())
 					null
 				else
 					it
@@ -138,12 +138,12 @@ class ContextSwitcher(val dotterel: Dotterel) : Dotterel.InputStateListener
 
 		if(translator.history.isNotEmpty())
 		{
-			this.editor = this.editor.copy(text = translatorText)
+			this.editor = this.editor.copy(reversedText = translatorText.reversed())
 			this.contexts[this.editor] = translator.history
 		}
 
 		translator.history = matchingHistory.toMutableList()
-		this.editor = newEditor.copy(text = translator.context.text)
+		this.editor = newEditor.copy(reversedText = translator.context.text.reversed())
 	}
 
 	override fun onStartInput(editorInfo: EditorInfo, restarting: Boolean)
