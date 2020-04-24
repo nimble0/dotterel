@@ -3,6 +3,7 @@
 
 package nimble.dotterel
 
+import android.text.InputType
 import android.util.Log
 import android.view.inputmethod.EditorInfo
 
@@ -13,6 +14,7 @@ import nimble.collections.BTreeIterator
 import nimble.collections.BTreeMap
 import nimble.dotterel.translation.HistoryTranslation
 import nimble.dotterel.util.fallThroughCompareTo
+import nimble.dotterel.util.testBits
 
 private const val TEXT_CONTEXT_SIZE = 1024
 private const val MAX_CONTEXTS = 20
@@ -46,6 +48,24 @@ private fun findMatchingHistory(
    }
 
    return history.subList(history.size - i, history.size)
+}
+
+private fun isPasswordField(inputType: Int): Boolean
+{
+	val fieldVariation = inputType and InputType.TYPE_MASK_VARIATION
+
+	return when(inputType and InputType.TYPE_MASK_CLASS)
+	{
+		InputType.TYPE_CLASS_TEXT ->
+			if(fieldVariation.testBits(InputType.TYPE_TEXT_VARIATION_WEB_EDIT_TEXT))
+				fieldVariation.testBits(InputType.TYPE_TEXT_VARIATION_WEB_PASSWORD)
+			else
+				fieldVariation.testBits(InputType.TYPE_TEXT_VARIATION_PASSWORD)
+		InputType.TYPE_CLASS_NUMBER ->
+			fieldVariation.testBits(InputType.TYPE_NUMBER_VARIATION_PASSWORD)
+		else ->
+			false
+	}
 }
 
 class ContextSwitcher(val dotterel: Dotterel) : Dotterel.InputStateListener
@@ -157,20 +177,35 @@ class ContextSwitcher(val dotterel: Dotterel) : Dotterel.InputStateListener
 		this.editor = newEditor.copy(reversedText = translator.context.text.reversed())
 	}
 
+	private fun clearPasswordHistory()
+	{
+		if(isPasswordField(this.editor.inputType))
+		{
+			Log.i("Dotterel", "Clear translation history")
+			this.dotterel.translator.history = mutableListOf()
+			this.editor = Editor(EditorInfo(), "")
+		}
+	}
+
 	override fun onStartInput(editorInfo: EditorInfo, restarting: Boolean)
 	{
 		Log.i("Dotterel", "Start input " +
 			"${editorInfo.packageName} ${editorInfo.fieldId}/${editorInfo.inputType}")
+		// Some programs don't call onFinishInput (Chrome), so clear history
+		// here too if necessary.
+		this.clearPasswordHistory()
 		this.updateContext()
 	}
 	override fun onFinishInput()
 	{
 		Log.i("Dotterel", "Finish input " +
 			"${this.editor.packageName} ${this.editor.fieldId}/${this.editor.inputType}")
+		this.clearPasswordHistory()
 	}
 	override fun onUpdateSelection(old: IntRange, new: IntRange)
 	{
 		Log.v("Dotterel", "Update text box selection from $old to $new")
-		this.updateContext()
+		if(!isPasswordField(this.dotterel.currentInputEditorInfo.inputType))
+			this.updateContext()
 	}
 }
