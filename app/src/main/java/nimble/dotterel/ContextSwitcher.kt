@@ -15,6 +15,7 @@ import nimble.dotterel.translation.HistoryTranslation
 import nimble.dotterel.util.fallThroughCompareTo
 
 private const val TEXT_CONTEXT_SIZE = 1024
+private const val MAX_CONTEXTS = 20
 
 private fun findMatchingHistory(
 	history: List<HistoryTranslation>,
@@ -82,11 +83,14 @@ class ContextSwitcher(val dotterel: Dotterel) : Dotterel.InputStateListener
 	}
 
 	// Sorted map to allow finding partially matched context
-	private val contexts = BTreeMap<Editor, MutableList<HistoryTranslation>>(10, 25)
+	private val contexts = BTreeMap<
+		Editor,
+		Pair<Long, MutableList<HistoryTranslation>>
+	>(10, 25)
 	private var editor = Editor(EditorInfo(), "")
 
 	private fun findMatchingContext(editor: Editor)
-		: Map.Entry<Editor, List<HistoryTranslation>>?
+		: Map.Entry<Editor, Pair<Long, List<HistoryTranslation>>>?
 	{
 		val insertIter = this.contexts.root.find(
 			editor,
@@ -104,6 +108,12 @@ class ContextSwitcher(val dotterel: Dotterel) : Dotterel.InputStateListener
 				else
 					it
 			})
+	}
+
+	private fun limitNumContexts()
+	{
+		while(this.contexts.size > MAX_CONTEXTS)
+			this.contexts.remove(this.contexts.entries.minBy({ it.value.first })!!)
 	}
 
 	private fun updateContext()
@@ -132,14 +142,15 @@ class ContextSwitcher(val dotterel: Dotterel) : Dotterel.InputStateListener
 		if(matchingContext != null)
 			this.contexts.remove(matchingContext.key)
 		val matchingHistory = if(matchingContext != null && text.isNotEmpty())
-				findMatchingHistory(matchingContext.value, text)
+				findMatchingHistory(matchingContext.value.second, text)
 			else
 				listOf()
 
 		if(translator.history.isNotEmpty())
 		{
 			this.editor = this.editor.copy(reversedText = translatorText.reversed())
-			this.contexts[this.editor] = translator.history
+			this.contexts[this.editor] = Pair(System.currentTimeMillis(), translator.history)
+			this.limitNumContexts()
 		}
 
 		translator.history = matchingHistory.toMutableList()
