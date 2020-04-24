@@ -105,7 +105,7 @@ class ContextSwitcher(val dotterel: Dotterel) : Dotterel.InputStateListener
 	// Sorted map to allow finding partially matched context
 	private val contexts = BTreeMap<
 		Editor,
-		Pair<Long, MutableList<HistoryTranslation>>
+		Pair<Long, List<HistoryTranslation>>
 	>(10, 25)
 	private var editor = Editor(EditorInfo(), "")
 
@@ -166,14 +166,17 @@ class ContextSwitcher(val dotterel: Dotterel) : Dotterel.InputStateListener
 			else
 				listOf()
 
-		if(translator.history.isNotEmpty())
+		val nonTextHistory = translator.history.takeLastWhile({ !it.hasText })
+		val textHistory = translator.history.dropLast(nonTextHistory.size)
+
+		if(textHistory.isNotEmpty())
 		{
 			this.editor = this.editor.copy(reversedText = translatorText.reversed())
-			this.contexts[this.editor] = Pair(System.currentTimeMillis(), translator.history)
+			this.contexts[this.editor] = Pair(System.currentTimeMillis(), textHistory)
 			this.limitNumContexts()
 		}
 
-		translator.history = matchingHistory.toMutableList()
+		translator.history = (matchingHistory + nonTextHistory).toMutableList()
 		this.editor = newEditor.copy(reversedText = translator.context.text.reversed())
 	}
 
@@ -182,7 +185,9 @@ class ContextSwitcher(val dotterel: Dotterel) : Dotterel.InputStateListener
 		if(isPasswordField(this.editor.inputType))
 		{
 			Log.i("Dotterel", "Clear translation history")
-			this.dotterel.translator.history = mutableListOf()
+			this.dotterel.translator.history = this.dotterel.translator.history
+				.takeLastWhile({ !it.hasText })
+				.toMutableList()
 			this.editor = Editor(EditorInfo(), "")
 		}
 	}
