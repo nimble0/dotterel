@@ -28,7 +28,8 @@
 			android:textColor="@color/stenoKeyText"
 			android:textSize="20sp"
 			android:gravity="center"
-			android:textAllCaps="false" />
+			android:textAllCaps="false"
+			android:singleLine="true" />
 		<Space
 			android:layout_width="0dp"
 			android:layout_weight="1"
