@@ -151,7 +151,7 @@ class AddTranslationDialog(
 				spinner.adapter = ArrayAdapter<String>(
 					dotterel,
 					R.layout.add_translation_spinner,
-					dictionaries.map({ it.path })
+					this.dictionaries.map({ it.path })
 				).also({
 					it.setDropDownViewResource(R.layout.add_translation_spinner_dropdown)
 				})
@@ -167,6 +167,17 @@ class AddTranslationDialog(
 
 		this.dictionariesSpinner.isFocusable = true
 		this.dictionariesSpinner.isFocusableInTouchMode = true
+
+		if(this.dictionariesSpinner.adapter.isEmpty)
+		{
+			this.dictionariesSpinner.isEnabled = false
+			this.dictionariesSpinner.adapter = ArrayAdapter<String>(
+				dotterel,
+				R.layout.add_translation_spinner,
+				listOf("n/a")
+			)
+			Toast.makeText(dotterel, "No saveable dictionaries available", Toast.LENGTH_LONG).show()
+		}
 
 		val overwriteEntry = view.findViewById<TextView>(R.id.overwrite_entry)
 		val existingEntries = view.findViewById<TextView>(R.id.existing_entries)
