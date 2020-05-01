@@ -22,6 +22,9 @@ import com.eclipsesource.json.Json
 import com.eclipsesource.json.JsonObject
 import com.eclipsesource.json.ParseException
 
+import java.io.PrintWriter
+import java.io.StringWriter
+
 import nimble.dotterel.machines.*
 import nimble.dotterel.stenoAppliers.DefaultStenoApplier
 import nimble.dotterel.stenoAppliers.RawStenoStenoApplier
@@ -268,26 +271,37 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 			?.apply(this.translator, s)
 
 		for(a in this.translator.flush())
-			when(a)
+			try
 			{
-				is FormattedText ->
+				when(a)
 				{
-					this.currentInputConnection?.run({
-						this.beginBatchEdit()
-						// TODO: Make sure that this is deleting the expected content.
-						// InputConnection.deleteSurroundingText should not delete
-						// half of a surrogate pair or nonexistent characters.
-						this.deleteSurroundingText(a.backspaces, 0)
-						this.commitText(a.text, 1)
-						this.endBatchEdit()
-					})
+					is FormattedText ->
+					{
+						this.currentInputConnection?.run({
+							this.beginBatchEdit()
+							// TODO: Make sure that this is deleting the expected content.
+							// InputConnection.deleteSurroundingText should not delete
+							// half of a surrogate pair or nonexistent characters.
+							this.deleteSurroundingText(a.backspaces, 0)
+							this.commitText(a.text, 1)
+							this.endBatchEdit()
+						})
+					}
+					is KeyCombo ->
+						a.toAndroidKeyEvent()?.also({
+							this.currentInputConnection?.sendKeyEvent(it)
+						})
+					is Runnable -> a.run()
+					is DotterelRunnable -> a(this)
 				}
-				is KeyCombo ->
-					a.toAndroidKeyEvent()?.also({
-						this.currentInputConnection?.sendKeyEvent(it)
-					})
-				is Runnable -> a.run()
-				is DotterelRunnable -> a(this)
+			}
+			catch(e: Exception)
+			{
+				val stackTrace = StringWriter()
+					.also({ e.printStackTrace(PrintWriter(it)) })
+					.toString()
+				Log.e("Dotterel", "Exception executing steno action: $e\n$stackTrace")
+				Toast.makeText(this, e.toString(), Toast.LENGTH_LONG).show()
 			}
 	}
 
