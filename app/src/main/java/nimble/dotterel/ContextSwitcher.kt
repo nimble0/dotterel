@@ -136,7 +136,7 @@ class ContextSwitcher(val dotterel: Dotterel) : Dotterel.InputStateListener
 			this.contexts.remove(this.contexts.entries.minBy({ it.value.first })!!)
 	}
 
-	private fun updateContext()
+	private fun updateContext(keepHistory: (HistoryTranslation) -> Boolean)
 	{
 		Log.v("Dotterel", "Update translation history")
 
@@ -166,7 +166,7 @@ class ContextSwitcher(val dotterel: Dotterel) : Dotterel.InputStateListener
 			else
 				listOf()
 
-		val nonTextHistory = translator.history.takeLastWhile({ !it.hasText })
+		val nonTextHistory = translator.history.takeLastWhile(keepHistory)
 		val textHistory = translator.history.dropLast(nonTextHistory.size)
 
 		if(textHistory.isNotEmpty())
@@ -199,7 +199,7 @@ class ContextSwitcher(val dotterel: Dotterel) : Dotterel.InputStateListener
 		// Some programs don't call onFinishInput (Chrome), so clear history
 		// here too if necessary.
 		this.clearPasswordHistory()
-		this.updateContext()
+		this.updateContext({ !it.hasText })
 	}
 	override fun onFinishInput()
 	{
@@ -211,6 +211,6 @@ class ContextSwitcher(val dotterel: Dotterel) : Dotterel.InputStateListener
 	{
 		Log.v("Dotterel", "Update text box selection from $old to $new")
 		if(!isPasswordField(this.dotterel.currentInputEditorInfo.inputType))
-			this.updateContext()
+			this.updateContext({ !it.undoable })
 	}
 }
