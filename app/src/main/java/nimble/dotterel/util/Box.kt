@@ -19,7 +19,16 @@ data class Box(val topLeft: Vector2, val bottomRight: Vector2)
 
 	val size get() = this.bottomRight - this.topLeft
 
-	fun overlaps(b: Box) = this.points.any({ it in b }) || b.points.any({ it in this })
+	fun overlaps(b: Box): Boolean
+	{
+		val xOverlap = (this.topLeft.x >= b.topLeft.x && this.topLeft.x <= b.bottomRight.x)
+			|| (this.bottomRight.x >= b.topLeft.x && this.bottomRight.x <= b.bottomRight.x)
+			|| (b.topLeft.x >= this.topLeft.x && b.topLeft.x <= this.bottomRight.x)
+		val yOverlap = (this.topLeft.y >= b.topLeft.y && this.topLeft.y <= b.bottomRight.y)
+			|| (this.bottomRight.y >= b.topLeft.y && this.bottomRight.y <= b.bottomRight.y)
+			|| (b.topLeft.y >= this.topLeft.y && b.topLeft.y <= this.bottomRight.y)
+		return xOverlap && yOverlap
+	}
 
 	fun toConvexPolygon() = ConvexPolygon(listOf(
 		this.topLeft,
