@@ -62,7 +62,7 @@ private data class KeyIntersection(
 
 private fun findKeyIntersections(
 	line: LinearLine,
-	keys: Set<View>
+	keys: Collection<View>
 ): List<KeyIntersection>
 {
 	val lineBoundingBox = line.boundingBox
@@ -241,7 +241,7 @@ class SwipeStenoView(context: Context, attributes: AttributeSet) :
 {
 	private class Touch(
 		var position: Vector2,
-		val keys: Set<View>)
+		val keys: Collection<View>)
 	{
 		var activate: Boolean? = null
 
@@ -305,7 +305,7 @@ class SwipeStenoView(context: Context, attributes: AttributeSet) :
 				val p = Vector2(e.getX(actionI), e.getY(actionI))
 				this.touches[pointerId] = Touch(
 					this.position + p,
-					this.keys.toSet())
+					this.keys)
 			}
 			MotionEvent.ACTION_MOVE ->
 			{

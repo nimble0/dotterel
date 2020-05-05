@@ -34,7 +34,7 @@ private fun MotionEvent.getTouchLine(i: Int): List<Pair<Vector2, Float>>
 
 private fun findKeyIntersections(
 	line: LinearLine,
-	keys: Set<View>
+	keys: Collection<View>
 ): List<Pair<View, Pair<Float, Float>>>
 {
 	val lineBoundingBox = line.boundingBox
@@ -44,7 +44,7 @@ private fun findKeyIntersections(
 		.filterNot({ it.second.second < 0f })
 }
 
-private fun activateKeysOnLine(line: LinearLine, keys: Set<View>, activate: Boolean): Float
+private fun activateKeysOnLine(line: LinearLine, keys: Collection<View>, activate: Boolean): Float
 {
 	val keyIntersections = findKeyIntersections(line, keys)
 
@@ -72,7 +72,7 @@ class TouchStenoView(context: Context, attributes: AttributeSet) :
 		var position: Vector2,
 		var radius: Float,
 		var activate: Boolean,
-		val keys: Set<View>)
+		val keys: Collection<View>)
 	{
 		init
 		{
@@ -162,7 +162,7 @@ class TouchStenoView(context: Context, attributes: AttributeSet) :
 							this.maxTouchRadius,
 							e.getPressure(actionI)),
 						!key.isSelected,
-						this.keys.toSet())
+						this.keys)
 					this.changeStroke()
 				}
 			}
