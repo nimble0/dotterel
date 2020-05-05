@@ -168,6 +168,7 @@ class TouchStenoView(context: Context, attributes: AttributeSet) :
 			}
 			MotionEvent.ACTION_MOVE ->
 			{
+				val oldStroke = this.stroke
 				var applyStroke = false
 				for(i in 0 until e.pointerCount)
 				{
@@ -187,7 +188,8 @@ class TouchStenoView(context: Context, attributes: AttributeSet) :
 						}
 					}
 				}
-				this.changeStroke()
+				if(this.stroke != oldStroke)
+					this.changeStroke()
 				// Make sure applyStroke is called after changeStroke
 				if(applyStroke)
 					this.applyStroke()

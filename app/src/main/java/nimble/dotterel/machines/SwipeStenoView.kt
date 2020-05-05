@@ -309,13 +309,15 @@ class SwipeStenoView(context: Context, attributes: AttributeSet) :
 			}
 			MotionEvent.ACTION_MOVE ->
 			{
+				val oldStroke = this.stroke
 				for(i in 0 until e.pointerCount)
 				{
 					val touch = this.touches[e.getPointerId(i)] ?: continue
 					for(p in e.getTouchLine(i))
 						touch.update(this.position + p)
 				}
-				this.changeStroke()
+				if(this.stroke != oldStroke)
+					this.changeStroke()
 			}
 			MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP ->
 			{
