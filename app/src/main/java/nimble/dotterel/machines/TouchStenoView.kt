@@ -84,12 +84,21 @@ class TouchStenoView(context: Context, attributes: AttributeSet) :
 
 		private fun activateNearKeys()
 		{
+			val circleBoundingBox = Box(
+				this.position - Vector2(this.radius, this.radius),
+				this.position + Vector2(this.radius, this.radius))
+			val keys2 = this.keys
+				.filter({ circleBoundingBox.overlaps(it.boundingBox) })
+
+			if(keys2.all({ it.isSelected == this.activate }))
+				return
+
 			for(i in 0 until CIRCULAR_ITERATIONS)
 			{
 				val angle = (i * 2 * Math.PI / CIRCULAR_ITERATIONS).toFloat()
 				activateKeysOnLine(
 					LinearLine(this.position, this.position + Vector2(this.radius, 0f).rotate(angle)),
-					this.keys,
+					keys2,
 					this.activate)
 			}
 		}
