@@ -48,8 +48,8 @@ class WindowTouchResizer(
 			MotionEvent.ACTION_POINTER_DOWN ->
 			{
 				val activationBox = Box(
-					this.activationView.position,
-					this.activationView.position + this.activationView.size)
+					this.activationView.screenPosition,
+					this.activationView.screenPosition + this.activationView.size)
 				if(event.pointerCount == 2
 					&& Vector2(event.getX(0), event.getY(0)) in activationBox
 					&& Vector2(event.getX(1), event.getY(1)) in activationBox)
