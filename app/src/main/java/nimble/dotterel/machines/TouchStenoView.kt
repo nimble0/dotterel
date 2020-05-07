@@ -71,14 +71,14 @@ class TouchStenoView(context: Context, attributes: AttributeSet) :
 	private class Touch(
 		var position: Vector2,
 		var radius: Float,
-		var activate: Boolean,
-		val keys: Collection<View>)
+		val keys: Collection<View>,
+		var key: View)
 	{
+		var activate: Boolean = !key.isSelected
+
 		init
 		{
-			this.keys
-				.filter({ this.position in it.boundingBox })
-				.forEach({ it.isSelected = this.activate })
+			this.key.isSelected = this.activate
 			this.activateNearKeys()
 		}
 
@@ -105,18 +105,27 @@ class TouchStenoView(context: Context, attributes: AttributeSet) :
 
 		fun update(position: Vector2, radius: Float): Boolean
 		{
-			val line = LinearLine(this.position, position)
-			val lineEnd = min(1f, activateKeysOnLine(
-				line,
-				this.keys,
-				this.activate))
-
-			this.position = line.lerp(lineEnd)
 			this.radius = radius
-
-			this.activateNearKeys()
-
-			return lineEnd < 1f
+			if(position !in this.key.boundingBox)
+			{
+				val line = LinearLine(this.position, position)
+				val lineEnd = min(1f, activateKeysOnLine(
+					line,
+					this.keys,
+					this.activate))
+				val newKey = this.keys.find({ this.position in it.boundingBox })
+				if(newKey != null)
+					this.key = newKey
+				this.position = line.lerp(lineEnd)
+				this.activateNearKeys()
+				return lineEnd < 1f
+			}
+			else
+			{
+				this.position = position
+				this.activateNearKeys()
+				return false
+			}
 		}
 	}
 
@@ -170,8 +179,8 @@ class TouchStenoView(context: Context, attributes: AttributeSet) :
 							this.minTouchRadius,
 							this.maxTouchRadius,
 							e.getPressure(actionI)),
-						!key.isSelected,
-						this.keys)
+						this.keys,
+						key)
 					this.changeStroke()
 				}
 			}
