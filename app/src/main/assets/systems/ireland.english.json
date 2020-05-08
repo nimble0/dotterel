@@ -49,7 +49,7 @@
 
 	"defaultFormatting": {
 		"space": " ",
-		"spaceStart": "NORMAL",
+		"spaceStart": "NONE",
 
 		"transform": "",
 		"singleTransform": "",
