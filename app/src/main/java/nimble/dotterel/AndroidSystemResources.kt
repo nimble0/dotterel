@@ -47,6 +47,7 @@ class AndroidSystemResources(private val context: Context) : SystemResources
 				"content" -> this.context
 					.contentResolver
 					.openInputStream(Uri.parse(path))
+				"file" -> File(path.drop("file://".length)).inputStream()
 				else -> File(path).inputStream()
 			}
 		}
@@ -77,6 +78,7 @@ class AndroidSystemResources(private val context: Context) : SystemResources
 				"content" -> this.context
 					.contentResolver
 					.openOutputStream(Uri.parse(path))
+				"file" -> File(path.drop("file://".length)).outputStream()
 				else -> File(path).outputStream()
 			}
 		}
@@ -120,6 +122,7 @@ class AndroidSystemResources(private val context: Context) : SystemResources
 						!= PackageManager.PERMISSION_GRANTED)
 				}
 			}
+			"file" -> false
 			else -> true
 		}
 	}
