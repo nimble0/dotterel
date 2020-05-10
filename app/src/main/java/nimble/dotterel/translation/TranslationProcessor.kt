@@ -9,6 +9,7 @@ import java.util.Locale
 import kotlin.math.min
 
 import nimble.dotterel.util.CaseInsensitiveString
+import nimble.dotterel.util.unescape
 
 private val TRANSLATION_PARTS_PATTERN = Regex("\\A(?:(?:[^{}\\\\]|(?:\\\\.))+|(?:\\{(?:[^{}\\\\]|(?:\\\\.))*\\}))")
 // META_FORMATTING_PATTERN groups
@@ -27,7 +28,7 @@ private fun parseTranslationParts(translation: String): List<String>
 	while(true)
 	{
 		val match = TRANSLATION_PARTS_PATTERN.find(translation.substring(i)) ?: break
-		i += match.range.endInclusive + 1
+		i += match.range.last + 1
 		val s = match.value.trim(' ')
 		if(s.isNotEmpty())
 			parts.add(s)
@@ -100,7 +101,7 @@ class TranslationProcessor(private val translator: Translator)
 	{
 		if(part[0] == '{')
 		{
-			val inner = part.substring(1, part.length - 1)
+			val inner = part.substring(1, part.length - 1).unescape()
 
 			val a = BASE_ALIASES[inner]
 				?: this.system.aliases[CaseInsensitiveString(inner)]
@@ -165,7 +166,7 @@ class TranslationProcessor(private val translator: Translator)
 		else
 			return TranslationPart(listOf(UnformattedText(
 				0,
-				part,
+				part.unescape(),
 				Formatting(orthography = this.system.orthographies))))
 	}
 

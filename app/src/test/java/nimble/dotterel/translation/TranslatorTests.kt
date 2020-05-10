@@ -241,6 +241,18 @@ class TranslatorTests : FunSpec
 		translation.hasSuffix shouldBe false
 	}
 
+	test("escaped braces")
+	{
+		dictionary["HEL"] = "hell"
+		dictionary["-D"] = "{^ed}"
+		dictionary["PWR-S"] = "\\{"
+		dictionary["PWR*S"] = "\\}"
+		dictionary["SPWR-S"] = "\\\\\\{"
+		dictionary["SPWR*S"] = "\\\\\\}{^\\}\\\\ish}"
+
+		translator.applyToString("PWR-S/HEL/-D/PWR*S/SPWR-S/SPWR*S") shouldBe " { helled } \\{ \\}}\\ish"
+	}
+
 	test("bad formatting")
 	{
 		dictionary["PRE"] = "{^pre^"
