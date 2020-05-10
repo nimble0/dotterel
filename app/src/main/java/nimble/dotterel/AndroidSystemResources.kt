@@ -37,7 +37,7 @@ class AndroidSystemResources(private val context: Context) : SystemResources
 			val type = path.substringBefore(":")
 			return when(type)
 			{
-				"asset" -> this.context.assets.open(path.substringAfter(":/"))
+				"asset" -> this.context.assets.open(path.drop("asset:/".length))
 				"content" -> this.context
 					.contentResolver
 					.openInputStream(Uri.parse(path))
@@ -50,11 +50,11 @@ class AndroidSystemResources(private val context: Context) : SystemResources
 		}
 		catch(e: IOException)
 		{
-			Log.e("Dotterel", "IO Exception: ${e.message}")
+			Log.e("Dotterel", "IO error reading $path: ${e.message}")
 		}
 		catch(e: SecurityException)
 		{
-			Log.i("Dotterel", "Permission denied reading dictionary $path")
+			Log.i("Dotterel", "Permission error reading $path: ${e.message}")
 		}
 
 		return null
@@ -80,11 +80,11 @@ class AndroidSystemResources(private val context: Context) : SystemResources
 		}
 		catch(e: IOException)
 		{
-			Log.e("Dotterel", "IO error reading $path: ${e.message}")
+			Log.e("Dotterel", "IO error writing $path: ${e.message}")
 		}
 		catch(e: SecurityException)
 		{
-			Log.e("Dotterel", "Permission error reading $path: ${e.message}")
+			Log.e("Dotterel", "Permission error writing $path: ${e.message}")
 		}
 
 		return null
