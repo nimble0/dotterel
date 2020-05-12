@@ -127,16 +127,16 @@ private fun charToKeyCode(c: Char): Int?
 	return null
 }
 
-fun KeyCombo.toAndroidKeyEvent(): KeyEvent?
+fun KeyCombo.toAndroidKeyEvents(): List<KeyEvent>
 {
-	val key = KEY_MAP[this.key] ?: charToKeyCode(this.key.first()) ?: return null
+	val key = KEY_MAP[this.key] ?: charToKeyCode(this.key.first()) ?: return listOf()
 	var modifiers = 0
 	for(m in Modifier.values())
 		if(this.modifiers and m.mask != 0)
-			modifiers = modifiers or (MODIFIER_MAP[m] ?: return null)
+			modifiers = modifiers or (MODIFIER_MAP[m] ?: return listOf())
 
 	val now = android.os.SystemClock.uptimeMillis()
-	return KeyEvent(
+	val down = KeyEvent(
 		now,
 		now,
 		KeyEvent.ACTION_DOWN,
@@ -147,4 +147,16 @@ fun KeyCombo.toAndroidKeyEvent(): KeyEvent?
 		0,
 		KeyEvent.FLAG_SOFT_KEYBOARD or KeyEvent.FLAG_KEEP_TOUCH_MODE,
 		InputDevice.SOURCE_KEYBOARD)
+	val up = KeyEvent(
+		now,
+		now,
+		KeyEvent.ACTION_UP,
+		key,
+		0,
+		modifiers,
+		0,
+		0,
+		KeyEvent.FLAG_SOFT_KEYBOARD or KeyEvent.FLAG_KEEP_TOUCH_MODE,
+		InputDevice.SOURCE_KEYBOARD)
+	return listOf(down, up)
 }

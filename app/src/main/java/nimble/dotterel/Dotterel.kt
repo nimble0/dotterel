@@ -288,7 +288,7 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 						})
 					}
 					is KeyCombo ->
-						a.toAndroidKeyEvent()?.also({
+						a.toAndroidKeyEvents().forEach({
 							this.currentInputConnection?.sendKeyEvent(it)
 						})
 					is Runnable -> a.run()
