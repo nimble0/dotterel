@@ -69,7 +69,12 @@ data class SystemDictionaries(
 	override fun get(k: List<Stroke>): String? =
 		this.dictionaries
 			.asSequence()
-			.mapNotNull({ if(it.enabled) it.dictionary[k] else null })
+			.mapNotNull({
+				if(it.enabled && k.size <= it.dictionary.longestKey)
+					it.dictionary[k]
+				else
+					null
+			})
 			.firstOrNull()
 
 	fun toJson() = this.dictionaries.map({ it.toJson() }).toJson()
