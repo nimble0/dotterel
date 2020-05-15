@@ -7,6 +7,7 @@ data class Stroke(val layout: KeyLayout, val keys: Long)
 {
 	operator fun plus(b: Stroke) = Stroke(this.layout, this.keys or b.keys)
 	operator fun minus(b: Stroke) = Stroke(this.layout, this.keys and b.keys.inv())
+	fun test(b: Stroke) = b.keys and this.keys == b.keys
 
 	val rtfcre: String get() = this.layout.rtfcre(this.keys)
 	val pureKeysString: String get() = this.layout.pureKeysString(this.keys)

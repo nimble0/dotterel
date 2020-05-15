@@ -36,5 +36,18 @@ class NumbersDictionaryTests : FunSpec
 		dictionary[layout.parse(listOf("0*8"))] shouldBe null
 		dictionary[layout.parse(listOf(""))] shouldBe null
 		dictionary[layout.parse(listOf("TPH-"))] shouldBe null
+
+		dictionary[layout.parse(listOf("1EU9"))] shouldBe "{&91}"
+		dictionary[layout.parse(listOf("10EU"))] shouldBe "{&01}"
+		dictionary[layout.parse(listOf("3-8D"))] shouldBe "{&338}"
+		dictionary[layout.parse(listOf("3-8Z"))] shouldBe "{&3800}"
+		dictionary[layout.parse(listOf("3EU8D"))] shouldBe "{&883}"
+		dictionary[layout.parse(listOf("3EU8Z"))] shouldBe "{&8300}"
+		dictionary[layout.parse(listOf("3-8DZ"))] shouldBe "{&33800}"
+		dictionary[layout.parse(listOf("3EU8DZ"))] shouldBe "{&88300}"
+		dictionary[layout.parse(listOf("EU"))] shouldBe null
+		dictionary[layout.parse(listOf("-D"))] shouldBe null
+		dictionary[layout.parse(listOf("-Z"))] shouldBe null
+		dictionary[layout.parse(listOf("EUDZ"))] shouldBe null
 	}
 })
