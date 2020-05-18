@@ -8,7 +8,7 @@
 	android:layout_width="match_parent"
 	android:layout_height="match_parent">
 
-	<LinearLayout
+	<androidx.appcompat.widget.LinearLayoutCompat
 		android:layout_width="0dp"
 		android:layout_height="wrap_content"
 		app:layout_constraintStart_toStartOf="parent"
@@ -17,7 +17,8 @@
 		android:background="@color/stenoKey">
 
 		<!-- Align the preview with the asterisk key, not the centre. -->
-		<Button android:id="@+id/translation_preview"
+		<androidx.appcompat.widget.AppCompatButton
+			android:id="@+id/translation_preview"
 			android:layout_width="0dp"
 			android:layout_weight="10"
 			android:layout_height="wrap_content"
@@ -33,7 +34,7 @@
 			android:layout_weight="1"
 			android:layout_height="wrap_content" />
 
-	</LinearLayout>
+	</androidx.appcompat.widget.LinearLayoutCompat>
 
 	<androidx.gridlayout.widget.GridLayout
 		android:id="@+id/keys"
@@ -47,7 +48,7 @@
 		app:layout_constraintHorizontal_bias="0.0"
 		app:layout_constraintStart_toStartOf="parent">
 
-		<TextView
+		<androidx.appcompat.widget.AppCompatTextView
 			style="@style/StenoKey"
 			android:hint="S-"
 			android:tag="steno_key"
@@ -55,28 +56,28 @@
 			app:layout_columnSpan="2"
 			app:layout_rowSpan="2" />
 
-		<TextView
+		<androidx.appcompat.widget.AppCompatTextView
 			style="@style/StenoKey"
 			android:hint="T-"
 			android:tag="steno_key"
 			android:text="T"
 			app:layout_columnSpan="2" />
 
-		<TextView
+		<androidx.appcompat.widget.AppCompatTextView
 			style="@style/StenoKey"
 			android:hint="P-"
 			android:tag="steno_key"
 			android:text="P"
 			app:layout_columnSpan="2" />
 
-		<TextView
+		<androidx.appcompat.widget.AppCompatTextView
 			style="@style/StenoKey"
 			android:hint="H-"
 			android:tag="steno_key"
 			android:text="H"
 			app:layout_columnSpan="2" />
 
-		<TextView
+		<androidx.appcompat.widget.AppCompatTextView
 			style="@style/StenoKey"
 			android:hint="*"
 			android:tag="steno_key"
@@ -84,91 +85,91 @@
 			app:layout_columnSpan="2"
 			app:layout_rowSpan="2" />
 
-		<TextView
+		<androidx.appcompat.widget.AppCompatTextView
 			style="@style/StenoKey"
 			android:hint="-F"
 			android:tag="steno_key"
 			android:text="F"
 			app:layout_columnSpan="2" />
 
-		<TextView
+		<androidx.appcompat.widget.AppCompatTextView
 			style="@style/StenoKey"
 			android:hint="-P"
 			android:tag="steno_key"
 			android:text="P"
 			app:layout_columnSpan="2" />
 
-		<TextView
+		<androidx.appcompat.widget.AppCompatTextView
 			style="@style/StenoKey"
 			android:hint="-L"
 			android:tag="steno_key"
 			android:text="L"
 			app:layout_columnSpan="2" />
 
-		<TextView
+		<androidx.appcompat.widget.AppCompatTextView
 			style="@style/StenoKey"
 			android:hint="-T"
 			android:tag="steno_key"
 			android:text="T"
 			app:layout_columnSpan="2" />
 
-		<TextView
+		<androidx.appcompat.widget.AppCompatTextView
 			style="@style/StenoKey"
 			android:hint="-D"
 			android:tag="steno_key"
 			android:text="D"
 			app:layout_columnSpan="2" />
 
-		<TextView
+		<androidx.appcompat.widget.AppCompatTextView
 			style="@style/StenoKey"
 			android:hint="K-"
 			android:tag="steno_key"
 			android:text="K"
 			app:layout_columnSpan="2" />
 
-		<TextView
+		<androidx.appcompat.widget.AppCompatTextView
 			style="@style/StenoKey"
 			android:hint="W-"
 			android:tag="steno_key"
 			android:text="W"
 			app:layout_columnSpan="2" />
 
-		<TextView
+		<androidx.appcompat.widget.AppCompatTextView
 			style="@style/StenoKey"
 			android:hint="R-"
 			android:tag="steno_key"
 			android:text="R"
 			app:layout_columnSpan="2" />
 
-		<TextView
+		<androidx.appcompat.widget.AppCompatTextView
 			style="@style/StenoKey"
 			android:hint="-R"
 			android:tag="steno_key"
 			android:text="R"
 			app:layout_columnSpan="2" />
 
-		<TextView
+		<androidx.appcompat.widget.AppCompatTextView
 			style="@style/StenoKey"
 			android:hint="-B"
 			android:tag="steno_key"
 			android:text="B"
 			app:layout_columnSpan="2" />
 
-		<TextView
+		<androidx.appcompat.widget.AppCompatTextView
 			style="@style/StenoKey"
 			android:hint="-G"
 			android:tag="steno_key"
 			android:text="G"
 			app:layout_columnSpan="2" />
 
-		<TextView
+		<androidx.appcompat.widget.AppCompatTextView
 			style="@style/StenoKey"
 			android:hint="-S"
 			android:tag="steno_key"
 			android:text="S"
 			app:layout_columnSpan="2" />
 
-		<TextView
+		<androidx.appcompat.widget.AppCompatTextView
 			style="@style/StenoKey"
 			android:hint="-Z"
 			android:tag="steno_key"
@@ -183,28 +184,28 @@
 			android:layout_height="10dp"
 			app:layout_columnSpan="5" />
 
-		<TextView
+		<androidx.appcompat.widget.AppCompatTextView
 			style="@style/StenoKey"
 			android:hint="A-"
 			android:tag="steno_key"
 			android:text="A"
 			app:layout_columnSpan="2" />
 
-		<TextView
+		<androidx.appcompat.widget.AppCompatTextView
 			style="@style/StenoKey"
 			android:hint="O-"
 			android:tag="steno_key"
 			android:text="O"
 			app:layout_columnSpan="2" />
 
-		<TextView
+		<androidx.appcompat.widget.AppCompatTextView
 			style="@style/StenoKey"
 			android:hint="-E"
 			android:tag="steno_key"
 			android:text="E"
 			app:layout_columnSpan="2" />
 
-		<TextView
+		<androidx.appcompat.widget.AppCompatTextView
 			style="@style/StenoKey"
 			android:hint="-U"
 			android:tag="steno_key"
@@ -215,7 +216,7 @@
 			style="@style/StenoKey"
 			app:layout_columnSpan="3" />
 
-		<TextView
+		<androidx.appcompat.widget.AppCompatTextView
 			style="@style/StenoKey"
 			android:hint="#-"
 			android:tag="steno_key"
