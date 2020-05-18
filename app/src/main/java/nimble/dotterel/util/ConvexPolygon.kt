@@ -60,7 +60,7 @@ fun Box.overlaps(s: ConvexPolygon) = s.overlaps(this)
 
 val ConvexPolygon.boundingBox get() =
 	if(this.points.isEmpty())
-		Box(Vector2(0f, 0f), Vector2(0f, 0f))
+		Box.EMPTY
 	else
 		Box(
 			Vector2(

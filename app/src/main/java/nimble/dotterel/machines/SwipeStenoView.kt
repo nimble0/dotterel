@@ -93,6 +93,8 @@ private class SwipeKeyDrawable(
 {
 	var shape: ConvexPolygon = ConvexPolygon(listOf())
 		private set
+	private var canvasBounds = Box.EMPTY
+	private var path = Path()
 
 	override fun setAlpha(alpha: Int) = Unit
 	override fun setColorFilter(colorFilter: ColorFilter?) = Unit
@@ -100,19 +102,24 @@ private class SwipeKeyDrawable(
 
 	override fun draw(canvas: Canvas)
 	{
-		val canvasBounds = Box(
-			Vector2(this.bounds.left.toFloat(), this.bounds.top.toFloat()),
-			Vector2(this.bounds.right.toFloat(), this.bounds.bottom.toFloat()))
+		val canvasBounds = this.bounds.let({
+			Box(
+				Vector2(it.left.toFloat(), it.top.toFloat()),
+				Vector2(it.right.toFloat(), it.bottom.toFloat()))
+		})
 
-		val bevelSize = this.bevelSize * min(canvasBounds.size.x, canvasBounds.size.y)
-		this.shape = canvasBounds
-			.toConvexPolygon()
-			.withBevels((this.bevels.map({ if(it) bevelSize else 0f })
-				+ List(max(0, canvasBounds.points.size - this.bevels.size), { 0f })))
+		if(canvasBounds != this.canvasBounds)
+		{
+			val bevelSize = this.bevelSize * min(canvasBounds.size.x, canvasBounds.size.y)
+			this.shape = canvasBounds
+				.toConvexPolygon()
+				.withBevels((this.bevels.map({ if(it) bevelSize else 0f })
+					+ List(max(0, canvasBounds.points.size - this.bevels.size), { 0f })))
+			this.path = this.shape.toPathWithRoundedCorners(this.cornerSize)
+		}
 
-		val path = this.shape.toPathWithRoundedCorners(this.cornerSize)
-		canvas.drawPath(path, this.fillPaint)
-		canvas.drawPath(path, this.strokePaint)
+		canvas.drawPath(this.path, this.fillPaint)
+		canvas.drawPath(this.path, this.strokePaint)
 	}
 }
 

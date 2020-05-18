@@ -31,4 +31,9 @@ data class Vector2(val x: Float, val y: Float)
 			this.x * cosA - this.y * sinA,
 			this.y * cosA + this.x * sinA)
 	}
+
+	companion object
+	{
+		val ZERO = Vector2(0f, 0f)
+	}
 }
