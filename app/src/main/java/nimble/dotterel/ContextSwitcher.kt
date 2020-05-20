@@ -18,6 +18,7 @@ import nimble.dotterel.util.testBits
 
 private const val TEXT_CONTEXT_SIZE = 1024
 private const val MAX_CONTEXTS = 20
+private const val GET_TEXT_TRIES = 3
 
 private fun findMatchingHistory(
 	history: List<HistoryTranslation>,
@@ -138,14 +139,28 @@ class ContextSwitcher(val dotterel: Dotterel) : Dotterel.InputStateListener
 
 	private fun updateContext(keepHistory: (HistoryTranslation) -> Boolean)
 	{
+		for(i in 0 until GET_TEXT_TRIES)
+		{
+			val text = this.dotterel.currentInputConnection
+				?.getTextBeforeCursor(TEXT_CONTEXT_SIZE, 0)
+				?.toString()
+			if(text != null)
+			{
+				this.updateContext(text, keepHistory)
+				return
+			}
+		}
+		this.updateContext("", keepHistory)
+	}
+
+	private fun updateContext(
+		text: String,
+		keepHistory: (HistoryTranslation) -> Boolean)
+	{
 		Log.v("Dotterel", "Update translation history")
 
 		val translator = this.dotterel.translator
 
-		val text = this.dotterel.currentInputConnection
-			?.getTextBeforeCursor(TEXT_CONTEXT_SIZE, 0)
-			?.toString()
-			?: ""
 		val translatorText = translator.context.text.takeLast(TEXT_CONTEXT_SIZE)
 
 		// Don't try changing context as long as there's at least a partial match
