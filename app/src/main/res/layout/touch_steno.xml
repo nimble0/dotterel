@@ -35,155 +35,258 @@
 
 	</LinearLayout>
 
-	<androidx.gridlayout.widget.GridLayout android:id="@+id/keys"
+	<androidx.gridlayout.widget.GridLayout
+		android:id="@+id/keys"
 		style="@style/TouchStenoKeyboard"
 		android:layout_width="0dp"
 		android:layout_height="0dp"
-		app:layout_constraintHeight_min="125dp"
-		app:layout_constraintStart_toStartOf="parent"
-		app:layout_constraintEnd_toEndOf="parent"
+		app:columnCount="20"
 		app:layout_constraintBottom_toBottomOf="parent"
-		app:columnCount="11">
+		app:layout_constraintEnd_toEndOf="parent"
+		app:layout_constraintHeight_min="125dp"
+		app:layout_constraintHorizontal_bias="0.0"
+		app:layout_constraintStart_toStartOf="parent">
 
 		<TextView
-			android:tag="steno_key"
 			style="@style/StenoKey"
 			android:hint="S-"
-			android:text="S"
-			app:layout_rowSpan="2"
-			app:layout_rowWeight="2" />
-		<TextView
 			android:tag="steno_key"
+			android:text="S"
+			app:layout_columnSpan="2"
+			app:layout_rowSpan="2" />
+
+		<TextView
 			style="@style/StenoKey"
 			android:hint="T-"
-			android:text="T" />
-		<TextView
 			android:tag="steno_key"
+			android:text="T"
+			app:layout_columnSpan="2" />
+
+		<TextView
 			style="@style/StenoKey"
 			android:hint="P-"
-			android:text="P" />
-		<TextView
 			android:tag="steno_key"
+			android:text="P"
+			app:layout_columnSpan="2" />
+
+		<TextView
 			style="@style/StenoKey"
 			android:hint="H-"
-			android:text="H" />
+			android:tag="steno_key"
+			android:text="H"
+			app:layout_columnSpan="2" />
 
 		<TextView
-			android:tag="steno_key"
 			style="@style/StenoKey"
 			android:hint="*"
+			android:tag="steno_key"
 			android:text="*"
 			app:layout_columnSpan="2"
-			app:layout_rowSpan="2"
-			app:layout_columnWeight="2"
-			app:layout_rowWeight="2" />
+			app:layout_rowSpan="2" />
 
 		<TextView
-			android:tag="steno_key"
 			style="@style/StenoKey"
 			android:hint="-F"
-			android:text="F" />
-		<TextView
 			android:tag="steno_key"
+			android:text="F"
+			app:layout_columnSpan="2" />
+
+		<TextView
 			style="@style/StenoKey"
 			android:hint="-P"
-			android:text="P" />
-		<TextView
 			android:tag="steno_key"
+			android:text="P"
+			app:layout_columnSpan="2" />
+
+		<TextView
 			style="@style/StenoKey"
 			android:hint="-L"
-			android:text="L" />
-		<TextView
 			android:tag="steno_key"
+			android:text="L"
+			app:layout_columnSpan="2" />
+
+		<TextView
 			style="@style/StenoKey"
 			android:hint="-T"
-			android:text="T" />
-		<TextView
 			android:tag="steno_key"
+			android:text="T"
+			app:layout_columnSpan="2" />
+
+		<TextView
 			style="@style/StenoKey"
 			android:hint="-D"
-			android:text="D" />
+			android:tag="steno_key"
+			android:text="D"
+			app:layout_columnSpan="2" />
 
 		<TextView
-			android:tag="steno_key"
 			style="@style/StenoKey"
 			android:hint="K-"
-			android:text="K" />
-		<TextView
 			android:tag="steno_key"
-			style="@style/StenoKey"
-			android:hint="W-"
-			android:text="W" />
-		<TextView
-			android:tag="steno_key"
-			style="@style/StenoKey"
-			android:hint="R-"
-			android:text="R" />
+			android:text="K"
+			app:layout_columnSpan="2" />
 
 		<TextView
+			style="@style/StenoKey"
+			android:hint="W-"
 			android:tag="steno_key"
+			android:text="W"
+			app:layout_columnSpan="2" />
+
+		<TextView
+			style="@style/StenoKey"
+			android:hint="R-"
+			android:tag="steno_key"
+			android:text="R"
+			app:layout_columnSpan="2" />
+
+		<TextView
 			style="@style/StenoKey"
 			android:hint="-R"
-			android:text="R" />
-		<TextView
 			android:tag="steno_key"
+			android:text="R"
+			app:layout_columnSpan="2" />
+
+		<TextView
 			style="@style/StenoKey"
 			android:hint="-B"
-			android:text="B" />
-		<TextView
 			android:tag="steno_key"
+			android:text="B"
+			app:layout_columnSpan="2" />
+
+		<TextView
 			style="@style/StenoKey"
 			android:hint="-G"
-			android:text="G" />
-		<TextView
 			android:tag="steno_key"
+			android:text="G"
+			app:layout_columnSpan="2" />
+
+		<TextView
 			style="@style/StenoKey"
 			android:hint="-S"
-			android:text="S" />
-		<TextView
 			android:tag="steno_key"
+			android:text="S"
+			app:layout_columnSpan="2" />
+
+		<TextView
 			style="@style/StenoKey"
 			android:hint="-Z"
-			android:text="Z" />
+			android:tag="steno_key"
+			android:text="Z"
+			app:layout_columnSpan="2" />
 
 		<Space
 			android:layout_height="10dp"
-			app:layout_columnSpan="11" />
+			app:layout_columnSpan="20" />
+
+		<Space
+			android:layout_height="10dp"
+			app:layout_columnSpan="5" />
+
+		<TextView
+			style="@style/StenoKey"
+			android:hint="A-"
+			android:tag="steno_key"
+			android:text="A"
+			app:layout_columnSpan="2" />
+
+		<TextView
+			style="@style/StenoKey"
+			android:hint="O-"
+			android:tag="steno_key"
+			android:text="O"
+			app:layout_columnSpan="2" />
+
+		<TextView
+			style="@style/StenoKey"
+			android:hint="-E"
+			android:tag="steno_key"
+			android:text="E"
+			app:layout_columnSpan="2" />
+
+		<TextView
+			style="@style/StenoKey"
+			android:hint="-U"
+			android:tag="steno_key"
+			android:text="U"
+			app:layout_columnSpan="2" />
 
 		<Space
 			style="@style/StenoKey"
-			app:layout_columnSpan="1" />
+			app:layout_columnSpan="3" />
+
 		<TextView
-			android:tag="steno_key"
 			style="@style/StenoKey"
 			android:hint="#-"
-			android:text="#" />
+			android:tag="steno_key"
+			android:text="#"
+			app:layout_columnSpan="2" />
+
 		<Space
 			style="@style/StenoKey"
-			app:layout_columnSpan="1" />
-		<TextView
-			android:tag="steno_key"
-			style="@style/StenoKey"
-			android:hint="A-"
-			android:text="A" />
-		<TextView
-			android:tag="steno_key"
-			style="@style/StenoKey"
-			android:hint="O-"
-			android:text="O" />
-		<TextView
-			android:tag="steno_key"
-			style="@style/StenoKey"
-			android:hint="-E"
-			android:text="E" />
-		<TextView
-			android:tag="steno_key"
-			style="@style/StenoKey"
-			android:hint="-U"
-			android:text="U" />
+			app:layout_columnSpan="2" />
+
+		<!-- Used to size columns correctly -->
 		<Space
-			style="@style/StenoKey"
-			app:layout_columnSpan="4" />
+			app:layout_columnSpan="1"
+			app:layout_columnWeight="1" />
+		<Space
+			app:layout_columnSpan="1"
+			app:layout_columnWeight="1" />
+		<Space
+			app:layout_columnSpan="1"
+			app:layout_columnWeight="1" />
+		<Space
+			app:layout_columnSpan="1"
+			app:layout_columnWeight="1" />
+		<Space
+			app:layout_columnSpan="1"
+			app:layout_columnWeight="1" />
+		<Space
+			app:layout_columnSpan="1"
+			app:layout_columnWeight="1" />
+		<Space
+			app:layout_columnSpan="1"
+			app:layout_columnWeight="1" />
+		<Space
+			app:layout_columnSpan="1"
+			app:layout_columnWeight="1" />
+		<Space
+			app:layout_columnSpan="1"
+			app:layout_columnWeight="1" />
+		<Space
+			app:layout_columnSpan="1"
+			app:layout_columnWeight="1" />
+		<Space
+			app:layout_columnSpan="1"
+			app:layout_columnWeight="1" />
+		<Space
+			app:layout_columnSpan="1"
+			app:layout_columnWeight="1" />
+		<Space
+			app:layout_columnSpan="1"
+			app:layout_columnWeight="1" />
+		<Space
+			app:layout_columnSpan="1"
+			app:layout_columnWeight="1" />
+		<Space
+			app:layout_columnSpan="1"
+			app:layout_columnWeight="1" />
+		<Space
+			app:layout_columnSpan="1"
+			app:layout_columnWeight="1" />
+		<Space
+			app:layout_columnSpan="1"
+			app:layout_columnWeight="1" />
+		<Space
+			app:layout_columnSpan="1"
+			app:layout_columnWeight="1" />
+		<Space
+			app:layout_columnSpan="1"
+			app:layout_columnWeight="1" />
+		<Space
+			app:layout_columnSpan="1"
+			app:layout_columnWeight="1" />
 
 	</androidx.gridlayout.widget.GridLayout>
 

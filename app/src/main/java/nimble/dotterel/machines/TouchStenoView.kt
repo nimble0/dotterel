@@ -6,8 +6,13 @@ package nimble.dotterel.machines
 import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.MotionEvent
+import android.view.View
 
+import com.eclipsesource.json.JsonObject
+
+import nimble.dotterel.R
 import nimble.dotterel.util.*
 import nimble.dotterel.util.ui.position
 import nimble.dotterel.util.ui.size
@@ -15,7 +20,6 @@ import nimble.dotterel.util.ui.size
 import kotlin.math.*
 
 private const val APPLY_STROKE_DISTANCE = 100f
-private const val SIZE_MULTIPLIER = 30f
 
 class TouchStenoView(context: Context, attributes: AttributeSet) :
 	StenoView(context, attributes)
@@ -52,6 +56,24 @@ class TouchStenoView(context: Context, attributes: AttributeSet) :
 		}
 	}
 
+	private var minTouchRadius = 0f
+	private var maxTouchRadius = 20f
+
+	override fun setConfig(config: JsonObject, systemConfig: JsonObject)
+	{
+		fun dipToPixels(v: Float) =
+			TypedValue
+				.applyDimension(
+					TypedValue.COMPLEX_UNIT_DIP,
+					v,
+					context.resources.displayMetrics)
+
+		this.minTouchRadius = dipToPixels(config.get("minTouchRadius").asFloat())
+		this.maxTouchRadius = dipToPixels(config.get("maxTouchRadius").asFloat())
+		val padding = dipToPixels(config.get("padding").asFloat()).toInt()
+		this.findViewById<View>(R.id.keys).setPadding(padding, padding, padding, padding)
+	}
+
 	override fun onFinishInflate()
 	{
 		super.onFinishInflate()
@@ -72,7 +94,7 @@ class TouchStenoView(context: Context, attributes: AttributeSet) :
 		if(touch.keyPress)
 			setKeysNear(
 				touch.start,
-				touch.largestSize * SIZE_MULTIPLIER,
+				lerp(this.minTouchRadius, this.maxTouchRadius, touch.largestSize),
 				touch.action)
 	}
 

@@ -12,8 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.*
 import androidx.preference.PreferenceFragmentCompat
 
-import com.eclipsesource.json.JsonObject
-import com.eclipsesource.json.PrettyPrint
+import com.eclipsesource.json.*
 
 import java.io.File
 
@@ -23,6 +22,17 @@ import nimble.dotterel.util.ui.flatten
 private val PREFERENCE_RESOURCES = listOf(
 	R.xml.pref_root,
 	R.xml.pref_machines
+)
+
+private val DEFAULT_JSON_PREFERENCES = mapOf(
+	Pair(
+		"machineConfig/On Screen",
+		"""{
+			"style": "Touch",
+			"minTouchRadius": 0,
+			"maxTouchRadius": 20,
+			"padding": 5
+		}""")
 )
 
 fun setDefaultSettings(context: Context)
@@ -50,6 +60,17 @@ fun setDefaultSettings(context: Context)
 
 	for(resource in PREFERENCE_RESOURCES)
 		PreferenceManager.setDefaultValues(context, resource, true)
+
+	for((k, v) in DEFAULT_JSON_PREFERENCES)
+	{
+		val currentValue = Json.parse(sharedPreferences.getString(k, "{}")).asObject()
+		val mergedValue = Json.parse(v).asObject().merge(currentValue)
+		if(currentValue != mergedValue)
+			sharedPreferences
+				.edit()
+				.putString(k, mergedValue.toString(PrettyPrint.indentWithTabs()))
+				.apply()
+	}
 }
 
 class DotterelSettings :

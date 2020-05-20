@@ -8,6 +8,7 @@ import android.inputmethodservice.InputMethodService
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 
 import androidx.preference.PreferenceManager
@@ -52,11 +53,6 @@ fun reloadSystem(sharedPreferences: SharedPreferences, system: String)
 
 class Dotterel : InputMethodService(), StenoMachine.Listener
 {
-	interface EditorListener
-	{
-		fun setInputView(v: View?)
-	}
-
 	interface KeyListener
 	{
 		fun keyDown(e: KeyEvent): Boolean
@@ -77,20 +73,18 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 	private val machines = mutableMapOf<String, StenoMachine>()
 
 	private var viewCreated = false
-	var viewId: Int? = null
+	var view: View? = null
 		set(v)
 		{
 			field = v
 			if(this.viewCreated)
-			{
-				val view = v?.let({ this.layoutInflater.inflate(it, null) })
-				for(l in this.editorListeners)
-					l.setInputView(view)
-
-				// Not allowed to pass null to setInputView
-				this.setInputView(view ?: View(this.applicationContext))
-			}
+			// Not allowed to pass null to setInputView
+				this.setInputView(this.view ?: View(this.applicationContext))
 		}
+	fun setView(viewId: Int)
+	{
+		this.view = viewId.let({ this.layoutInflater.inflate(it, null) })
+	}
 
 	private fun loadSystem()
 	{
@@ -228,10 +222,8 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 	override fun onCreateInputView(): View?
 	{
 		this.viewCreated = true
-		val view = this.viewId?.let({ this.layoutInflater.inflate(it, null) })
-		for(l in this.editorListeners)
-			l.setInputView(view)
-		return view
+		(this.view?.parent as? ViewGroup)?.removeView(this.view)
+		return this.view
 	}
 
 	override fun onEvaluateFullscreenMode(): Boolean
@@ -267,10 +259,6 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 				is DotterelRunnable -> a(this)
 			}
 	}
-
-	private val editorListeners = mutableListOf<EditorListener>()
-	fun addEditorListener(l: EditorListener) = this.editorListeners.add(l).let({ Unit })
-	fun removeEditorListener(l: EditorListener) = this.editorListeners.remove(l).let({ Unit })
 
 	override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean
 	{
