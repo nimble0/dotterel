@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This file is part of Dotterel which is released under GPL-2.0-or-later. -->
+<!-- See file <LICENSE.txt> or go to <http://www.gnu.org/licenses/> for full license details. -->
+
+<androidx.constraintlayout.widget.ConstraintLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical"
+	android:background="#000">
+
+	<androidx.constraintlayout.widget.ConstraintLayout
+		android:id="@+id/titleBar"
+		app:layout_constraintTop_toTopOf="parent"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content">
+
+		<androidx.appcompat.widget.AppCompatTextView
+			android:id="@android:id/title"
+			app:layout_constraintTop_toTopOf="parent"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:padding="10dp"
+			android:gravity="center"
+			android:text="@string/add_translation_title"
+			android:background="#555"
+			android:textColor="#fff" />
+
+		<androidx.appcompat.widget.AppCompatImageButton
+			android:id="@android:id/closeButton"
+			app:layout_constraintRight_toRightOf="parent"
+			app:layout_constraintTop_toTopOf="parent"
+			app:layout_constraintBottom_toBottomOf="parent"
+			android:layout_width="wrap_content"
+			android:layout_height="0dp"
+			android:padding="3dp"
+			app:srcCompat="@drawable/ic_close_white_128dp"
+			android:background="@color/close"
+			android:adjustViewBounds="true"
+			android:scaleType="fitCenter"
+			android:contentDescription="@string/close" />
+
+	</androidx.constraintlayout.widget.ConstraintLayout>
+
+	<androidx.appcompat.widget.LinearLayoutCompat android:id="@+id/buttons"
+		app:layout_constraintBottom_toBottomOf="parent"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:padding="3dp"
+		android:gravity="end"
+		android:background="#000">
+
+		<androidx.appcompat.widget.AppCompatButton
+			style="?android:attr/buttonBarButtonStyle"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:textColor="#fff"
+			android:text="@android:string/cancel"
+			android:id="@+id/cancel" />
+		<androidx.appcompat.widget.AppCompatButton
+			style="?android:attr/buttonBarButtonStyle"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:textColor="#fff"
+			android:text="@string/add"
+			android:id="@+id/ok" />
+
+	</androidx.appcompat.widget.LinearLayoutCompat>
+
+	<androidx.appcompat.widget.LinearLayoutCompat
+		app:layout_constraintTop_toBottomOf="@id/titleBar"
+		app:layout_constraintBottom_toTopOf="@id/buttons"
+		android:layout_width="match_parent"
+		android:layout_height="0dp"
+		android:orientation="vertical">
+
+		<androidx.gridlayout.widget.GridLayout
+			style="@style/TouchStenoKeyboard"
+			android:layout_width="match_parent"
+			android:layout_height="0dp"
+			android:layout_weight="1"
+			app:columnCount="2">
+
+			<androidx.appcompat.widget.AppCompatTextView
+				android:text="@string/add_translation_dictionary"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:padding="5dp"
+				android:layout_marginLeft="5dp"
+				android:layout_marginTop="5dp"
+				android:textColor="#fff" />
+			<androidx.appcompat.widget.AppCompatSpinner
+				android:id="@+id/dictionary"
+				app:layout_rowWeight="0"
+				android:layout_width="0dp"
+				app:layout_columnWeight="1"
+				android:layout_height="wrap_content"
+				android:padding="5dp"
+				android:layout_margin="5dp"
+				android:layout_marginBottom="0dp"
+				android:background="#555"
+				android:imeOptions="actionNext" />
+
+			<androidx.appcompat.widget.AppCompatTextView
+				android:text="@string/add_translation_strokes"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:padding="5dp"
+				android:layout_marginLeft="5dp"
+				android:layout_marginTop="5dp"
+				android:textColor="#fff" />
+			<androidx.appcompat.widget.AppCompatEditText android:id="@+id/strokes"
+				android:layout_width="0dp"
+				app:layout_columnWeight="1"
+				android:layout_height="wrap_content"
+				android:padding="5dp"
+				android:layout_margin="5dp"
+				android:layout_marginBottom="0dp"
+				android:background="#555"
+				android:textColor="#fff"
+				android:fontFamily="monospace"
+				android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+				android:selectAllOnFocus="true"
+				android:inputType="text"
+				android:privateImeOptions="nimble.dotterel.rawSteno=true"
+				android:imeOptions="actionDone">
+				<requestFocus />
+			</androidx.appcompat.widget.AppCompatEditText>
+
+			<androidx.appcompat.widget.AppCompatTextView
+				android:text="@string/add_translation_translation"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:padding="5dp"
+				android:layout_marginLeft="5dp"
+				android:layout_marginTop="5dp"
+				android:textColor="#fff" />
+			<androidx.appcompat.widget.AppCompatEditText android:id="@+id/translation"
+				android:layout_width="0dp"
+				app:layout_columnWeight="1"
+				android:layout_height="wrap_content"
+				android:padding="5dp"
+				android:layout_margin="5dp"
+				android:layout_marginBottom="0dp"
+				android:background="#555"
+				android:textColor="#fff"
+				android:selectAllOnFocus="true"
+				android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+				android:inputType="text"
+				android:imeOptions="actionDone" />
+
+			<androidx.appcompat.widget.AppCompatTextView
+				android:text="@string/add_translation_overwrite"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:padding="5dp"
+				android:layout_marginLeft="5dp"
+				android:layout_marginTop="5dp"
+				android:textColor="#fff" />
+			<androidx.appcompat.widget.AppCompatTextView
+				android:id="@+id/overwrite_entry"
+				android:layout_width="0dp"
+				app:layout_columnWeight="1"
+				android:layout_height="wrap_content"
+				android:padding="5dp"
+				android:layout_margin="5dp"
+				android:layout_marginBottom="0dp"
+				android:background="#555"
+				android:textColor="#fff"
+				android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+
+			<androidx.appcompat.widget.AppCompatTextView
+				android:text="@string/add_translation_existing"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:padding="5dp"
+				android:layout_marginLeft="5dp"
+				android:layout_marginTop="5dp"
+				android:textColor="#fff" />
+			<androidx.appcompat.widget.AppCompatTextView
+				android:id="@+id/existing_entries"
+				android:layout_width="0dp"
+				app:layout_columnWeight="1"
+				app:layout_gravity="fill_vertical"
+				android:layout_height="0dp"
+				android:padding="5dp"
+				android:layout_margin="5dp"
+				android:layout_marginBottom="0dp"
+				android:background="#555"
+				android:textColor="#fff"
+				android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+				android:scrollbars="vertical" />
+
+		</androidx.gridlayout.widget.GridLayout>
+
+	</androidx.appcompat.widget.LinearLayoutCompat>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

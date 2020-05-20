@@ -62,6 +62,13 @@
 
 	<string name="lookup_translation_title">Dotterel: Lookup Translation</string>
 
+	<string name="add_translation_title">Dotterel: Add Translation</string>
+	<string name="add_translation_dictionary">Dictionary</string>
+	<string name="add_translation_strokes">Strokes</string>
+	<string name="add_translation_translation">Translation</string>
+	<string name="add_translation_overwrite">Overwrite</string>
+	<string name="add_translation_existing">Existing</string>
+
 	<string-array name="on_screen_styles">
 		<item>Touch</item>
 		<item>Swipe</item>

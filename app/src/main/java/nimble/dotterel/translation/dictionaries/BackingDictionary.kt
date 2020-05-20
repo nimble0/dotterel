@@ -5,7 +5,12 @@ package nimble.dotterel.translation.dictionaries
 
 import java.util.Locale
 
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+
 import nimble.collections.BTreeMultiMap
+import nimble.dotterel.util.BufferedMap
 import nimble.dotterel.util.CaseInsensitiveString
 
 private fun countStrokes(s: String): Int
@@ -25,7 +30,8 @@ private fun countStrokes(s: String): Int
 // String keys to List<Stroke>.
 open class BackingDictionary()
 {
-	private val entries = mutableMapOf<String, String>()
+	private val _entries = BufferedMap<String, String>()
+	private val entriesMutex = Mutex()
 	private val keySizeCounts = mutableListOf<Int>()
 	val longestKey: Int get() = this.keySizeCounts.size
 
@@ -35,7 +41,7 @@ open class BackingDictionary()
 
 	constructor(initialEntries: Iterable<Pair<String, String>>) : this()
 	{
-		this.entries.putAll(initialEntries)
+		this._entries.map.putAll(initialEntries)
 		for(x in this.entries)
 		{
 			this.incrementKeySizeCount(countStrokes(x.key))
@@ -48,6 +54,8 @@ open class BackingDictionary()
 					x.value)
 		}
 	}
+
+	val entries: Map<String, String> get() = this._entries
 
 	private fun incrementKeySizeCount(s: Int)
 	{
@@ -71,11 +79,17 @@ open class BackingDictionary()
 				translation)
 	}
 
-	operator fun get(k: String): String? = this.entries[k]
+	operator fun get(k: String): String? = this._entries[k]
 
 	operator fun set(k: String, v: String)
 	{
-		val oldTranslation = this.entries.put(k, v)
+		val oldTranslation = runBlocking()
+		{
+			this@BackingDictionary.entriesMutex.withLock()
+			{
+				this@BackingDictionary._entries.put(k, v)
+			}
+		}
 		if(oldTranslation == null)
 			this.incrementKeySizeCount(countStrokes(k))
 		else
@@ -89,7 +103,13 @@ open class BackingDictionary()
 
 	fun remove(k: String)
 	{
-		val translation = this.entries.remove(k) ?: return
+		val translation = runBlocking()
+		{
+			this@BackingDictionary.entriesMutex.withLock()
+			{
+				this@BackingDictionary._entries.remove(k)
+			}
+		} ?: return
 
 		this.decrementKeySizeCount(countStrokes(k))
 		this.removeReverseTranslation(k, translation)
@@ -104,4 +124,24 @@ open class BackingDictionary()
 				else
 					setOf()
 			}))
+
+	fun parallelGetEntries(): List<Pair<String, String>> =
+		runBlocking()
+		{
+			this@BackingDictionary.entriesMutex.withLock()
+			{
+				this@BackingDictionary._entries.startBuffering()
+			}
+
+			val listEntries = this@BackingDictionary
+				._entries
+				.toList()
+
+			this@BackingDictionary.entriesMutex.withLock()
+			{
+				this@BackingDictionary._entries.flush()
+			}
+
+			listEntries.sortedWith(compareBy({ it.first }, { it.second }))
+		}
 }

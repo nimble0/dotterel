@@ -6,9 +6,6 @@ package nimble.dotterel.translation
 import io.kotlintest.matchers.shouldBe
 import io.kotlintest.specs.FunSpec
 
-import java.io.InputStream
-import java.io.OutputStream
-
 import nimble.dotterel.translation.*
 import nimble.dotterel.translation.dictionaries.BackingDictionary
 import nimble.dotterel.translation.dictionaries.BackedDictionary
@@ -40,15 +37,7 @@ private val testLayout = KeyLayout(
 		Pair("-9", listOf("#-", "-T"))
 	))
 private val testSystem = NULL_SYSTEM.copy(
-	manager = SystemManager(object : SystemResources
-	{
-		override val transforms = TRANSFORMS
-		override val commands = COMMANDS
-		override val codeDictionaries: Map<String, (KeyLayout) -> Dictionary> = mapOf()
-
-		override fun openInputStream(path: String): InputStream? = null
-		override fun openOutputStream(path: String): OutputStream? = null
-	}),
+	manager = SystemManager(LocalSystemResources()),
 	keyLayout = testLayout,
 	suffixStrokes = testLayout.parse(listOf("-Z", "-D", "-S", "-G")),
 	aliases = mapOf(

@@ -308,3 +308,48 @@ fun Translator.pop(count: Int): List<HistoryTranslation>
 		.toList()
 		.asReversed()
 }
+
+
+fun Translator.applyRaw(s: Stroke)
+{
+	val t = this.translate(s)
+
+	try
+	{
+		val processed = this.processor.process(t.raw)
+		val textOnlyTranslation = processed.actions
+			.all({ it is UnformattedText || it is FormattedText })
+
+		if(!processed.empty)
+			if(textOnlyTranslation)
+			{
+				this.push(Translation(
+					listOf(s),
+					listOf(),
+					s.rtfcre,
+					isUntranslate = true,
+					hasPrefix = false,
+					hasSuffix = false))
+			}
+			else
+			{
+				for(h in t.replaces.asReversed())
+					if(h != this.history.last())
+						throw IllegalArgumentException(
+							"Replaced translations must match translation history buffer")
+					else
+						this.popFull()
+
+				this.push(HistoryTranslation(
+					t.strokes,
+					processed.replaces + t.replaces,
+					processed.actions,
+					this.context,
+					t.hasPrefix || t.isUntranslate))
+			}
+	}
+	catch(e: ParseException)
+	{
+		this.log.error("Error parsing translation: ${t.raw}")
+	}
+}

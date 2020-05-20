@@ -22,6 +22,8 @@ import com.eclipsesource.json.JsonObject
 import com.eclipsesource.json.ParseException
 
 import nimble.dotterel.machines.*
+import nimble.dotterel.stenoAppliers.DefaultStenoApplier
+import nimble.dotterel.stenoAppliers.RawStenoStenoApplier
 import nimble.dotterel.translation.*
 
 val MACHINES = mapOf(
@@ -41,6 +43,12 @@ interface DotterelRunnable
 				override fun invoke(dotterel: Dotterel) = lambda(dotterel)
 			}
 	}
+}
+
+interface StenoApplier
+{
+	fun isActive(dotterel: Dotterel): Boolean
+	fun apply(translator: Translator, stroke: Stroke)
 }
 
 fun reloadSystem(sharedPreferences: SharedPreferences, system: String)
@@ -74,6 +82,11 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 			override fun info(message: String) { Log.i("Dotterel Translation", message) }
 			override fun error(message: String) { Log.e("Dotterel Translation", message) }
 		})
+
+	private val stenoAppliers = mutableListOf<StenoApplier>(
+		RawStenoStenoApplier(),
+		DefaultStenoApplier()
+	)
 
 	private val machines = mutableMapOf<String, StenoMachine>()
 
@@ -242,7 +255,10 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 	override fun changeStroke(s: Stroke) {}
 	override fun applyStroke(s: Stroke)
 	{
-		this.translator.apply(s)
+		this.stenoAppliers
+			.firstOrNull({ it.isActive(this) })
+			?.apply(this.translator, s)
+
 		for(a in this.translator.flush())
 			when(a)
 			{

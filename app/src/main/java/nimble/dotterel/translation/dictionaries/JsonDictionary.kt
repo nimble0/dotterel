@@ -5,19 +5,79 @@ package nimble.dotterel.translation.dictionaries
 
 import com.eclipsesource.json.Json
 import com.eclipsesource.json.JsonObject
+import com.eclipsesource.json.PrettyPrint
 
 import java.io.InputStream
+import java.io.OutputStream
 
-import nimble.dotterel.translation.KeyLayout
-import nimble.dotterel.translation.FileParseException
+import kotlinx.coroutines.*
 
-class JsonDictionary(keyLayout: KeyLayout, json: JsonObject) :
-	BackedDictionary(
+import nimble.dotterel.translation.*
+
+open class ImmutableJsonDictionary(keyLayout: KeyLayout, json: JsonObject) :
+	ImmutableBackedDictionary(
 		keyLayout,
 		BackingDictionary(
 			json.map({ Pair(it.name, it.value.asString()) })
 		))
 {
+	companion object
+	{
+		fun load(input: InputStream, keyLayout: KeyLayout): ImmutableJsonDictionary
+		{
+			try
+			{
+				return ImmutableJsonDictionary(
+					keyLayout,
+					Json.parse(input.bufferedReader()).asObject())
+			}
+			catch(e: com.eclipsesource.json.ParseException)
+			{
+				throw FileParseException("Invalid JSON", e)
+			}
+			catch(e: java.lang.NullPointerException)
+			{
+				throw FileParseException("Invalid type", e)
+			}
+			catch(e: java.lang.UnsupportedOperationException)
+			{
+				throw FileParseException("Missing type", e)
+			}
+		}
+	}
+}
+
+class JsonDictionary(keyLayout: KeyLayout, json: JsonObject) :
+	ImmutableJsonDictionary(keyLayout, json),
+	SaveableDictionary
+{
+	override val parallelSave = true
+
+	override fun set(k: List<Stroke>, v: String)
+	{
+		this.backingDictionary[k.rtfcre] = v
+	}
+	override fun remove(k: List<Stroke>)
+	{
+		this.backingDictionary.remove(k.rtfcre)
+	}
+
+	override fun save(output: OutputStream)
+	{
+		runBlocking()
+		{
+			val listEntries = this@JsonDictionary.backingDictionary.parallelGetEntries()
+			val json = JsonObject()
+				.also({
+					for(kv in listEntries)
+						it.add(kv.first, kv.second)
+				})
+
+			output.bufferedWriter()
+				.use({ json.writeTo(it, PrettyPrint.indentWithSpaces(0)) })
+		}
+	}
+
 	companion object
 	{
 		fun load(input: InputStream, keyLayout: KeyLayout): JsonDictionary

@@ -39,6 +39,12 @@ private val DEFAULT_JSON_PREFERENCES = mapOf(
 		"""{
 			"width": 400,
 			"height": 300
+		}"""),
+	Pair(
+		"tool/addTranslation",
+		"""{
+			"width": 400,
+			"height": 300
 		}""")
 )
 
