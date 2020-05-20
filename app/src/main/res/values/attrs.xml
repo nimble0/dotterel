@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This file is part of Dotterel which is released under GPL-2.0-or-later. -->
+<!-- See file <LICENSE.txt> or go to <http://www.gnu.org/licenses/> for full license details. -->
+
+<resources>
+
+	<declare-styleable name="SwipeStenoKey">
+		<attr name="bevelTopLeft" format="boolean" />
+		<attr name="bevelTopRight" format="boolean" />
+		<attr name="bevelBottomLeft" format="boolean" />
+		<attr name="bevelBottomRight" format="boolean" />
+		<attr name="specialKey" format="boolean" />
+	</declare-styleable>
+
+</resources>

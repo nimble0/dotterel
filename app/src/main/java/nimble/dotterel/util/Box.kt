@@ -26,6 +26,11 @@ data class Box(val topLeft: Vector2, val bottomRight: Vector2)
 		Vector2(this.bottomRight.x, this.topLeft.y),
 		this.bottomRight,
 		Vector2(this.topLeft.x, this.bottomRight.y)))
+
+	companion object
+	{
+		val EMPTY = Box(Vector2.ZERO, Vector2.ZERO)
+	}
 }
 
 fun Box.expand(v: Vector2) = Box(this.topLeft - v, this.bottomRight + v)

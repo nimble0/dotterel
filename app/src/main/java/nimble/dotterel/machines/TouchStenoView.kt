@@ -3,7 +3,6 @@
 
 package nimble.dotterel.machines
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
 import android.util.TypedValue
@@ -144,8 +143,7 @@ class TouchStenoView(context: Context, attributes: AttributeSet) :
 		this.touches.clear()
 	}
 
-	@SuppressLint("ClickableViewAccessibility")
-	override fun onTouchEvent(e: MotionEvent): Boolean
+	override fun dispatchTouchEvent(e: MotionEvent): Boolean
 	{
 		val actionI = e.actionIndex
 		val pointerId = e.getPointerId(actionI)
@@ -207,6 +205,7 @@ class TouchStenoView(context: Context, attributes: AttributeSet) :
 			}
 		}
 
+		super.dispatchTouchEvent(e)
 		return true
 	}
 }

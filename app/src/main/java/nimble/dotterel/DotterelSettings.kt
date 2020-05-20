@@ -31,7 +31,8 @@ private val DEFAULT_JSON_PREFERENCES = mapOf(
 			"style": "Touch",
 			"minTouchRadius": 0,
 			"maxTouchRadius": 20,
-			"padding": 5
+			"padding": 5,
+			"swipeBevelSize": 60
 		}""")
 )
 
