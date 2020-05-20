@@ -62,7 +62,7 @@ private data class KeyIntersection(
 
 private fun findKeyIntersections(
 	line: LinearLine,
-	keys: Set<View>
+	keys: Collection<View>
 ): List<KeyIntersection>
 {
 	val lineBoundingBox = line.boundingBox
@@ -241,16 +241,14 @@ class SwipeStenoView(context: Context, attributes: AttributeSet) :
 {
 	private class Touch(
 		var position: Vector2,
-		val keys: Set<View>)
+		val keys: Collection<View>,
+		var key: View?)
 	{
 		var activate: Boolean? = null
 
 		init
 		{
-			val key = this.keys.find({
-				this.position in it.boundingBox
-					&& getKeyShape(it)?.contains(this.position) == true
-			})
+			val key = this.key
 			if(key != null)
 			{
 				key.isSelected = !key.isSelected
@@ -260,9 +258,17 @@ class SwipeStenoView(context: Context, attributes: AttributeSet) :
 
 		fun update(position: Vector2)
 		{
+			val key = this.key
+			if(key != null && position in key.boundingBox)
+			{
+				this.position = position
+				return
+			}
+
 			val intersections = findKeyIntersections(
 				LinearLine(this.position, position),
 				this.keys)
+			this.position = position
 
 			var i = 0f
 			for(a in intersections)
@@ -275,13 +281,17 @@ class SwipeStenoView(context: Context, attributes: AttributeSet) :
 
 				val activate = this.activate
 				if(!a.isBoundingBoxIntersection && activate != null)
+				{
 					a.key.isSelected = activate
+					this.key = a.key
+				}
 				i = max(i, a.intersection.second)
 			}
 			if(i < 1f && intersections.isNotEmpty())
+			{
+				this.key = null
 				this.activate = null
-
-			this.position = position
+			}
 		}
 	}
 
@@ -303,19 +313,27 @@ class SwipeStenoView(context: Context, attributes: AttributeSet) :
 			MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN ->
 			{
 				val p = Vector2(e.getX(actionI), e.getY(actionI))
+				val key = this.keys.find({
+					p in it.boundingBox && getKeyShape(it)?.contains(p) == true
+				})
 				this.touches[pointerId] = Touch(
 					this.position + p,
-					this.keys.toSet())
+					this.keys,
+					key)
+				if(key != null)
+					this.changeStroke()
 			}
 			MotionEvent.ACTION_MOVE ->
 			{
+				val oldStroke = this.stroke
 				for(i in 0 until e.pointerCount)
 				{
 					val touch = this.touches[e.getPointerId(i)] ?: continue
 					for(p in e.getTouchLine(i))
 						touch.update(this.position + p)
 				}
-				this.changeStroke()
+				if(this.stroke != oldStroke)
+					this.changeStroke()
 			}
 			MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP ->
 			{

@@ -180,14 +180,39 @@ data class KeyLayout(
 
 	fun rtfcre(keys: Long): String
 	{
-		val sections = this.sections.map({
-			it.filter({ it.test(keys) }).map({ it.char }).joinToString("")
-		})
-		val needDivider = sections[1].isEmpty() && sections[2].isNotEmpty()
+		val result = StringBuilder(this.keys.size)
+		for(i in 0 until this.breakKeys.first)
+		{
+			val k = this.keys[i]
+			if(k.test(keys))
+				result.append(k.char)
+		}
 
-		return (sections[0]
-			+ (if(needDivider) "-" else sections[1])
-			+ sections[2])
+		var addDivider = true
+		for(i in this.breakKeys.first until this.breakKeys.second)
+		{
+			val k = this.keys[i]
+			if(k.test(keys))
+			{
+				result.append(k.char)
+				addDivider = false
+			}
+		}
+
+		if(addDivider)
+			result.append('-')
+
+		for(i in this.breakKeys.second until this.keys.size)
+		{
+			val k = this.keys[i]
+			if(k.test(keys))
+				result.append(k.char)
+		}
+
+		if(result.last() == '-')
+			result.deleteCharAt(result.length - 1)
+
+		return result.toString()
 	}
 
 	constructor(json: JsonObject) :

@@ -28,8 +28,8 @@ class WindowTouchMover(
 			MotionEvent.ACTION_POINTER_DOWN ->
 			{
 				val activationBox = Box(
-					this.activationView.position,
-					this.activationView.position + this.activationView.size)
+					this.activationView.screenPosition,
+					this.activationView.screenPosition + this.activationView.size)
 				if(event.pointerCount == 1 && Vector2(event.x, event.y) in activationBox)
 				{
 					this.moving = true

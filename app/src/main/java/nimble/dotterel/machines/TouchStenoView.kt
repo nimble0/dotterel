@@ -34,7 +34,7 @@ private fun MotionEvent.getTouchLine(i: Int): List<Pair<Vector2, Float>>
 
 private fun findKeyIntersections(
 	line: LinearLine,
-	keys: Set<View>
+	keys: Collection<View>
 ): List<Pair<View, Pair<Float, Float>>>
 {
 	val lineBoundingBox = line.boundingBox
@@ -44,7 +44,7 @@ private fun findKeyIntersections(
 		.filterNot({ it.second.second < 0f })
 }
 
-private fun activateKeysOnLine(line: LinearLine, keys: Set<View>, activate: Boolean): Float
+private fun activateKeysOnLine(line: LinearLine, keys: Collection<View>, activate: Boolean): Float
 {
 	val keyIntersections = findKeyIntersections(line, keys)
 
@@ -71,43 +71,61 @@ class TouchStenoView(context: Context, attributes: AttributeSet) :
 	private class Touch(
 		var position: Vector2,
 		var radius: Float,
-		var activate: Boolean,
-		val keys: Set<View>)
+		val keys: Collection<View>,
+		var key: View)
 	{
+		var activate: Boolean = !key.isSelected
+
 		init
 		{
-			this.keys
-				.filter({ this.position in it.boundingBox })
-				.forEach({ it.isSelected = this.activate })
+			this.key.isSelected = this.activate
 			this.activateNearKeys()
 		}
 
 		private fun activateNearKeys()
 		{
+			val circleBoundingBox = Box(
+				this.position - Vector2(this.radius, this.radius),
+				this.position + Vector2(this.radius, this.radius))
+			val keys2 = this.keys
+				.filter({ circleBoundingBox.overlaps(it.boundingBox) })
+
+			if(keys2.all({ it.isSelected == this.activate }))
+				return
+
 			for(i in 0 until CIRCULAR_ITERATIONS)
 			{
 				val angle = (i * 2 * Math.PI / CIRCULAR_ITERATIONS).toFloat()
 				activateKeysOnLine(
 					LinearLine(this.position, this.position + Vector2(this.radius, 0f).rotate(angle)),
-					this.keys,
+					keys2,
 					this.activate)
 			}
 		}
 
 		fun update(position: Vector2, radius: Float): Boolean
 		{
-			val line = LinearLine(this.position, position)
-			val lineEnd = min(1f, activateKeysOnLine(
-				line,
-				this.keys,
-				this.activate))
-
-			this.position = line.lerp(lineEnd)
 			this.radius = radius
-
-			this.activateNearKeys()
-
-			return lineEnd < 1f
+			if(position !in this.key.boundingBox)
+			{
+				val line = LinearLine(this.position, position)
+				val lineEnd = min(1f, activateKeysOnLine(
+					line,
+					this.keys,
+					this.activate))
+				val newKey = this.keys.find({ this.position in it.boundingBox })
+				if(newKey != null)
+					this.key = newKey
+				this.position = line.lerp(lineEnd)
+				this.activateNearKeys()
+				return lineEnd < 1f
+			}
+			else
+			{
+				this.position = position
+				this.activateNearKeys()
+				return false
+			}
 		}
 	}
 
@@ -161,13 +179,14 @@ class TouchStenoView(context: Context, attributes: AttributeSet) :
 							this.minTouchRadius,
 							this.maxTouchRadius,
 							e.getPressure(actionI)),
-						!key.isSelected,
-						this.keys.toSet())
+						this.keys,
+						key)
 					this.changeStroke()
 				}
 			}
 			MotionEvent.ACTION_MOVE ->
 			{
+				val oldStroke = this.stroke
 				var applyStroke = false
 				for(i in 0 until e.pointerCount)
 				{
@@ -187,7 +206,8 @@ class TouchStenoView(context: Context, attributes: AttributeSet) :
 						}
 					}
 				}
-				this.changeStroke()
+				if(this.stroke != oldStroke)
+					this.changeStroke()
 				// Make sure applyStroke is called after changeStroke
 				if(applyStroke)
 					this.applyStroke()
