@@ -10,90 +10,70 @@ import android.util.Log
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 
-import nimble.dotterel.translation.TranslationPart
 import nimble.dotterel.translation.Translator
 
-fun editorAction(translator: Translator, arg: String) =
-	TranslationPart(actions = listOf(
-		DotterelRunnable.make({ dotterel: Dotterel ->
-			if(dotterel.currentInputEditorInfo.actionLabel != null)
-				dotterel.sendDefaultEditorAction(false)
-			else
-				dotterel.currentInputConnection.performEditorAction(
-					EditorInfo.IME_ACTION_DONE)
-		})
-	))
-
-fun switchPreviousIme(translator: Translator, arg: String)
-	: TranslationPart
+fun editorAction(dotterel: Dotterel, translator: Translator, arg: String)
 {
-	return TranslationPart(
-		actions = listOf(DotterelRunnable.make({ dotterel: Dotterel ->
-			if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P)
-				dotterel.switchToPreviousInputMethod()
-			else
-			{
-				val imm = dotterel.getSystemService(Context.INPUT_METHOD_SERVICE)
-					as InputMethodManager
-				@Suppress("DEPRECATION")
-				imm.switchToLastInputMethod(dotterel.window?.window?.attributes?.token)
-			}
-		})))
+	if(dotterel.currentInputEditorInfo.actionLabel != null)
+		dotterel.sendDefaultEditorAction(false)
+	else
+		dotterel.currentInputConnection.performEditorAction(
+			EditorInfo.IME_ACTION_DONE)
 }
 
-fun switchNextIme(translator: Translator, arg: String)
-	: TranslationPart
+fun switchPreviousIme(dotterel: Dotterel, translator: Translator, arg: String)
 {
-	return TranslationPart(
-		actions = listOf(DotterelRunnable.make({ dotterel: Dotterel ->
-			if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P)
-				dotterel.switchToNextInputMethod(false)
-			else
-			{
-				val imm = dotterel.getSystemService(Context.INPUT_METHOD_SERVICE)
-					as InputMethodManager
-				@Suppress("DEPRECATION")
-				imm.switchToNextInputMethod(
-					dotterel.window?.window?.attributes?.token,
-					false)
-			}
-		})))
+	if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P)
+		dotterel.switchToPreviousInputMethod()
+	else
+	{
+		val imm = dotterel.getSystemService(Context.INPUT_METHOD_SERVICE)
+			as InputMethodManager
+		@Suppress("DEPRECATION")
+		imm.switchToLastInputMethod(dotterel.window?.window?.attributes?.token)
+	}
 }
 
-fun switchIme(translator: Translator, arg: String)
-	: TranslationPart
+fun switchNextIme(dotterel: Dotterel, translator: Translator, arg: String)
 {
-	return TranslationPart(
-		actions = listOf(DotterelRunnable.make({ dotterel: Dotterel ->
-			try
-			{
-				if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P)
-					dotterel.switchInputMethod(arg)
-				else
-				{
-					val imm = dotterel.getSystemService(Context.INPUT_METHOD_SERVICE)
-						as InputMethodManager
-					@Suppress("DEPRECATION")
-					imm.setInputMethod(
-						dotterel.window?.window?.attributes?.token,
-						arg)
-				}
-			}
-			catch(e: java.lang.IllegalArgumentException)
-			{
-				Log.e("Dotterel IME:SWITCH", "Bad IME id")
-			}
-		})))
+	if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P)
+		dotterel.switchToNextInputMethod(false)
+	else
+	{
+		val imm = dotterel.getSystemService(Context.INPUT_METHOD_SERVICE)
+			as InputMethodManager
+		@Suppress("DEPRECATION")
+		imm.switchToNextInputMethod(
+			dotterel.window?.window?.attributes?.token,
+			false)
+	}
 }
 
-fun showImePicker(translator: Translator, arg: String)
-	: TranslationPart
+fun switchIme(dotterel: Dotterel, translator: Translator, arg: String)
 {
-	return TranslationPart(
-		actions = listOf(DotterelRunnable.make({ dotterel: Dotterel ->
+	try
+	{
+		if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P)
+			dotterel.switchInputMethod(arg)
+		else
+		{
 			val imm = dotterel.getSystemService(Context.INPUT_METHOD_SERVICE)
 				as InputMethodManager
-			imm.showInputMethodPicker()
-		})))
+			@Suppress("DEPRECATION")
+			imm.setInputMethod(
+				dotterel.window?.window?.attributes?.token,
+				arg)
+		}
+	}
+	catch(e: java.lang.IllegalArgumentException)
+	{
+		Log.e("Dotterel IME:SWITCH", "Bad IME id")
+	}
 }
 
+fun showImePicker(dotterel: Dotterel, translator: Translator, arg: String)
+{
+	val imm = dotterel.getSystemService(Context.INPUT_METHOD_SERVICE)
+		as InputMethodManager
+	imm.showInputMethodPicker()
+}

@@ -8,6 +8,7 @@ import com.eclipsesource.json.JsonArray
 import com.eclipsesource.json.JsonObject
 
 import java.io.InputStream
+import java.util.Locale
 
 import kotlin.math.*
 
@@ -125,9 +126,9 @@ class SimpleOrthography : Orthography
 	fun remove(left: String, right: String)
 	{
 		@Suppress("NAME_SHADOWING")
-		val left = left.toLowerCase()
+		val left = left.toLowerCase(Locale.getDefault())
 		@Suppress("NAME_SHADOWING")
-		val right = right.toLowerCase()
+		val right = right.toLowerCase(Locale.getDefault())
 
 		val leftI = this.replacements.binarySearch(LeftLookupEntry(left))
 		if(leftI < 0)
@@ -144,9 +145,9 @@ class SimpleOrthography : Orthography
 	fun add(left: String, right: String, replacement: String)
 	{
 		@Suppress("NAME_SHADOWING")
-		val left = left.toLowerCase()
+		val left = left.toLowerCase(Locale.getDefault())
 		@Suppress("NAME_SHADOWING")
-		val right = right.toLowerCase()
+		val right = right.toLowerCase(Locale.getDefault())
 
 		val leftEntryI = this.replacements.binarySearch(LeftLookupEntry(left))
 		val leftEntry = if(leftEntryI < 0)
@@ -217,7 +218,7 @@ class SimpleOrthography : Orthography
 	}
 
 	override fun match(a: String, b: String): Orthography.Result? =
-		this.find(a.toLowerCase(), b.toLowerCase())?.let({
+		this.find(a.toLowerCase(Locale.getDefault()), b.toLowerCase(Locale.getDefault()))?.let({
 			Orthography.Result(
 				it.left.length,
 				it.replacement.withCase((a + b).substring(a.length - it.left.length))

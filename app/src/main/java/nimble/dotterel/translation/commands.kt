@@ -5,8 +5,8 @@
 
 package nimble.dotterel.translation
 
-import java.util.Collections
-
+import nimble.dotterel.Dotterel
+import nimble.dotterel.DotterelRunnable
 import nimble.dotterel.util.CaseInsensitiveString
 
 val COMMANDS = mapOf(
@@ -31,6 +31,16 @@ private val backspaceWord = KeyCombo("backspace", Modifier.CONTROL.mask)
 fun List<Any>.filterTextActions() =
 	this.filter({ it is UnformattedText || it is FormattedText })
 
+fun runnableCommand(
+	f: (Dotterel, Translator, String) -> Unit
+): (Translator, String) -> TranslationPart =
+	{ translator, arg ->
+		TranslationPart(
+			actions = listOf(DotterelRunnable.make({ dotterel: Dotterel ->
+				f(dotterel, translator, arg)
+			})))
+	}
+
 fun undoStroke(translator: Translator, arg: String)
 	: TranslationPart
 {
@@ -49,7 +59,7 @@ fun undoStroke(translator: Translator, arg: String)
 		translator.push(HistoryTranslation(
 			listOf(),
 			listOf(),
-			Collections.nCopies(count, backspaceWord),
+			List(count, { backspaceWord }),
 			translator.context,
 			false))
 

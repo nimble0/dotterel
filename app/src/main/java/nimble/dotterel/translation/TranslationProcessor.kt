@@ -4,6 +4,7 @@
 package nimble.dotterel.translation
 
 import java.text.ParseException
+import java.util.Locale
 
 import kotlin.math.min
 
@@ -82,7 +83,7 @@ class TranslationProcessor(private val translator: Translator)
 		var i = commandStr.length
 		while(i != -1)
 		{
-			val name = commandStr.substring(0, i).toLowerCase()
+			val name = commandStr.substring(0, i).toLowerCase(Locale.ROOT)
 			val arg = commandStr.substring(min(i + 1, commandStr.length))
 			val command = this.system.commands[CaseInsensitiveString(name)]
 			if(command != null)

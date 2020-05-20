@@ -108,17 +108,9 @@ class SystemManager(
 				}
 			}
 		}
-		catch(e: ParseException)
+		catch(e: FileParseException)
 		{
-			this.log.error("Dictionary $path has badly formed JSON")
-		}
-		catch(e: java.lang.NullPointerException)
-		{
-			this.log.error("Invalid type found while reading dictionary $path")
-		}
-		catch(e: java.lang.UnsupportedOperationException)
-		{
-			this.log.error("Invalid type found while reading dictionary $path")
+			this.log.error("Error parsing dictionary $path")
 		}
 
 		return null

@@ -7,11 +7,28 @@ import com.eclipsesource.json.Json
 
 import java.io.InputStream
 
+import nimble.dotterel.translation.FileParseException
+
 class JsonDictionary(input: InputStream) : StandardDictionary()
 {
 	init
 	{
-		for(entry in Json.parse(input.bufferedReader()).asObject())
-			this[entry.name] = entry.value.asString()
+		try
+		{
+			for(entry in Json.parse(input.bufferedReader()).asObject())
+				this[entry.name] = entry.value.asString()
+		}
+		catch(e: com.eclipsesource.json.ParseException)
+		{
+			throw FileParseException("Invalid JSON", e)
+		}
+		catch(e: java.lang.NullPointerException)
+		{
+			throw FileParseException("Invalid type", e)
+		}
+		catch(e: java.lang.UnsupportedOperationException)
+		{
+			throw FileParseException("Missing type", e)
+		}
 	}
 }
