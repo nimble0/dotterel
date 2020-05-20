@@ -7,8 +7,8 @@ import android.os.Bundle
 
 import androidx.preference.*
 
-import nimble.dotterel.util.*
-import nimble.dotterel.util.DialogPreference
+import nimble.dotterel.util.ui.*
+import nimble.dotterel.util.ui.DialogPreference
 
 private const val DIALOG_FRAGMENT_TAG = "nimble.dotterel.MachinePreferenceFragment.DIALOG"
 

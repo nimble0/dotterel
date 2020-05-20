@@ -1,7 +1,7 @@
 // This file is part of Dotterel which is released under GPL-2.0-or-later.
 // See file <LICENSE.txt> or go to <http://www.gnu.org/licenses/> for full license details.
 
-package nimble.dotterel
+package nimble.dotterel.translation
 
 import io.kotlintest.matchers.shouldBe
 import io.kotlintest.specs.FunSpec
@@ -10,6 +10,8 @@ import java.io.InputStream
 import java.io.OutputStream
 
 import nimble.dotterel.translation.*
+import nimble.dotterel.translation.dictionaries.StandardDictionary
+import nimble.dotterel.translation.orthographies.RegexOrthography
 import nimble.dotterel.util.CaseInsensitiveString
 
 internal fun Translator.apply(strokes: String): List<Any>

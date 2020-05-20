@@ -1,7 +1,7 @@
 // This file is part of Dotterel which is released under GPL-2.0-or-later.
 // See file <LICENSE.txt> or go to <http://www.gnu.org/licenses/> for full license details.
 
-package nimble.dotterel
+package nimble.dotterel.translation
 
 import com.eclipsesource.json.Json
 import com.eclipsesource.json.JsonObject
@@ -13,9 +13,7 @@ import io.kotlintest.specs.FunSpec
 
 import java.io.*
 
-import nimble.dotterel.translation.*
 import nimble.dotterel.util.CaseInsensitiveString
-import nimble.dotterel.util.getOrNull
 import nimble.dotterel.util.toJson
 
 class LocalSystemResources : SystemResources

@@ -5,7 +5,7 @@ package nimble.dotterel
 
 import androidx.preference.PreferenceFragmentCompat
 
-import nimble.dotterel.util.flatten
+import nimble.dotterel.util.ui.flatten
 
 fun bindSystemPreferencesToActiveSystem(preferenceFragment: PreferenceFragmentCompat)
 {

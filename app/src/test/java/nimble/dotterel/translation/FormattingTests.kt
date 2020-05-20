@@ -1,13 +1,13 @@
 // This file is part of Dotterel which is released under GPL-2.0-or-later.
 // See file <LICENSE.txt> or go to <http://www.gnu.org/licenses/> for full license details.
 
-package nimble.dotterel
+package nimble.dotterel.translation
 
 import io.kotlintest.matchers.shouldBe
 import io.kotlintest.properties.*
 import io.kotlintest.specs.FunSpec
 
-import nimble.dotterel.translation.*
+import nimble.dotterel.translation.orthographies.RegexOrthography
 
 class FormattingTests : FunSpec
 ({

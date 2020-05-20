@@ -9,6 +9,8 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 
 import nimble.dotterel.util.*
+import nimble.dotterel.util.ui.position
+import nimble.dotterel.util.ui.size
 
 import kotlin.math.*
 

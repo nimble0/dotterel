@@ -1,7 +1,7 @@
 // This file is part of Dotterel which is released under GPL-2.0-or-later.
 // See file <LICENSE.txt> or go to <http://www.gnu.org/licenses/> for full license details.
 
-package nimble.dotterel.translation
+package nimble.dotterel.translation.orthographies
 
 import com.eclipsesource.json.Json
 import com.eclipsesource.json.JsonArray
@@ -12,6 +12,7 @@ import java.util.Locale
 
 import kotlin.math.*
 
+import nimble.dotterel.translation.*
 import nimble.dotterel.util.toJson
 
 internal fun String.withCase(s: String): String =

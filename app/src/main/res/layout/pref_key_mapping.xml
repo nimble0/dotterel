@@ -22,7 +22,8 @@
 		android:gravity="center"
 		android:background="@color/tint" />
 
-	<nimble.dotterel.FlowLayout android:id="@+id/keyboard_keys"
+	<nimble.dotterel.util.ui.FlowLayout
+		android:id="@+id/keyboard_keys"
 		android:layout_width="0dp"
 		android:layout_height="wrap_content"
 		android:layout_weight="1"

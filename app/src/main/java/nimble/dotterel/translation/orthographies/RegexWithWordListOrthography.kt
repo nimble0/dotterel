@@ -1,12 +1,14 @@
 // This file is part of Dotterel which is released under GPL-2.0-or-later.
 // See file <LICENSE.txt> or go to <http://www.gnu.org/licenses/> for full license details.
 
-package nimble.dotterel.translation
+package nimble.dotterel.translation.orthographies
 
 import com.eclipsesource.json.Json
 
 import java.io.InputStream
 
+import nimble.dotterel.translation.FileParseException
+import nimble.dotterel.translation.Orthography
 import nimble.dotterel.util.mapValues
 
 class RegexWithWordListOrthography(
@@ -58,7 +60,7 @@ class RegexWithWordListOrthography(
 				RegexWithWordListOrthography(
 					json.get("regex").asArray().map({
 						it.asObject().let({ it2 ->
-							RegexWithWordListOrthography.Replacement(
+							Replacement(
 								Regex(
 									it2.get("l").asString()
 										+ "\uffff"

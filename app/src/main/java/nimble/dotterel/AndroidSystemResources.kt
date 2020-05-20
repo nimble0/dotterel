@@ -10,6 +10,7 @@ import android.util.Log
 import java.io.*
 
 import nimble.dotterel.translation.*
+import nimble.dotterel.translation.dictionaries.NumbersDictionary
 import nimble.dotterel.util.CaseInsensitiveString
 
 private val CODE_DICTIONARIES = mapOf(
