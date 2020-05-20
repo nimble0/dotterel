@@ -26,7 +26,7 @@ class NumbersDictionaryTests : FunSpec
 				Pair("-8", listOf("#-", "-L")),
 				Pair("-9", listOf("#-", "-T")))
 		)
-		val dictionary = NumbersDictionary()
+		val dictionary = NumbersDictionary(layout)
 
 		dictionary[layout.parse(listOf("13-"))] shouldBe "{&13}"
 		dictionary[layout.parse(listOf("1-9"))] shouldBe "{&19}"

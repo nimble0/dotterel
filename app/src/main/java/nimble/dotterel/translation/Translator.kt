@@ -7,6 +7,7 @@ import java.text.ParseException
 
 import kotlin.math.max
 
+import nimble.dotterel.Dotterel
 import nimble.dotterel.util.product
 
 private const val TRANSLATION_HISTORY_SIZE = 100
@@ -109,6 +110,7 @@ fun optimiseActions(context: String, actions: List<Any>): List<Any>
 
 class Translator(
 	var system: System,
+	var dotterel: Dotterel? = null,
 	var log: Log = object : Log {})
 {
 	val processor = TranslationProcessor(this)

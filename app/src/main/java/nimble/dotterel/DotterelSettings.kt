@@ -33,6 +33,12 @@ private val DEFAULT_JSON_PREFERENCES = mapOf(
 			"maxTouchRadius": 20,
 			"padding": 5,
 			"swipeBevelSize": 60
+		}"""),
+	Pair(
+		"tool/lookupTranslation",
+		"""{
+			"width": 400,
+			"height": 300
 		}""")
 )
 

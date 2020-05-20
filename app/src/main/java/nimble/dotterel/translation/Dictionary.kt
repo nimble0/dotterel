@@ -3,8 +3,23 @@
 
 package nimble.dotterel.translation
 
+import nimble.dotterel.util.CaseInsensitiveString
+
 interface Dictionary
 {
+	val keyLayout: KeyLayout
 	val longestKey: Int
 	operator fun get(k: List<Stroke>): String?
+}
+
+interface MutableDictionary : Dictionary
+{
+	operator fun set(k: List<Stroke>, v: String)
+	fun remove(k: List<Stroke>)
+}
+
+interface ReverseDictionary : Dictionary
+{
+	fun reverseGet(s: String): Set<List<Stroke>>
+	fun findTranslations(s: CaseInsensitiveString): Set<String>
 }

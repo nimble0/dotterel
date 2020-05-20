@@ -20,7 +20,7 @@ class LocalSystemResources : SystemResources
 {
 	override val transforms = TRANSFORMS
 	override val commands = COMMANDS
-	override val codeDictionaries = mapOf<String, Dictionary>()
+	override val codeDictionaries: Map<String, (KeyLayout) -> Dictionary> = mapOf()
 
 	override fun openInputStream(path: String): InputStream?
 	{
@@ -175,6 +175,7 @@ class SystemTests : FunSpec
 			transformState = Formatting.TransformState.MAIN
 		)
 		val dictionaries = SystemDictionaries(
+			base.keyLayout,
 			base.dictionaries.dictionaries.subList(
 				0,
 				base.dictionaries.dictionaries.size - 1)

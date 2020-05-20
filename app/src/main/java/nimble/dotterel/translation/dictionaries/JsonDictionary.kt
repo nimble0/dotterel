@@ -4,31 +4,40 @@
 package nimble.dotterel.translation.dictionaries
 
 import com.eclipsesource.json.Json
+import com.eclipsesource.json.JsonObject
 
 import java.io.InputStream
 
+import nimble.dotterel.translation.KeyLayout
 import nimble.dotterel.translation.FileParseException
 
-class JsonDictionary(input: InputStream) : StandardDictionary()
+class JsonDictionary(keyLayout: KeyLayout, json: JsonObject) :
+	BackedDictionary(
+		keyLayout,
+		BackingDictionary(
+			json.map({ Pair(it.name, it.value.asString()) })
+		))
 {
-	init
+	companion object
 	{
-		try
+		fun load(input: InputStream, keyLayout: KeyLayout): JsonDictionary
 		{
-			for(entry in Json.parse(input.bufferedReader()).asObject())
-				this[entry.name] = entry.value.asString()
-		}
-		catch(e: com.eclipsesource.json.ParseException)
-		{
-			throw FileParseException("Invalid JSON", e)
-		}
-		catch(e: java.lang.NullPointerException)
-		{
-			throw FileParseException("Invalid type", e)
-		}
-		catch(e: java.lang.UnsupportedOperationException)
-		{
-			throw FileParseException("Missing type", e)
+			try
+			{
+				return JsonDictionary(keyLayout, Json.parse(input.bufferedReader()).asObject())
+			}
+			catch(e: com.eclipsesource.json.ParseException)
+			{
+				throw FileParseException("Invalid JSON", e)
+			}
+			catch(e: java.lang.NullPointerException)
+			{
+				throw FileParseException("Invalid type", e)
+			}
+			catch(e: java.lang.UnsupportedOperationException)
+			{
+				throw FileParseException("Missing type", e)
+			}
 		}
 	}
 }

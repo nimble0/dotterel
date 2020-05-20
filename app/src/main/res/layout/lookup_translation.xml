@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This file is part of Dotterel which is released under GPL-2.0-or-later. -->
+<!-- See file <LICENSE.txt> or go to <http://www.gnu.org/licenses/> for full license details. -->
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:orientation="vertical"
+	android:background="#000">
+
+	<androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/titleBar"
+		app:layout_constraintTop_toTopOf="parent"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content">
+
+		<androidx.appcompat.widget.AppCompatTextView android:id="@android:id/title"
+			app:layout_constraintTop_toTopOf="parent"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:padding="10dp"
+			android:gravity="center"
+			android:text="@string/lookup_translation_title"
+			android:background="#555"
+			android:textColor="#fff" />
+
+		<androidx.appcompat.widget.AppCompatImageButton android:id="@android:id/closeButton"
+			app:layout_constraintRight_toRightOf="parent"
+			app:layout_constraintTop_toTopOf="parent"
+			app:layout_constraintBottom_toBottomOf="parent"
+			android:layout_width="wrap_content"
+			android:layout_height="0dp"
+			android:padding="3dp"
+			app:srcCompat="@drawable/ic_close_white_128dp"
+			android:background="@color/close"
+			android:adjustViewBounds="true"
+			android:scaleType="fitCenter"
+			android:contentDescription="@string/close" />
+
+	</androidx.constraintlayout.widget.ConstraintLayout>
+
+	<androidx.appcompat.widget.AppCompatEditText android:id="@+id/translation"
+		app:layout_constraintTop_toBottomOf="@id/titleBar"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:padding="5dp"
+		android:layout_margin="5dp"
+		android:layout_marginBottom="0dp"
+		android:background="#555"
+		android:textColor="#fff"
+		android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+		android:importantForAutofill="no"
+		android:inputType="text"
+		android:imeOptions="actionDone">
+		<requestFocus />
+	</androidx.appcompat.widget.AppCompatEditText>
+
+	<androidx.appcompat.widget.AppCompatTextView android:id="@+id/lookup_results"
+		app:layout_constraintTop_toBottomOf="@id/translation"
+		app:layout_constraintBottom_toBottomOf="parent"
+		android:layout_width="match_parent"
+		android:layout_height="0dp"
+		android:padding="5dp"
+		android:layout_margin="5dp"
+		android:layout_marginBottom="0dp"
+		android:background="#555"
+		android:textColor="#fff"
+		android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+		android:scrollbars="vertical" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

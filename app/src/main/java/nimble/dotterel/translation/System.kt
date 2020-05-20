@@ -21,8 +21,8 @@ data class SystemDictionary(
 
 	companion object
 	{
-		fun fromJson(manager: SystemManager, json: JsonObject) =
-			manager.openDictionary(json.get("path").asString())
+		fun fromJson(manager: SystemManager, keyLayout: KeyLayout, json: JsonObject) =
+			manager.openDictionary(keyLayout, json.get("path").asString())
 				?.let({ dictionary ->
 					SystemDictionary(
 						json.get("path").asString(),
@@ -56,6 +56,7 @@ data class SystemOrthography(
 }
 
 data class SystemDictionaries(
+	override val keyLayout: KeyLayout,
 	val dictionaries: List<SystemDictionary> = listOf()
 ) :
 	Dictionary
@@ -81,10 +82,10 @@ data class SystemDictionaries(
 
 	companion object
 	{
-		fun fromJson(manager: SystemManager, json: JsonArray) =
+		fun fromJson(manager: SystemManager, keyLayout: KeyLayout, json: JsonArray) =
 			json.map({ it.asObject() })
-				.mapNotNull({ SystemDictionary.fromJson(manager, it) })
-				.let({ SystemDictionaries(it) })
+				.mapNotNull({ SystemDictionary.fromJson(manager, keyLayout, it) })
+				.let({ SystemDictionaries(keyLayout, it) })
 	}
 }
 
@@ -158,7 +159,7 @@ data class System(
 
 	var orthographies: SystemOrthographies = SystemOrthographies(listOf()),
 
-	var dictionaries: SystemDictionaries = SystemDictionaries(),
+	var dictionaries: SystemDictionaries = SystemDictionaries(EMPTY_KEY_LAYOUT),
 
 	var machineConfig: JsonObject = JsonObject())
 {
@@ -244,7 +245,7 @@ fun System.Companion.fromJson(
 				LoadingDictionary(
 					path,
 					it.get("enabled").asBoolean(),
-					async(Dispatchers.Default) { manager.parallelOpenDictionary(path) })
+					async(Dispatchers.Default) { manager.parallelOpenDictionary(keyLayout, path) })
 			})
 
 		val orthographies = SystemOrthographies(
@@ -255,6 +256,7 @@ fun System.Companion.fromJson(
 			}) ?: listOf())
 
 		val dictionaries = SystemDictionaries(
+			keyLayout,
 			loadingDictionaries?.mapNotNull({ dictionary ->
 				dictionary.dictionary.await()?.let({
 					SystemDictionary(dictionary.path, dictionary.enabled, it)

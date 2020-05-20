@@ -5,8 +5,12 @@ package nimble.dotterel.translation.dictionaries
 
 import nimble.dotterel.translation.*
 
-class NumbersDictionary : Dictionary
+class NumbersDictionary(override val keyLayout: KeyLayout) : Dictionary
 {
+	private val numbers = (
+		"123450".map({ Pair(it, keyLayout.parseKeys(listOf(it.toString()))) })
+		+ "6789".map({ Pair(it, keyLayout.parseKeys(listOf("-$it"))) }))
+
 	override val longestKey: Int = 1
 	override fun get(k: List<Stroke>): String?
 	{
@@ -14,14 +18,10 @@ class NumbersDictionary : Dictionary
 			return null
 
 		val s = k[0]
-		if(s.isEmpty)
+		if(s.layout != this.keyLayout || s.isEmpty)
 			return null
 
-		val numbers = (
-			"123450".map({ Pair(it, s.layout.parseKeys(listOf(it.toString()))) })
-			+ "6789".map({ Pair(it, s.layout.parseKeys(listOf("-$it"))) }))
-
-		val pressedKeys = numbers.fold(0L, { acc, it ->
+		val pressedKeys = this.numbers.fold(0L, { acc, it ->
 			if(s.keys and it.second.keys == it.second.keys)
 				acc or it.second.keys
 			else
@@ -30,7 +30,7 @@ class NumbersDictionary : Dictionary
 		if(pressedKeys != s.keys)
 			return null
 
-		val numbersString = numbers.joinToString("", transform = {
+		val numbersString = this.numbers.joinToString("", transform = {
 			if(s.keys and it.second.keys == it.second.keys)
 				it.first.toString()
 			else

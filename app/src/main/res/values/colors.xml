@@ -25,4 +25,5 @@
 	<color name="highlighted">#07F</color>
 	<color name="error">#8F00</color>
 	<color name="selected_error">#895c</color>
+	<color name="close">#700</color>
 </resources>
