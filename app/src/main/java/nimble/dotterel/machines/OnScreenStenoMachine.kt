@@ -180,7 +180,18 @@ abstract class StenoView(context: Context, attributes: AttributeSet) :
 		this.strokeListener?.applyStroke(this.stroke)
 
 		for(key in this.keys)
+		{
+			key.isActivated = key.isSelected
 			key.isSelected = false
-		this.updatePreview(this.stroke)
+		}
+
+		// Ensure applied stroke is visible in selected keys and
+		// translation preview for short duration.
+		this.handler.postDelayed(
+			{
+				this.keys.forEach({ it.isActivated = false })
+				this.updatePreview(this.stroke)
+			},
+			50)
 	}
 }
