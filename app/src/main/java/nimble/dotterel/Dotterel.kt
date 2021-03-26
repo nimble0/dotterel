@@ -108,7 +108,9 @@ class Dotterel : InputMethodService(), StenoMachine.Listener
 			field = v
 			if(this.viewCreated)
 			// Not allowed to pass null to setInputView
-				this.setInputView(this.view ?: View(this.applicationContext))
+				this.setInputView(
+					this.view
+					?: View(this.applicationContext).also({ it.visibility = View.GONE }))
 		}
 	fun setView(viewId: Int)
 	{
