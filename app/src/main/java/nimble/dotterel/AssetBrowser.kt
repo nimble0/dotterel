@@ -189,6 +189,12 @@ abstract class AssetBrowser : AppCompatActivity()
 
 	override fun onOptionsItemSelected(item: MenuItem): Boolean
 	{
+		if(item.itemId == android.R.id.home)
+		{
+			this.finish()
+			return true
+		}
+
 		val root = this.roots[this.rootIds[item.itemId]]
 		return if(root != null)
 		{
