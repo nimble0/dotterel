@@ -10,18 +10,18 @@ import nimble.dotterel.translation.KeyCombo
 import nimble.dotterel.translation.Modifier
 
 private val MODIFIER_MAP = mapOf(
-	Pair(Modifier.SHIFT_L, META_SHIFT_LEFT_ON or META_SHIFT_ON),
-	Pair(Modifier.SHIFT_R, META_SHIFT_RIGHT_ON or META_SHIFT_ON),
-	Pair(Modifier.SHIFT, META_SHIFT_ON),
-	Pair(Modifier.CONTROL_L, META_CTRL_LEFT_ON or META_CTRL_ON),
-	Pair(Modifier.CONTROL_R, META_CTRL_RIGHT_ON or META_CTRL_ON),
-	Pair(Modifier.CONTROL, META_CTRL_ON),
-	Pair(Modifier.ALT_L, META_ALT_LEFT_ON or META_ALT_ON),
-	Pair(Modifier.ALT_R, META_ALT_RIGHT_ON or META_ALT_ON),
-	Pair(Modifier.ALT, META_ALT_ON),
-	Pair(Modifier.SUPER_L, META_META_LEFT_ON or META_META_ON),
-	Pair(Modifier.SUPER_R, META_META_RIGHT_ON or META_META_ON),
-	Pair(Modifier.SUPER, META_META_ON)
+	Pair(Modifier.SHIFT_L, Pair(KEYCODE_SHIFT_LEFT, META_SHIFT_LEFT_ON or META_SHIFT_ON)),
+	Pair(Modifier.SHIFT_R, Pair(KEYCODE_SHIFT_RIGHT, META_SHIFT_RIGHT_ON or META_SHIFT_ON)),
+	Pair(Modifier.SHIFT, Pair(KEYCODE_SHIFT_LEFT, META_SHIFT_ON)),
+	Pair(Modifier.CONTROL_L, Pair(KEYCODE_CTRL_LEFT, META_CTRL_LEFT_ON or META_CTRL_ON)),
+	Pair(Modifier.CONTROL_R, Pair(KEYCODE_CTRL_RIGHT, META_CTRL_RIGHT_ON or META_CTRL_ON)),
+	Pair(Modifier.CONTROL, Pair(KEYCODE_CTRL_LEFT, META_CTRL_ON)),
+	Pair(Modifier.ALT_L, Pair(KEYCODE_ALT_LEFT, META_ALT_LEFT_ON or META_ALT_ON)),
+	Pair(Modifier.ALT_R, Pair(KEYCODE_ALT_RIGHT, META_ALT_RIGHT_ON or META_ALT_ON)),
+	Pair(Modifier.ALT, Pair(KEYCODE_ALT_LEFT, META_ALT_ON)),
+	Pair(Modifier.SUPER_L, Pair(KEYCODE_META_LEFT, META_META_LEFT_ON or META_META_ON)),
+	Pair(Modifier.SUPER_R, Pair(KEYCODE_META_RIGHT,META_META_RIGHT_ON or META_META_ON)),
+	Pair(Modifier.SUPER, Pair(KEYCODE_META_LEFT, META_META_ON))
 )
 
 private val KEY_MAP = mapOf(
@@ -129,14 +129,31 @@ private fun charToKeyCode(c: Char): Int?
 
 fun KeyCombo.toAndroidKeyEvents(): List<KeyEvent>
 {
+	val now = android.os.SystemClock.uptimeMillis()
+
 	val key = KEY_MAP[this.key] ?: charToKeyCode(this.key.first()) ?: return listOf()
+
+	val keyPresses = mutableListOf<KeyEvent>()
 	var modifiers = 0
 	for(m in Modifier.values())
 		if(this.modifiers and m.mask != 0)
-			modifiers = modifiers or (MODIFIER_MAP[m] ?: return listOf())
+		{
+			val modifier = MODIFIER_MAP[m] ?: return listOf()
+			modifiers = modifiers or modifier.second
+			keyPresses.add(KeyEvent(
+				now,
+				now,
+				KeyEvent.ACTION_DOWN,
+				modifier.first,
+				0,
+				modifiers,
+				0,
+				0,
+				KeyEvent.FLAG_SOFT_KEYBOARD or KeyEvent.FLAG_KEEP_TOUCH_MODE,
+				InputDevice.SOURCE_KEYBOARD))
+		}
 
-	val now = android.os.SystemClock.uptimeMillis()
-	val down = KeyEvent(
+	keyPresses.add(KeyEvent(
 		now,
 		now,
 		KeyEvent.ACTION_DOWN,
@@ -146,17 +163,10 @@ fun KeyCombo.toAndroidKeyEvents(): List<KeyEvent>
 		0,
 		0,
 		KeyEvent.FLAG_SOFT_KEYBOARD or KeyEvent.FLAG_KEEP_TOUCH_MODE,
-		InputDevice.SOURCE_KEYBOARD)
-	val up = KeyEvent(
-		now,
-		now,
-		KeyEvent.ACTION_UP,
-		key,
-		0,
-		modifiers,
-		0,
-		0,
-		KeyEvent.FLAG_SOFT_KEYBOARD or KeyEvent.FLAG_KEEP_TOUCH_MODE,
-		InputDevice.SOURCE_KEYBOARD)
-	return listOf(down, up)
+		InputDevice.SOURCE_KEYBOARD))
+
+	return (keyPresses
+		+ keyPresses
+			.map({ KeyEvent.changeAction(it, KeyEvent.ACTION_UP) })
+			.reversed())
 }
