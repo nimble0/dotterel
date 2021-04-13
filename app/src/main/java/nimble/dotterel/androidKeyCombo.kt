@@ -34,7 +34,7 @@ private val KEY_MAP = mapOf(
 	Pair("g", KEYCODE_G),
 	Pair("h", KEYCODE_H),
 	Pair("i", KEYCODE_I),
-	Pair("j", KEYCODE_A),
+	Pair("j", KEYCODE_J),
 	Pair("k", KEYCODE_K),
 	Pair("l", KEYCODE_L),
 	Pair("m", KEYCODE_M),
