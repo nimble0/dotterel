@@ -218,11 +218,11 @@ class SerialStenoMachine(
 					config.get("flowControl")?.also({ v -> socket.flowControl = FlowControl.valueOf2(v.asString()) })
 				})
 
-			val mapping = systemConfig["TxBolt"]!!.asObject()
+			val protocolName = config.get("protocol")?.asString() ?: DEFAULT_SERIAL_CONFIG.get("protocol").asString()
+			val mapping = systemConfig[protocolName]!!.asObject()
 				.get("layout").asObject()
 				.mapValues({ it.value.asArray().map({ key -> key.asString() }) })
-
-			this.protocol = PROTOCOLS[config.get("protocol")?.asString() ?: DEFAULT_SERIAL_CONFIG.get("protocol").asString()]
+			this.protocol = PROTOCOLS[protocolName]
 				?.invoke(this.socket!!)
 				?.also({ protocol ->
 					protocol.keyLayout = keyLayout
