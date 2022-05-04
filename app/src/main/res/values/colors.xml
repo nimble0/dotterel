@@ -6,6 +6,8 @@
 	<color name="primary">#3F51B5</color>
 	<color name="primaryDark">#303F9F</color>
 	<color name="accent">#FF4081</color>
+	<color name="background">#FAFAFA</color>
+	<color name="actionBarBackground">#5973FF</color>
 
 	<color name="stenoKey">#000</color>
 	<color name="stenoKeyBorder">#555</color>

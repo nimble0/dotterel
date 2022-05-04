@@ -4,28 +4,29 @@
 package nimble.dotterel
 
 import android.annotation.SuppressLint
+import android.content.res.Configuration
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.webkit.WebView
+
+import androidx.core.content.ContextCompat
 
 import androidx.fragment.app.Fragment
 
-class AboutFragment : Fragment()
+class AboutFragment : Fragment(R.layout.about)
 {
 	@SuppressLint("SetJavaScriptEnabled")
-	override fun onCreateView(
-		inflater: LayoutInflater,
-		container: ViewGroup?,
-		savedInstanceState: Bundle?
-	): View
+	override fun onViewCreated(view: View, savedInstanceState: Bundle?)
 	{
-		val webView = WebView(inflater.context)
+		super.onViewCreated(view, savedInstanceState)
+
+		val webView = view as WebView
+		val nightModeFlags = this.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+		val darkMode = nightModeFlags == Configuration.UI_MODE_NIGHT_YES
+
 		webView.settings.javaScriptEnabled = true
 		webView.loadUrl(this.getString(R.string.pref_about_page_url)
-			+ "?version=" + this.getString(R.string.version_name))
-
-		return webView
+			+ "?version=" + this.getString(R.string.version_name) + "&darkMode=$darkMode")
+		webView.setBackgroundColor(ContextCompat.getColor(this.requireContext(), R.color.background))
 	}
 }

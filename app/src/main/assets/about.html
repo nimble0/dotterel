@@ -2,7 +2,6 @@
 <html>
 	<head>
 		<title>About Dotterel</title>
-		<style></style>
 		<script>
 			function getQueryParams(queryString)
 			{
@@ -18,18 +17,31 @@
 				return params;
 			}
 
-			var dotterelVersion = getQueryParams(window.location.search).version;
+			var queryParams = getQueryParams(window.location.search);
+			var dotterelVersion = queryParams.version;
+			var darkMode = queryParams.darkMode === "true";
+			if(darkMode)
+				document.getElementsByTagName("html")[0].className += " darkMode";
 		</script>
 		<style>
 			body {
 				margin: 0 2em;
-				background-color: #FAFAFA;
 			}
 			h3 {
 				margin-top: 3em;
 			}
 			.version {
 				font-size: 60%;
+			}
+
+			html.darkMode
+			{
+				color: #FAFAFA;
+			}
+
+			html.darkMode a:link
+			{
+				color: #44F;
 			}
 		</style>
 	</head>

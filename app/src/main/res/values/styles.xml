@@ -5,11 +5,17 @@
 <resources>
 
 	<!-- Base application theme. -->
-	<style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+	<style name="AppTheme" parent="Theme.AppCompat.DayNight">
 		<!-- Customize your theme here. -->
 		<item name="colorPrimary">@color/primary</item>
 		<item name="colorPrimaryDark">@color/primaryDark</item>
 		<item name="colorAccent">@color/accent</item>
+		<item name="android:colorBackground">@color/background</item>
+		<item name="actionBarStyle">@style/ToolbarStyle</item>
+	</style>
+
+	<style name="ToolbarStyle" parent="Widget.AppCompat.Light.ActionBar.Solid">
+		<item name="background">@color/actionBarBackground</item>
 	</style>
 
 	<style name="AboutTheme">
