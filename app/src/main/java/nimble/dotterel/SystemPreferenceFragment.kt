@@ -77,6 +77,7 @@ class SystemPreferenceFragment : PreferenceFragmentCompat()
 		for(preference in this.preferenceScreen.flatten())
 		{
 			preference.extras.putBoolean("readOnly", this.readOnly)
+			preference.extras.putString("path", this.path)
 			when(preference.extras.getString("store_type"))
 			{
 				"text_file" ->

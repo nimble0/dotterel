@@ -202,6 +202,9 @@ class DictionariesPreferenceFragment : PreferenceFragment()
 		savedInstanceState: Bundle?
 	): View
 	{
+		if(this.preference == null)
+			this.preference = this.loadPreference()
+
 		val view = inflater.inflate(R.layout.pref_dictionaries, container, false)
 
 		val adapter = DictionariesPreferenceAdapter(inflater.context)

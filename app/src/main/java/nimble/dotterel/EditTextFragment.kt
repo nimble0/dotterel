@@ -28,6 +28,9 @@ open class EditTextFragment : PreferenceFragment(), FragmentExitListener
 		savedInstanceState: Bundle?
 	): View
 	{
+		if(this.preference == null)
+			this.preference = this.loadPreference()
+
 		this.text = this.preference?.let({
 			it.preferenceDataStore?.getString(it.key, null)
 		}) ?: ""

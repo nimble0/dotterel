@@ -36,6 +36,7 @@ fun bindSystemPreferencesToActiveSystem(preferenceFragment: PreferenceFragmentCo
 				{
 					it.key = it.extras.getString("key")
 					it.preferenceDataStore = systemDataStore
+					it.extras.putString("path", system)
 				}
 			}
 		})
