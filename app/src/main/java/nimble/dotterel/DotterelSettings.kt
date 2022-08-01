@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
+import android.view.Menu
+import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.inputmethod.InputMethodManager
 
@@ -188,6 +190,7 @@ class SettingsFragment : PreferenceFragmentCompat()
 	override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?)
 	{
 		this.addPreferencesFromResource(R.xml.pref_root)
+		this.setHasOptionsMenu(true)
 
 		this.preferenceScreen
 			.flatten()
@@ -212,6 +215,11 @@ class SettingsFragment : PreferenceFragmentCompat()
 		})
 	}
 
+	override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater)
+	{
+		inflater.inflate(R.menu.root, menu)
+	}
+
 	private fun updateSystemsList()
 	{
 		val systems = File(this.requireContext().filesDir, "systems")
@@ -232,6 +240,20 @@ class SettingsFragment : PreferenceFragmentCompat()
 		})
 
 		bindSystemPreferencesToActiveSystem(this)
+	}
+
+	override fun onOptionsItemSelected(item: MenuItem): Boolean
+	{
+		return when(item.itemId)
+		{
+			R.id.share_log ->
+			{
+				(this.activity?.application as DotterelApplication?)?.shareLog()
+				true
+			}
+			else ->
+				super.onOptionsItemSelected(item)
+		}
 	}
 
 	override fun onResume()

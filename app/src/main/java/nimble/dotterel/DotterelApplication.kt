@@ -5,8 +5,10 @@ package nimble.dotterel
 
 import android.app.*
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
@@ -63,6 +65,22 @@ class DotterelApplication : Application()
 
 			defaultHandler.uncaughtException(thread, e)
 		})
+	}
+
+	fun shareLog()
+	{
+		val logFile = this.saveLogFile() ?: return
+		val logFileUri = FileProvider.getUriForFile(
+			this.applicationContext,
+			this.applicationContext.packageName, logFile)
+
+		val sharingIntent = Intent(Intent.ACTION_SEND)
+			.also({
+				it.type = "text/*"
+				it.putExtra(Intent.EXTRA_STREAM, logFileUri)
+				it.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+			})
+		startActivity(Intent.createChooser(sharingIntent, "share file with").also({ it.flags = FLAG_ACTIVITY_NEW_TASK }))
 	}
 
 	private fun deleteOldLogFiles()
