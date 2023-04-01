@@ -13,10 +13,13 @@ class GeminiPrSerialProtocol(socket: SerialSocket) : StenoSerialProtocol(socket)
 		 "Fn",  "#1", "#2", "#3", "#4",   "#5",   "#6",
 		"S1-", "S2-", "T-", "K-", "P-",   "W-",   "H-",
 		 "R-",  "A-", "O-", "*1", "*2", "res1", "res2",
-		 "pwr", "*3", "*4", "-E", "-U",   "-F",   "-R",
+		"pwr",  "*3", "*4", "-E", "-U",   "-F",   "-R",
 		 "-P",  "-B", "-L", "-G", "-T",   "-S",   "-D",
 		 "#7",  "#8", "#9", "#A", "#B",   "#C",   "-Z"
 	)
+		.chunked(7)
+		.map({ row -> row.reversed() })
+		.flatten()
 
 	override fun receive(data: ByteArray)
 	{
