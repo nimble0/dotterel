@@ -3,6 +3,8 @@
 
 package nimble.dotterel.machines
 
+import android.util.Log
+
 import nimble.dotterel.util.toUnsignedInt
 
 private const val BYTES_PER_STROKE = 6
@@ -21,24 +23,38 @@ class GeminiPrSerialProtocol(socket: SerialSocket) : StenoSerialProtocol(socket)
 		.map({ row -> row.reversed() })
 		.flatten()
 
-	override fun receive(data: ByteArray)
-	{
-		if(data.size != 6
-			|| (data[0].toUnsignedInt() and 0b1000000 == 0)
-			|| data.drop(1).any({ (data[0].toUnsignedInt() and 0b1000000 != 0) }))
-		{
-			val hexData = data.joinToString(
-				separator = " ",
-				transform = { String.format("%02X", it)})
-			val error = "discarding invalid packet: $hexData"
-			return
-		}
+	private val buffer = mutableListOf<Int>()
 
-		val keys = data.withIndex().fold(
+	private fun processBuffer()
+	{
+		val keys = this.buffer.withIndex().fold(
 			0L,
 			{ acc, it ->
-				acc or (it.value.toLong() and 0b1111111) shl (it.index * 7)
+				acc or ((it.value.toLong() and 0b1111111) shl (it.index * 7))
 			})
 		this.applyStroke(keys)
+
+		this.buffer.clear()
+	}
+
+	override fun receive(data: ByteArray)
+	{
+		for(b in data)
+		{
+			val ub = b.toUnsignedInt()
+			// First byte of chord
+			if(ub and 0b10000000 != 0 && this.buffer.isNotEmpty())
+			{
+				val hexData = this.buffer.joinToString(
+					separator = " ",
+					transform = { String.format("%02X", it)})
+				Log.w("Dotterel GeminiPr", "discarding invalid packet: $hexData")
+				this.buffer.clear()
+			}
+
+			this.buffer.add(ub)
+			if(this.buffer.size == BYTES_PER_STROKE)
+				this.processBuffer()
+		}
 	}
 }
