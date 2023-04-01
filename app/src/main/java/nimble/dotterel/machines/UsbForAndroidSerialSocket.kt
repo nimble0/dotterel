@@ -13,7 +13,8 @@ import com.hoho.android.usbserial.driver.UsbSerialPort
 import com.hoho.android.usbserial.driver.UsbSerialProber
 import com.hoho.android.usbserial.util.SerialInputOutputManager
 
-import java.util.concurrent.Executors
+import android.os.Handler
+import android.os.Looper
 
 private val usbForAndroid_DATA_BITS = mapOf(
 	Pair(DataBits._5, UsbSerialPort.DATABITS_5),
@@ -56,6 +57,7 @@ class UsbForAndroidSerialSocket(
 	private val usbSerialPort: UsbSerialPort
 	private var isOpen = false
 	private var serialIoManager: SerialInputOutputManager
+	private val mainLooper = Handler(Looper.getMainLooper())
 
 	init
 	{
@@ -79,10 +81,10 @@ class UsbForAndroidSerialSocket(
 
 				override fun onNewData(data: ByteArray)
 				{
-					this@UsbForAndroidSerialSocket.protocol?.receive(data)
+					mainLooper.post({ this@UsbForAndroidSerialSocket.protocol?.receive(data) })
 				}
 			})
-		Executors.newSingleThreadExecutor().submit(this.serialIoManager)
+		this.serialIoManager.start()
 	}
 
 	override var baudRate: Int = BAUDRATE_DEFAULT
