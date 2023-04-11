@@ -14,6 +14,8 @@ import com.hoho.android.usbserial.util.SerialInputOutputManager
 import android.os.Handler
 import android.os.Looper
 
+import java.io.IOException
+
 private val usbForAndroid_DATA_BITS = mapOf(
 	Pair(DataBits._5, UsbSerialPort.DATABITS_5),
 	Pair(DataBits._6, UsbSerialPort.DATABITS_6),
@@ -58,7 +60,7 @@ class UsbForAndroidSerialSocket(
 	init
 	{
 		val driver = prober.probeDevice(device)
-			?: throw Exception("Error probing serial USB device $device")
+			?: throw IOException("Error probing serial USB device $device")
 		this.usbSerialPort = driver.ports[0]
 		this.usbSerialPort.open(connection)
 		this.isOpen = true
