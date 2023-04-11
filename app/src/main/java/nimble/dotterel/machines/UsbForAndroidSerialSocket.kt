@@ -7,8 +7,6 @@ import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbDeviceConnection
 import android.util.Log
 
-import com.hoho.android.usbserial.driver.CdcAcmSerialDriver
-import com.hoho.android.usbserial.driver.ProbeTable
 import com.hoho.android.usbserial.driver.UsbSerialPort
 import com.hoho.android.usbserial.driver.UsbSerialProber
 import com.hoho.android.usbserial.util.SerialInputOutputManager
@@ -44,9 +42,7 @@ private val usbForAndroid_PARITY = mapOf(
 //	Pair(FlowControl.XON_XOFF, UsbSerialPort.FLOWCONTROL_XONXOFF_OUT)
 //)
 
-private val prober = UsbSerialProber(ProbeTable().also({
-	it.addProduct(0xFEED, 0x1337, CdcAcmSerialDriver::class.java)
-}))
+private val prober = UsbSerialProber(UsbSerialProber.getDefaultProbeTable())
 
 class UsbForAndroidSerialSocket(
 	device: UsbDevice,
