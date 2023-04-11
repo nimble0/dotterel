@@ -172,11 +172,11 @@ class SerialStenoMachine(
 				UsbManager.ACTION_USB_DEVICE_ATTACHED ->
 					this.tracker?.addMachine(Pair(
 						"Serial",
-						intent.getParcelableExtra<UsbDevice>(UsbManager.EXTRA_DEVICE).id))
+						intent.getParcelableExtra<UsbDevice>(UsbManager.EXTRA_DEVICE)!!.id))
 				UsbManager.ACTION_USB_DEVICE_DETACHED ->
 					this.tracker?.removeMachine(Pair(
 						"Serial",
-						intent.getParcelableExtra<UsbDevice>(UsbManager.EXTRA_DEVICE).id))
+						intent.getParcelableExtra<UsbDevice>(UsbManager.EXTRA_DEVICE)!!.id))
 			}
 		}
 	}

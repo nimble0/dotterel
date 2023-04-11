@@ -110,6 +110,7 @@ class TranslationProcessor(private val translator: Translator)
 			{
 				is Actions -> return TranslationPart(a.actions)
 				is TranslationString -> return this.process(a.string)
+				else -> {}
 			}
 
 			if(inner.isNotEmpty() && inner[0] == '#')

@@ -19,6 +19,7 @@ import androidx.appcompat.widget.Toolbar
 abstract class AppCompatPreferenceActivity : PreferenceActivity()
 {
 
+	@Deprecated("Deprecated in Java")
 	override fun onCreate(savedInstanceState: Bundle?)
 	{
 		delegate.installViewFactory()
@@ -83,12 +84,14 @@ abstract class AppCompatPreferenceActivity : PreferenceActivity()
 		delegate.onConfigurationChanged(newConfig)
 	}
 
+	@Deprecated("Deprecated in Java")
 	override fun onStop()
 	{
 		super.onStop()
 		delegate.onStop()
 	}
 
+	@Deprecated("Deprecated in Java")
 	override fun onDestroy()
 	{
 		super.onDestroy()

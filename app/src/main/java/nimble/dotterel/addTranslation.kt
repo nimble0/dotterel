@@ -174,9 +174,9 @@ class AddTranslationDialog(
 			this.dictionariesSpinner.adapter = ArrayAdapter<String>(
 				dotterel,
 				R.layout.add_translation_spinner,
-				listOf("n/a")
+				listOf("missing writable dictionary")
 			)
-			Toast.makeText(dotterel, "No saveable dictionaries available", Toast.LENGTH_LONG).show()
+			Toast.makeText(dotterel, "No writable dictionaries available", Toast.LENGTH_LONG).show()
 		}
 
 		val overwriteEntry = view.findViewById<TextView>(R.id.overwrite_entry)

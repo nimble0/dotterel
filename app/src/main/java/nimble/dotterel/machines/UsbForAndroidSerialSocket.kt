@@ -36,12 +36,12 @@ private val usbForAndroid_PARITY = mapOf(
 	Pair(Parity.SPACE, UsbSerialPort.PARITY_SPACE)
 )
 
-private val usbForAndroid_FLOW_CONTROL = mapOf(
-	Pair(FlowControl.OFF, UsbSerialPort.FLOWCONTROL_NONE),
-	Pair(FlowControl.RTS_CTS, UsbSerialPort.FLOWCONTROL_RTSCTS_IN),
-	Pair(FlowControl.DSR_DTR, UsbSerialPort.FLOWCONTROL_RTSCTS_OUT),
-	Pair(FlowControl.XON_XOFF, UsbSerialPort.FLOWCONTROL_XONXOFF_OUT)
-)
+//private val usbForAndroid_FLOW_CONTROL = mapOf(
+//	Pair(FlowControl.OFF, UsbSerialPort.FLOWCONTROL_NONE),
+//	Pair(FlowControl.RTS_CTS, UsbSerialPort.FLOWCONTROL_RTSCTS_IN),
+//	Pair(FlowControl.DSR_DTR, UsbSerialPort.FLOWCONTROL_RTSCTS_OUT),
+//	Pair(FlowControl.XON_XOFF, UsbSerialPort.FLOWCONTROL_XONXOFF_OUT)
+//)
 
 private val prober = UsbSerialProber(ProbeTable().also({
 	it.addProduct(0xFEED, 0x1337, CdcAcmSerialDriver::class.java)

@@ -162,6 +162,7 @@ class DotterelSettings :
 				.name
 	}
 
+	@Deprecated("Deprecated in Java")
 	override fun onBackPressed()
 	{
 		val fragment = this.supportFragmentManager

@@ -205,6 +205,7 @@ abstract class AssetBrowser : AppCompatActivity()
 			super.onOptionsItemSelected(item)
 	}
 
+	@Deprecated("Deprecated in Java")
 	override fun onBackPressed()
 	{
 		val protocol = path.substringBefore(":")
