@@ -34,12 +34,10 @@ val UsbDevice.id: String
 	{
 		Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ->
 			"${this.manufacturerName} ${this.productName} ${this.version}" +
-				" (${this.vendorId.toString(16)}:${this.productId.toString(16)})" +
-				" : ${this.serialNumber}"
+				" (${this.vendorId.toString(16)}:${this.productId.toString(16)})"
 		Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ->
 			"${this.manufacturerName} ${this.productName}" +
-				" (${this.vendorId.toString(16)}:${this.productId.toString(16)})" +
-				" : ${this.serialNumber}"
+				" (${this.vendorId.toString(16)}:${this.productId.toString(16)})"
 		else ->
 			"ID ${this.vendorId.toString(16)}:0x${this.productId.toString(16)}"
 	}
