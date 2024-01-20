@@ -9,7 +9,7 @@ import nimble.dotterel.util.ui.flatten
 
 fun bindSystemPreferencesToActiveSystem(preferenceFragment: PreferenceFragmentCompat)
 {
-	val sharedPreferences = preferenceFragment.preferenceManager.sharedPreferences
+	val sharedPreferences = preferenceFragment.preferenceManager.sharedPreferences!!
 
 	val system = sharedPreferences.getString("system", null)
 

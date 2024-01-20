@@ -122,7 +122,7 @@ class ContextSwitcher(val dotterel: Dotterel) : Dotterel.InputStateListener
 		val v2 = if(insertIter.hasNext()) insertIter.value() else null
 		return listOfNotNull(v, v2)
 			.filter({ it.key.editorInfoEquals(editor) })
-			.maxBy({ it.key.reversedText.commonPrefixWith(editor.reversedText).length })
+			.maxByOrNull({ it.key.reversedText.commonPrefixWith(editor.reversedText).length })
 			?.let({
 				if(it.key.reversedText.commonPrefixWith(editor.reversedText).isEmpty())
 					null
@@ -134,7 +134,7 @@ class ContextSwitcher(val dotterel: Dotterel) : Dotterel.InputStateListener
 	private fun limitNumContexts()
 	{
 		while(this.contexts.size > MAX_CONTEXTS)
-			this.contexts.remove(this.contexts.entries.minBy({ it.value.first })!!)
+			this.contexts.remove(this.contexts.entries.minByOrNull({ it.value.first })!!)
 	}
 
 	private fun updateContext(keepHistory: (HistoryTranslation) -> Boolean)

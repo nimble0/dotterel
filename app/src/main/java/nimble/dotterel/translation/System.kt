@@ -65,7 +65,7 @@ data class SystemDictionaries(
 		get() = this.dictionaries
 			.asSequence()
 			.map({ it.dictionary.longestKey })
-			.max() ?: 0
+			.maxOrNull() ?: 0
 
 	override fun get(k: List<Stroke>): String? =
 		this.dictionaries

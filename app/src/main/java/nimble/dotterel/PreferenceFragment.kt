@@ -23,7 +23,7 @@ abstract class PreferenceFragment : PreferenceFragmentCompat()
 				val path = arguments.get("path") as? String ?: return null
 				val systemDataStore = makeJsonSystemDataStore(
 					this.requireContext(),
-					this.preferenceManager.sharedPreferences,
+					this.preferenceManager.sharedPreferences!!,
 					path)
 				val preference = Preference(this.requireContext())
 				preference.key = key
@@ -35,7 +35,7 @@ abstract class PreferenceFragment : PreferenceFragmentCompat()
 				val path = arguments.get("path") as? String ?: return null
 				val fileDataStore = FileDataStore(this.requireContext())
 				fileDataStore.onPreferenceChanged = {
-					reloadSystem(this.preferenceManager.sharedPreferences, path)
+					reloadSystem(this.preferenceManager.sharedPreferences!!, path)
 				}
 				val preference = Preference(this.requireContext())
 				preference.key = path

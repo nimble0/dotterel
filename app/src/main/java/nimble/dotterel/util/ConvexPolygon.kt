@@ -84,7 +84,7 @@ fun LinearLine.intersect(shape: ConvexPolygon): Pair<Float, Float>?
 	assert(intersections.size % 2 == 0)
 
 	return if(intersections.size >= 2)
-		Pair(intersections.min()!!, intersections.max()!!)
+		Pair(intersections.minOrNull()!!, intersections.maxOrNull()!!)
 	else
 		null
 }
@@ -109,7 +109,7 @@ fun ConvexPolygon.calculateBevels(bevels: Iterable<Float>): List<BevelData>
 
 			val prevLineLength = prevLine.length
 			val nextLineLength = nextLine.length
-			val edgeSize = listOf(bevel, prevLineLength, nextLineLength).min()!!
+			val edgeSize = listOf(bevel, prevLineLength, nextLineLength).minOrNull()!!
 
 			if(edgeSize == 0f)
 				BevelData(0f, 1f, 0f)

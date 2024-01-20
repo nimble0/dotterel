@@ -17,7 +17,8 @@ class MachinesPreferenceFragment : PreferenceFragmentCompat()
 	override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?)
 	{
 		this.addPreferencesFromResource(R.xml.pref_machines)
-		this.preferenceScreen.removePreference(this.findPreference("hidden"))
+		this.findPreference<Preference>("hidden")
+			?.let({ this.preferenceScreen.removePreference(it) })
 
 		val machinesCategory = this.preferenceScreen
 			.findPreference<PreferenceCategory>("machines")!!
@@ -59,7 +60,7 @@ class MachinesPreferenceFragment : PreferenceFragmentCompat()
 					{
 						val dataStore = jsonDataStores[dataStorePath]
 							?: JsonPreferenceDataStore(
-								this.preferenceManager.sharedPreferences,
+								this.preferenceManager.sharedPreferences!!,
 								dataStorePath
 							).also({ jsonDataStores[dataStorePath] = it })
 						preference.key = preference.extras.getString("key")

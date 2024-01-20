@@ -38,7 +38,7 @@ class InterfacePreferenceFragment : PreferenceFragmentCompat()
 					{
 						val dataStore = jsonDataStores[dataStorePath]
 							?: JsonPreferenceDataStore(
-								this.preferenceManager.sharedPreferences,
+								this.preferenceManager.sharedPreferences!!,
 								dataStorePath
 							).also({ jsonDataStores[dataStorePath] = it })
 						preference.key = preference.extras.getString("key")

@@ -45,7 +45,7 @@ class RegexWithWordListOrthography(
 					null
 			}))
 
-		return candidates.minBy({ this.wordList[it.text] ?: Int.MAX_VALUE })
+		return candidates.minByOrNull({ this.wordList[it.text] ?: Int.MAX_VALUE })
 	}
 
 	companion object

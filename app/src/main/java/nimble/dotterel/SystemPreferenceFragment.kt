@@ -67,11 +67,11 @@ class SystemPreferenceFragment : PreferenceFragmentCompat()
 
 		val fileDataStore = FileDataStore(this.requireContext())
 		fileDataStore.onPreferenceChanged = {
-			reloadSystem(this.preferenceManager.sharedPreferences, this.path)
+			reloadSystem(this.preferenceManager.sharedPreferences!!, this.path)
 		}
 		this.jsonDataStore = makeJsonSystemDataStore(
 			this.requireContext(),
-			this.preferenceManager.sharedPreferences,
+			this.preferenceManager.sharedPreferences!!,
 			this.path)
 
 		for(preference in this.preferenceScreen.flatten())
@@ -122,10 +122,10 @@ class SystemPreferenceFragment : PreferenceFragmentCompat()
 					preference.title = newName
 					preference.extras.putString("path", newFile.absolutePath)
 
-					val activeSystem = this.preferenceManager.sharedPreferences
+					val activeSystem = this.preferenceManager.sharedPreferences!!
 						.getString("system", null)
 					if(activeSystem == this.path)
-						this.preferenceManager.sharedPreferences
+						this.preferenceManager.sharedPreferences!!
 							.edit()
 							.putString("system", newFile.absolutePath)
 							.apply()

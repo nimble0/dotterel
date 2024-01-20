@@ -128,12 +128,12 @@ class DotterelSettings :
 	}
 
 	override fun onPreferenceStartFragment(
-		caller: PreferenceFragmentCompat?,
+		caller: PreferenceFragmentCompat,
 		preference: Preference
 	): Boolean
 	{
 		val fragment = this.supportFragmentManager.fragmentFactory
-			.instantiate(this.classLoader, preference.fragment)
+			.instantiate(this.classLoader, preference.fragment!!)
 		fragment.arguments = preference.extras
 		(fragment as? PreferenceFragment)?.preference = preference
 		this.supportFragmentManager
@@ -217,7 +217,7 @@ class SettingsFragment : PreferenceFragmentCompat()
 			preference.entryValues = systems.map({ it.absolutePath }).toTypedArray()
 
 			// Update preference to reflect changes to underlying SharedPreferences value
-			val value = this.preferenceManager.sharedPreferences
+			val value = this.preferenceManager.sharedPreferences!!
 				.getString(preference.key, null)
 			preference.onPreferenceChangeListener?.onPreferenceChange(
 				preference,

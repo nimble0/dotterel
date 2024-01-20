@@ -55,7 +55,7 @@ private class SystemsPreferenceModalListener(
 			R.id.list_delete ->
 			{
 				val activeSystem = this.systemsPreferenceFragment
-					.preferenceManager.sharedPreferences
+					.preferenceManager.sharedPreferences!!
 					.getString("system", null)
 				(0 until this.adapter.count)
 					.map({ this.adapter.getItem(it)!! })
@@ -65,7 +65,7 @@ private class SystemsPreferenceModalListener(
 						if(activeSystem == it.path)
 							this.systemsPreferenceFragment
 								.preferenceManager
-								.sharedPreferences
+								.sharedPreferences!!
 								.edit()
 								.putString("system", "")
 								.apply()
@@ -148,14 +148,14 @@ class SystemsPreferenceFragment : PreferenceFragmentCompat()
 
 		// Preference listener stored as member variable because
 		// SharedPreferences holds listeners with weak pointers.
-		this.preferenceManager.sharedPreferences
+		this.preferenceManager.sharedPreferences!!
 			.registerOnSharedPreferenceChangeListener(this.preferenceListener)
 	}
 
 	override fun onDestroy()
 	{
 		super.onDestroy()
-		this.preferenceManager.sharedPreferences
+		this.preferenceManager.sharedPreferences!!
 			.unregisterOnSharedPreferenceChangeListener(this.preferenceListener)
 	}
 
@@ -168,7 +168,7 @@ class SystemsPreferenceFragment : PreferenceFragmentCompat()
 		val preferenceView = super.onCreateView(inflater, container, savedInstanceState)
 			as LinearLayout
 		this.preferenceScreen = this.preferenceManager
-			.createPreferenceScreen(this.activity)
+			.createPreferenceScreen(this.requireActivity().applicationContext)
 
 		val view = inflater.inflate(R.layout.pref_systems, container, false)
 		preferenceView.addView(view)
@@ -227,7 +227,7 @@ class SystemsPreferenceFragment : PreferenceFragmentCompat()
 					"asset:/systems/$it") })
 				?.sortedWith(compareBy({ it.name }))
 				?: listOf()
-			val activeSystem = this.preferenceManager.sharedPreferences
+			val activeSystem = this.preferenceManager.sharedPreferences!!
 				.getString("system", null)
 
 			systemsAdapter.clear()
