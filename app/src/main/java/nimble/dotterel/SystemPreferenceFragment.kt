@@ -16,6 +16,7 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 
 import com.eclipsesource.json.JsonObject
+import com.eclipsesource.json.ParseException
 import com.eclipsesource.json.PrettyPrint
 
 import java.io.File
@@ -31,24 +32,34 @@ fun makeJsonSystemDataStore(
 	sharedPreferences: SharedPreferences,
 	path: String
 ) =
-	JsonSystemDataStore(
-		AndroidSystemResources(context),
-		path
-	).also({
-		it.onPreferenceChanged = {
-			reloadSystem(sharedPreferences, path)
-		}
-		it.onGetError = { k, e ->
-			val m = "Could not get $k: ${e.message}"
-			Log.i("Dotterel Settings", m)
-			Toast.makeText(context, m, Toast.LENGTH_LONG).show()
-		}
-		it.onSetError = { k, e ->
-			val m = "Could not set $k: ${e.message}"
-			Log.i("Dotterel Settings", m)
-			Toast.makeText(context, m, Toast.LENGTH_LONG).show()
-		}
-	})
+	try
+	{
+		JsonSystemDataStore(
+			AndroidSystemResources(context),
+			path
+		).also({
+			it.onPreferenceChanged = {
+				reloadSystem(sharedPreferences, path)
+			}
+			it.onGetError = { k, e ->
+				val m = "Could not get $k: ${e.message}"
+				Log.i("Dotterel Settings", m)
+				Toast.makeText(context, m, Toast.LENGTH_LONG).show()
+			}
+			it.onSetError = { k, e ->
+				val m = "Could not set $k: ${e.message}"
+				Log.i("Dotterel Settings", m)
+				Toast.makeText(context, m, Toast.LENGTH_LONG).show()
+			}
+		})
+	}
+	catch(e: ParseException)
+	{
+		val m = "Could not parse system $path: ${e.message}"
+		Log.e("Dotterel Settings", m)
+		Toast.makeText(context, m, Toast.LENGTH_LONG).show()
+		null
+	}
 
 @Suppress("UNUSED")
 class SystemPreferenceFragment : PreferenceFragmentCompat()
@@ -56,6 +67,37 @@ class SystemPreferenceFragment : PreferenceFragmentCompat()
 	private var path: String = ""
 	private var jsonDataStore: JsonSystemDataStore? = null
 	private var readOnly = true
+
+	private fun setPreferencesEnabledState()
+	{
+		if(this.jsonDataStore != null)
+		{
+			for(preference in this.preferenceScreen.flatten())
+				preference.isEnabled = true
+		}
+		else
+		{
+			// Disable all preferences except JSON if there's an error with the JSON
+			for(preference in this.preferenceScreen.flatten())
+				preference.isEnabled = false
+			val jsonPreference: Preference? = this.findPreference(path)
+			jsonPreference?.isEnabled = true
+		}
+	}
+
+	private fun reload()
+	{
+		this.jsonDataStore = makeJsonSystemDataStore(
+			this.requireContext(),
+			this.preferenceManager.sharedPreferences!!,
+			this.path)
+
+		for(preference in this.preferenceScreen.flatten())
+			if(preference.extras.getString("store_type") == "json_file")
+				preference.preferenceDataStore = this.jsonDataStore
+
+		this.setPreferencesEnabledState()
+	}
 
 	override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?)
 	{
@@ -69,10 +111,6 @@ class SystemPreferenceFragment : PreferenceFragmentCompat()
 		fileDataStore.onPreferenceChanged = {
 			reloadSystem(this.preferenceManager.sharedPreferences!!, this.path)
 		}
-		this.jsonDataStore = makeJsonSystemDataStore(
-			this.requireContext(),
-			this.preferenceManager.sharedPreferences!!,
-			this.path)
 
 		for(preference in this.preferenceScreen.flatten())
 		{
@@ -92,12 +130,14 @@ class SystemPreferenceFragment : PreferenceFragmentCompat()
 				}
 			}
 		}
+
+		this.reload()
 	}
 
 	override fun onResume()
 	{
 		super.onResume()
-		this.jsonDataStore?.reload()
+		this.reload()
 	}
 
 	private fun rename() =
