@@ -84,7 +84,7 @@ class TranslationProcessor(private val translator: Translator)
 		var i = commandStr.length
 		while(i != -1)
 		{
-			val name = commandStr.substring(0, i).toLowerCase(Locale.ROOT)
+			val name = commandStr.substring(0, i).lowercase()
 			val arg = commandStr.substring(min(i + 1, commandStr.length))
 			val command = this.system.commands[CaseInsensitiveString(name)]
 			if(command != null)
@@ -110,6 +110,7 @@ class TranslationProcessor(private val translator: Translator)
 			{
 				is Actions -> return TranslationPart(a.actions)
 				is TranslationString -> return this.process(a.string)
+				null -> {}
 			}
 
 			if(inner.isNotEmpty() && inner[0] == '#')

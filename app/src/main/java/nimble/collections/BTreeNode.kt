@@ -221,7 +221,7 @@ class BTreeBranchNode<T>(
 			+ this.nodes
 			.asSequence()
 			.take(this.dataSize + 1)
-			.sumBy({ it!!.size }))
+			.sumOf({ it!!.size }))
 
 	fun newNode(minSize: Int, maxSize: Int) =
 		BTreeBranchNode<T>(minSize, maxSize)

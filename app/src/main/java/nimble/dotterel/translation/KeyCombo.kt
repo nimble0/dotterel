@@ -158,7 +158,7 @@ fun parseKeyCombos(keyCombos: String): List<KeyCombo>
 			{
 				val modifier = try
 				{
-					Modifier.valueOf(match.groupValues[1].toUpperCase(Locale.ROOT))
+					Modifier.valueOf(match.groupValues[1].uppercase())
 				}
 				catch(e: IllegalArgumentException)
 				{
@@ -181,7 +181,7 @@ fun parseKeyCombos(keyCombos: String): List<KeyCombo>
 			// Key press
 			match.groupValues[3].isNotEmpty() ->
 			{
-				val keyName = match.groupValues[3].toLowerCase(Locale.ROOT)
+				val keyName = match.groupValues[3].lowercase()
 				val key = KEYNAME_TO_CHAR[keyName]?.toString() ?: keyName
 				actions.add(KeyCombo(key, modifiers))
 			}

@@ -22,10 +22,10 @@ import nimble.dotterel.util.ui.FlowLayout
 data class KeyMapping(val stenoKey: String, val keyboardKeys: MutableList<String>)
 
 fun keyCodeToString(keyCode: Int) =
-	KeyEvent.keyCodeToString(keyCode).substring("KEYCODE_".length).toLowerCase(Locale.ROOT)
+	KeyEvent.keyCodeToString(keyCode).substring("KEYCODE_".length).lowercase()
 
 fun stringToKeyCode(keyCodeString: String) =
-	KeyEvent.keyCodeFromString("KEYCODE_${keyCodeString.toUpperCase(Locale.ROOT)}")
+	KeyEvent.keyCodeFromString("KEYCODE_${keyCodeString.uppercase()}")
 
 class KeyMapAdapter(context: Context, items: List<KeyMapping>, val readOnly: Boolean) :
 	ArrayAdapter<KeyMapping>(context, R.layout.pref_key_mapping, items)
@@ -108,7 +108,7 @@ class KeyMapPreference(context: Context, attributes: AttributeSet) :
 {
 	private var keyLayout: KeyLayout = KeyLayout("#STKPWHR-AO*EU-FRPBLGTSDZ")
 
-	val readOnly get() = (this.extras?.getBoolean("readOnly") == true)
+	val readOnly get() = this.extras.getBoolean("readOnly")
 
 	override val dialogFragment get() = KeyMapPreferenceFragment()
 

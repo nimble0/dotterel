@@ -192,7 +192,7 @@ open class BTreeSet<T>(
 			return false
 		return this.containsAll(other2)
 	}
-	override fun hashCode(): Int = this.iterator().asSequence().sumBy({ it.hashCode() })
+	override fun hashCode(): Int = this.iterator().asSequence().sumOf({ it.hashCode() })
 }
 
 data class BTreeNodeIterator<T>(

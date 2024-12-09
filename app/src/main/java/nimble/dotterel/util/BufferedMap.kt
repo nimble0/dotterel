@@ -176,7 +176,7 @@ class BufferedMap<K, V>(
 				return false
 		return true
 	}
-	override fun hashCode(): Int = this.entries.asSequence().sumBy({ it.hashCode() })
+	override fun hashCode(): Int = this.entries.sumOf({ it.hashCode() })
 }
 
 class BufferedMapIterator<K, V>(

@@ -47,7 +47,7 @@ open class BackingDictionary()
 			this.incrementKeySizeCount(countStrokes(x.key))
 
 			this.reverseEntries.put(x.value, x.key)
-			val lowerValue = x.value.toLowerCase(Locale.getDefault())
+			val lowerValue = x.value.lowercase()
 			if(x.value != lowerValue)
 				this.caseInsensitiveReverseEntries.put(
 					CaseInsensitiveString(lowerValue),
@@ -96,9 +96,9 @@ open class BackingDictionary()
 			this.removeReverseTranslation(k, oldTranslation)
 
 		this.reverseEntries.put(v, k)
-		if(v != v.toLowerCase(Locale.getDefault()))
+		if(v != v.lowercase())
 			this.caseInsensitiveReverseEntries
-				.put(CaseInsensitiveString(v.toLowerCase(Locale.getDefault())), v)
+				.put(CaseInsensitiveString(v.lowercase()), v)
 	}
 
 	fun remove(k: String)
@@ -118,7 +118,7 @@ open class BackingDictionary()
 	fun reverseGet(s: String): Set<String> = this.reverseEntries[s].toSet()
 	fun findTranslations(s: CaseInsensitiveString): Set<String> =
 		(this.caseInsensitiveReverseEntries[s]
-			+ s.value.toLowerCase(Locale.getDefault()).let({
+			+ s.value.lowercase().let({
 				if(this.reverseEntries.containsKey(it))
 					setOf(it)
 				else

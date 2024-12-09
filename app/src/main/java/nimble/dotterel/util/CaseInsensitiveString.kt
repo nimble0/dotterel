@@ -12,5 +12,5 @@ data class CaseInsensitiveString(val value: String) : Comparable<CaseInsensitive
 		this.value.compareTo(other.value, true)
 
 	override fun hashCode() =
-		this.value.toLowerCase().hashCode()
+		this.value.lowercase().hashCode()
 }

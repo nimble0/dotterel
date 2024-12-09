@@ -105,7 +105,7 @@ class SystemManager(
 				}
 				else ->
 				{
-					var dictionary: Dictionary? = null
+					var dictionary: Dictionary?
 					val loadTime = measureTimeMillis()
 					{
 						dictionary = this.resources.openInputStream(path)
@@ -148,7 +148,7 @@ class SystemManager(
 
 		try
 		{
-			var orthography: Orthography? = null
+			var orthography: Orthography?
 			val loadTime = measureTimeMillis()
 			{
 				orthography = this.resources.openInputStream(path)
@@ -221,7 +221,7 @@ class SystemManager(
 	{
 		try
 		{
-			var system: System? = null
+			var system: System?
 			val loadTime = measureTimeMillis()
 			{
 				system = this.resources.openInputStream(path)

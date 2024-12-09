@@ -6,7 +6,6 @@ package nimble.dotterel.translation
 import io.kotlintest.matchers.shouldBe
 import io.kotlintest.specs.FunSpec
 
-import nimble.dotterel.translation.*
 import nimble.dotterel.translation.dictionaries.BackingDictionary
 import nimble.dotterel.translation.dictionaries.BackedDictionary
 import nimble.dotterel.translation.orthographies.RegexOrthography
@@ -337,7 +336,7 @@ class TranslatorTests : FunSpec
 
 		val actions = translator.apply("EBGS/TAT/EUBG/*/*/TRAOEPL/*/*/*/*")
 		actions.filterIsInstance<KeyCombo>().size shouldBe 2
-		actionsToText(actions)?.text ?: "" shouldBe ""
+		(actionsToText(actions)?.text ?: "") shouldBe ""
 	}
 
 	test("repeat last stroke")

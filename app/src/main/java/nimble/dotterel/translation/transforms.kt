@@ -39,14 +39,14 @@ fun upperCaseTransform(
 	text: UnformattedText,
 	suffix: Boolean
 ) =
-	text.copy(text = text.text.toUpperCase(Locale.getDefault()))
+	text.copy(text = text.text.uppercase())
 
 fun lowerCaseTransform(
 	context: FormattedText,
 	text: UnformattedText,
 	suffix: Boolean
 ) =
-	text.copy(text = text.text.toLowerCase(Locale.getDefault()))
+	text.copy(text = text.text.lowercase())
 
 private val CAMEL_PATTERN = Regex("((?<=  ?).)")
 

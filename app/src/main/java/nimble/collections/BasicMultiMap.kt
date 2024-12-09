@@ -9,7 +9,7 @@ class BasicMultiMap<K, V> : MutableMultiMap<K, V>
 {
 	val data: MutableMap<K, MutableSet<V>> = mutableMapOf()
 
-	override val size: Int get() = this.data.values.sumBy({ it.size })
+	override val size: Int get() = this.data.values.sumOf({ it.size })
 	override fun isEmpty(): Boolean = this.data.isEmpty()
 
 	override fun containsKey(key: K): Boolean = this.data.containsKey(key)

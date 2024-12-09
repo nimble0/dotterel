@@ -18,7 +18,7 @@ import nimble.dotterel.util.toJson
 internal fun String.withCase(s: String): String =
 	(this.zip(s, transform = { a, b ->
 		if(b.isUpperCase())
-			a.toUpperCase()
+			a.uppercaseChar()
 		else
 			a
 	}).joinToString("")
@@ -127,9 +127,9 @@ class SimpleOrthography : Orthography
 	fun remove(left: String, right: String)
 	{
 		@Suppress("NAME_SHADOWING")
-		val left = left.toLowerCase(Locale.getDefault())
+		val left = left.lowercase()
 		@Suppress("NAME_SHADOWING")
-		val right = right.toLowerCase(Locale.getDefault())
+		val right = right.lowercase()
 
 		val leftI = this.replacements.binarySearch(LeftLookupEntry(left))
 		if(leftI < 0)
@@ -146,9 +146,9 @@ class SimpleOrthography : Orthography
 	fun add(left: String, right: String, replacement: String)
 	{
 		@Suppress("NAME_SHADOWING")
-		val left = left.toLowerCase(Locale.getDefault())
+		val left = left.lowercase()
 		@Suppress("NAME_SHADOWING")
-		val right = right.toLowerCase(Locale.getDefault())
+		val right = right.lowercase()
 
 		val leftEntryI = this.replacements.binarySearch(LeftLookupEntry(left))
 		val leftEntry = if(leftEntryI < 0)
@@ -219,7 +219,7 @@ class SimpleOrthography : Orthography
 	}
 
 	override fun match(a: String, b: String): Orthography.Result? =
-		this.find(a.toLowerCase(Locale.getDefault()), b.toLowerCase(Locale.getDefault()))?.let({
+		this.find(a.lowercase(), b.lowercase())?.let({
 			Orthography.Result(
 				it.left.length,
 				it.replacement.withCase((a + b).substring(a.length - it.left.length))
