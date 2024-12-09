@@ -11,7 +11,7 @@ import kotlin.math.min
 import nimble.dotterel.util.CaseInsensitiveString
 import nimble.dotterel.util.unescape
 
-private val TRANSLATION_PARTS_PATTERN = Regex("\\A(?:(?:[^{}\\\\]|(?:\\\\.))+|(?:\\{(?:[^{}\\\\]|(?:\\\\.))*\\}))")
+private val TRANSLATION_PARTS_PATTERN = Regex("\\A(?:(?:[^{}\\\\]|(?:\\\\[{}])|(?:\\\\))+|(?:\\{(?:[^{}\\\\]|(?:\\\\[{}])|(?:\\\\))*\\}))")
 // META_FORMATTING_PATTERN groups
 // 1 - Formatting start
 // 2 - No space start/glue

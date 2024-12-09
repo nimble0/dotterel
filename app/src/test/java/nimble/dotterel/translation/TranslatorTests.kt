@@ -247,10 +247,12 @@ class TranslatorTests : FunSpec
 		dictionary["-D"] = "{^ed}"
 		dictionary["PWR-S"] = "\\{"
 		dictionary["PWR*S"] = "\\}"
-		dictionary["SPWR-S"] = "\\\\\\{"
-		dictionary["SPWR*S"] = "\\\\\\}{^\\}\\\\ish}"
+		dictionary["SPWHR-S"] = "{^\\^}"
+		dictionary["SPWR-S"] = "\\\\{"
+		dictionary["SPWR*S"] = "\\\\}{^\\}\\ish}"
 
-		translator.applyToString("PWR-S/HEL/-D/PWR*S/SPWR-S/SPWR*S") shouldBe " { helled } \\{ \\}}\\ish"
+		translator.applyToString("PWR-S/HEL/-D/SPWHR-S/PWR*S/SPWR-S/SPWR*S") shouldBe
+			" { helled\\} \\{ \\}}\\ish"
 	}
 
 	test("bad formatting")

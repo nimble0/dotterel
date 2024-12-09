@@ -4,6 +4,5 @@
 package nimble.dotterel.util
 
 fun String.unescape() =
-	this.replace("\\\\", "\uffff")
-		.replace("\\", "")
-		.replace("\uffff", "\\")
+	this.replace("\\{", "{")
+		.replace("\\}", "}")
