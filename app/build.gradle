@@ -29,6 +29,9 @@ android {
 	dependenciesInfo {
 		includeInApk false
 	}
+	lintOptions {
+		checkReleaseBuilds false
+	}
 	namespace 'nimble.dotterel'
 }
 
