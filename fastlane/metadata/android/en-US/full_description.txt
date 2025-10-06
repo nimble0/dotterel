@@ -1,0 +1,1 @@
+<p><i>Dotterel</i> provides the ability to use stenographic input on the Android platform – like the machines court recorders or closed captioners use. Using this method they can achieve really high input speeds.</p>
