@@ -209,7 +209,7 @@ class SerialStenoMachine(
 					this.device!!,
 					this.usbManager.openDevice(device)!!)
 				?.also({ socket ->
-					config.get("baudRate")?.also({ v -> socket.baudRate = v.asInt() })
+					config.get("baudRate")?.also({ v -> socket.baudRate = v.asString().toIntOrNull() ?: BAUDRATE_DEFAULT })
 					config.get("dataBits")?.also({ v -> socket.dataBits = DataBits.valueOf2(v.asString()) })
 					config.get("stopBits")?.also({ v -> socket.stopBits = StopBits.valueOf2(v.asString()) })
 					config.get("parity")?.also({ v -> socket.parity = Parity.valueOf2(v.asString()) })
@@ -217,8 +217,15 @@ class SerialStenoMachine(
 				})
 
 			val protocolName = config.get("protocol")?.asString() ?: DEFAULT_SERIAL_CONFIG.get("protocol").asString()
-			val mapping = systemConfig[protocolName]!!.asObject()
-				.get("layout").asObject()
+			val protocolConfig = systemConfig.get(protocolName)?.asObject()
+			if(protocolConfig == null)
+			{
+				val m = "Current system does not support serial protocol $protocolName"
+				Log.w("Steno Machine", m)
+				Toast.makeText(this.app, m, Toast.LENGTH_SHORT).show()
+				return
+			}
+			val mapping = protocolConfig.get("layout").asObject()
 				.mapValues({ it.value.asArray().map({ key -> key.asString() }) })
 			this.protocol = PROTOCOLS[protocolName]
 				?.invoke(this.socket!!)
@@ -270,11 +277,15 @@ class SerialStenoMachine(
 		Log.i("Dotterel", "Requesting USB device access permission for ${this.id}")
 
 		this.app.intentForwarder.add(ACTION_USB_PERMISSION, this)
+		val flags = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+			PendingIntent.FLAG_IMMUTABLE
+		else
+			0
 		val pendingIntent = PendingIntent.getBroadcast(
 			this.app,
 			0,
 			Intent(ACTION_USB_PERMISSION),
-			0)
+			flags)
 		this.usbManager.requestPermission(this.device, pendingIntent)
 	}
 

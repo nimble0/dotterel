@@ -191,10 +191,24 @@ class Dotterel : InputMethodService(), StenoMachine.Listener, StenoMachineTracke
 			Log.e("Dotterel", m)
 			Toast.makeText(this, m, Toast.LENGTH_LONG).show()
 		}
+		catch(e: java.lang.NullPointerException)
+		{
+			val m = ("Invalid type found while reading $nameId machine"
+				+ " config for system ${this.translator.system.path}: $e")
+			Log.e("Dotterel", m)
+			Toast.makeText(this, m, Toast.LENGTH_LONG).show()
+		}
+		catch(e: java.lang.UnsupportedOperationException)
+		{
+			val m = ("Invalid type found while reading $nameId machine"
+				+ " config for system ${this.translator.system.path}: $e")
+			Log.e("Dotterel", m)
+			Toast.makeText(this, m, Toast.LENGTH_LONG).show()
+		}
 		catch(e: IllegalArgumentException)
 		{
 			val m = ("Invalid type found while reading $nameId machine"
-				+ " config for system ${this.translator.system.path}")
+				+ " config for system ${this.translator.system.path}: $e")
 			Log.e("Dotterel", m)
 			Toast.makeText(this, m, Toast.LENGTH_LONG).show()
 		}

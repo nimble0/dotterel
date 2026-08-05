@@ -188,7 +188,10 @@ class DotterelApplication : Application()
 				Intent.createChooser(
 					shareIntent,
 					this.getString(R.string.crash_notification_share)),
-				0))
+				if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+					PendingIntent.FLAG_IMMUTABLE
+				else
+					0))
 
 		NotificationManagerCompat.from(this)
 			.notify(0, notification.build())

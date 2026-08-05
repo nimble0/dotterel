@@ -11,7 +11,7 @@
 			android:title="@string/pref_machines_serial_baudrate">
 			<extra android:name="store_type" android:value="json_preference" />
 			<extra android:name="store_path" android:value="machineConfig/Serial" />
-			<extra android:name="key" android:value="baudrate" />
+			<extra android:name="key" android:value="baudRate" />
 		</EditTextPreference>
 
 		<ListPreference
