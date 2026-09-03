@@ -19,7 +19,7 @@ import kotlin.math.max
 
 import nimble.dotterel.util.get
 
-data class PathItem(
+data class AssetPathItem(
 	val path: String,
 	val name: String,
 	val isFolder: Boolean)
@@ -43,7 +43,7 @@ interface BrowserRoot
 	val name: String
 	val protocol: String
 	val root: String
-	fun files(path: String): List<PathItem>?
+	fun files(path: String): List<AssetPathItem>?
 }
 
 fun String.withoutPrefix(prefix: String): String? =
@@ -61,7 +61,7 @@ class AssetBrowserRoot(
 	override val name = "Assets"
 	override val protocol = "asset"
 
-	override fun files(path: String): List<PathItem>?
+	override fun files(path: String): List<AssetPathItem>?
 	{
 		val path2 = path.withoutPrefix("${this.protocol}:/")
 			?.let({ assetPath(it )})
@@ -69,7 +69,7 @@ class AssetBrowserRoot(
 		return this.assetManager
 			.list(path2)
 			?.map({
-				PathItem(
+				AssetPathItem(
 					path + it,
 					it,
 					this.assetManager.isPathFolder(assetPath("$path2/$it")))
@@ -85,22 +85,22 @@ class JsonTreeBrowserRoot(
 ) :
 	BrowserRoot
 {
-	override fun files(path: String): List<PathItem>?
+	override fun files(path: String): List<AssetPathItem>?
 	{
 		val path2 = path.withoutPrefix("${this.protocol}:/")
 			?.let({ assetPath(it) })
 			?: return listOf()
 		val pathSegments = if(path2 == "") listOf() else path2.split("/")
 		return (this.json.get(pathSegments) as? JsonObject)
-			?.map({ PathItem(path + it.name, it.name, it.value is JsonObject) })
+			?.map({ AssetPathItem(path + it.name, it.name, it.value is JsonObject) })
 	}
 }
 
 private class AssetPathAdapter(
 	context: Context,
-	items: MutableList<PathItem> = mutableListOf()
+	items: MutableList<AssetPathItem> = mutableListOf()
 ) :
-	ArrayAdapter<PathItem>(context, R.layout.asset_browser_item, items)
+	ArrayAdapter<AssetPathItem>(context, R.layout.asset_browser_item, items)
 {
 	override fun getView(position: Int, convertView: View?, parent: ViewGroup)
 		: View
@@ -135,8 +135,8 @@ abstract class AssetBrowser : AppCompatActivity()
 	}
 
 	private var path = ""
-	private val pathFiles = mutableListOf<PathItem>()
-	private var adapter: ArrayAdapter<PathItem>? = null
+	private val pathFiles = mutableListOf<AssetPathItem>()
+	private var adapter: ArrayAdapter<AssetPathItem>? = null
 
 	fun navigate(path: String)
 	{
