@@ -45,8 +45,8 @@ private class FloatingDialogTouchListener(
 		// coordinates to be absolute.
 		// This assumes no rotation or scaling.
 		assert(view.rotation == 0.0f)
-		assert(view.scaleX == 0.0f)
-		assert(view.scaleY == 0.0f)
+		assert(view.scaleX == 0.0f || view.scaleX == 1.0f)
+		assert(view.scaleY == 0.0f || view.scaleY == 1.0f)
 		event.offsetLocation(event.rawX - event.x,event.rawY - event.y)
 
 		this.mover.onTouchEvent(event)
