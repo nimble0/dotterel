@@ -25,12 +25,13 @@ class RegexWithWordListOrthography(
 		val s = a + '\uffff' + b
 
 		val leftWordPattern = Regex("(\\S*)$")
-		val simpleJoin = leftWordPattern.find(a)?.value + b
+		val leftWord = leftWordPattern.find(a)?.value ?: ""
+		val simpleJoin = leftWord + b
 
 		val candidates = (
 			listOfNotNull(
 				if(simpleJoin in this.wordList)
-					Orthography.Result(a.length, simpleJoin)
+					Orthography.Result(leftWord.length, simpleJoin)
 				else
 					null,
 				this.suffixAliases[b]?.let({ this.match(a, it) })
