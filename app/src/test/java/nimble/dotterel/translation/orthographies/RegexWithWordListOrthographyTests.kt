@@ -39,5 +39,8 @@ class RegexWithWordListOrthographyTests : FunSpec
 		replacements.apply("response", "ible") shouldBe "responsible"
 		replacements.apply("hut", "er") shouldBe "huter"
 		replacements.apply("hug", "er") shouldBe "hugger"
+		// Only the last word should be replaced, not the preceding text
+		replacements.apply("the hut", "er") shouldBe "the huter"
+		replacements.apply("the narrate", "ing") shouldBe "the narrating"
 	}
 })
