@@ -30,7 +30,7 @@ class RegexWithWordListOrthography(
 		val candidates = (
 			listOfNotNull(
 				if(simpleJoin in this.wordList)
-					Orthography.Result(a.length, simpleJoin)
+					Orthography.Result(simpleJoin.length - b.length, simpleJoin)
 				else
 					null,
 				this.suffixAliases[b]?.let({ this.match(a, it) })
