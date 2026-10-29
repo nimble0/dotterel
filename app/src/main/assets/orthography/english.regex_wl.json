@@ -1,25 +1,25 @@
 {
 "regex":
 [
-	{"l": "(\\S*[aeiou]c)", "r": "ly$", "s": "$1ally"},
+	{"l": "(.*[aeiou]c)", "r": "ly$", "s": "$1ally"},
 
-	{"l": "(\\S*t)e", "r": "ry$", "s": "$1ory"},
+	{"l": "(.*t)e", "r": "ry$", "s": "$1ory"},
 
-	{"l": "(\\S*[naeiou])te?", "r": "cy$", "s": "$1cy"},
+	{"l": "(.*[naeiou])te?", "r": "cy$", "s": "$1cy"},
 
-	{"l": "(\\S*(?:s|sh|x|z|zh))", "r": "s$", "s": "$1es"},
-	{"l": "(\\S*(?:oa|ea|i|ee|oo|au|ou|l|n|(?<![gin]a)r|t)ch)", "r": "s$", "s": "$1es"},
-	{"l": "(\\S+[bcdfghjklmnpqrstvwxz])y", "r": "s$", "s": "$1ies"},
+	{"l": "(.*(?:s|sh|x|z|zh))", "r": "s$", "s": "$1es"},
+	{"l": "(.*(?:oa|ea|i|ee|oo|au|ou|l|n|(?<![gin]a)r|t)ch)", "r": "s$", "s": "$1es"},
+	{"l": "(.+[bcdfghjklmnpqrstvwxz])y", "r": "s$", "s": "$1ies"},
 
-	{"l": "(\\S+)ie", "r": "ing$", "s": "$1ying"},
-	{"l": "(\\S+[cdfghlmnpr])y", "r": "ist$", "s": "$1ist"},
-	{"l": "(\\S+[bcdfghjklmnpqrstvwxz])y", "r": "([a-hj-xz].*)$", "s": "$1i$2"},
+	{"l": "(.+)ie", "r": "ing$", "s": "$1ying"},
+	{"l": "(.+[cdfghlmnpr])y", "r": "ist$", "s": "$1ist"},
+	{"l": "(.+[bcdfghjklmnpqrstvwxz])y", "r": "([a-hj-xz].*)$", "s": "$1i$2"},
 
-	{"l": "(\\S+)te", "r": "en$", "s": "$1tten"},
-	{"l": "(\\S+e)e", "r": "(e.+)$", "s": "$1$2"},
-	{"l": "(\\S+[bcdfghjklmnpqrstuvwxz])e", "r": "([aeiouy].*)$", "s": "$1$2"},
+	{"l": "(.+)te", "r": "en$", "s": "$1tten"},
+	{"l": "(.+e)e", "r": "(e.+)$", "s": "$1$2"},
+	{"l": "(.+[bcdfghjklmnpqrstuvwxz])e", "r": "([aeiouy].*)$", "s": "$1$2"},
 
-	{"l": "(\\S*(?:[bcdfghjklmnprstvwxyz]|qu)[aeiou])([bcdfgklmnprtvz])", "r": "([aeiouy].*)", "s": "$1$2$2$3"}
+	{"l": "(.*(?:[bcdfghjklmnprstvwxyz]|qu)[aeiou])([bcdfgklmnprtvz])", "r": "([aeiouy].*)", "s": "$1$2$2$3"}
 ],
 
 "suffixAliases":
