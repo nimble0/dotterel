@@ -26,5 +26,7 @@ class RegexOrthographyTests : FunSpec
 		replacements.apply("bug", "er") shouldBe "bugger"
 		replacements.apply("bug", "y") shouldBe "buggy"
 		replacements.apply("bug", "ted") shouldBe null
+
+		replacements.testUnmatchedInvariance()
 	}
 })

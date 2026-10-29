@@ -39,5 +39,7 @@ class RegexWithWordListOrthographyTests : FunSpec
 		replacements.apply("response", "ible") shouldBe "responsible"
 		replacements.apply("hut", "er") shouldBe "huter"
 		replacements.apply("hug", "er") shouldBe "hugger"
+
+		replacements.testUnmatchedInvariance()
 	}
 })
