@@ -12,8 +12,6 @@ import androidx.preference.*
 
 import com.eclipsesource.json.*
 
-import java.util.Locale
-
 import nimble.dotterel.translation.KeyLayout
 import nimble.dotterel.util.*
 import nimble.dotterel.util.ui.DialogPreference

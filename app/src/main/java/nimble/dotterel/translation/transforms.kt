@@ -5,8 +5,6 @@
 
 package nimble.dotterel.translation
 
-import java.util.Locale
-
 import nimble.dotterel.util.CaseInsensitiveString
 
 val TRANSFORMS = mapOf(

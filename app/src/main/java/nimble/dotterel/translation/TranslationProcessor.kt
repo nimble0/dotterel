@@ -4,7 +4,6 @@
 package nimble.dotterel.translation
 
 import java.text.ParseException
-import java.util.Locale
 
 import kotlin.math.min
 
