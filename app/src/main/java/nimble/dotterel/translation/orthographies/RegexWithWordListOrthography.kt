@@ -16,11 +16,21 @@ import nimble.dotterel.util.mapValues
 private val LAST_WORD_PATTERN = Regex("(?:[0-9]+[.,][0-9]+|['\\w]+[-\\w']*|[^\\w\\s]+)$")
 
 class RegexWithWordListOrthography(
-	var replacements: List<Replacement>,
-	var suffixAliases: Map<String, String>,
-	var wordList: Map<String, Int>
+	val replacements: List<Replacement>,
+	val suffixAliases: Map<String, String>,
+	wordList: Map<String, Int>
 ) : Orthography
 {
+	val wordList: Map<String, Int> = wordList.let({ wordList ->
+		val result = mutableMapOf<String, Int>()
+		for(kv in wordList)
+		{
+			val k = kv.key.lowercase()
+			result[k] = min(result[k] ?: Int.MAX_VALUE, kv.value)
+		}
+		result
+	})
+
 	data class Replacement(val pattern: Regex, var replacement: String)
 
 	override fun match(a: String, b: String): Orthography.Result?
@@ -32,7 +42,7 @@ class RegexWithWordListOrthography(
 
 		val candidates = (
 			listOfNotNull(
-				if(simpleJoin in this.wordList)
+				if(simpleJoin.lowercase() in this.wordList)
 					Orthography.Result(lastWord.length, simpleJoin)
 				else
 					null,
@@ -47,7 +57,7 @@ class RegexWithWordListOrthography(
 					null
 			}))
 
-		return candidates.minByOrNull({ this.wordList[it.text] ?: Int.MAX_VALUE })
+		return candidates.minByOrNull({ this.wordList[it.text.lowercase()] ?: Int.MAX_VALUE })
 	}
 
 	companion object

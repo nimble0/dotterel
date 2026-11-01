@@ -15,10 +15,10 @@ class RegexWithWordListOrthographyTests : FunSpec
 		val replacements = RegexWithWordListOrthography(
 			listOf(
 				RegexWithWordListOrthography.Replacement(
-					Regex("(\\S+[bcdfghjklmnpqrstuvwxz])e\uffff([aeiouy]\\w)"),
+					Regex("(\\S+[bcdfghjklmnpqrstuvwxz])e\uffff([aeiouy]\\w)", RegexOption.IGNORE_CASE),
 					"$1$2"),
 				RegexWithWordListOrthography.Replacement(
-					Regex("(\\S*[bcdfghjklmnprstvwxyz]u)([gbdlmntv])\uffff([aeiouy])"),
+					Regex("(\\S*[bcdfghjklmnprstvwxyz]u)([gbdlmntv])\uffff([aeiouy])", RegexOption.IGNORE_CASE),
 					"$1$2$2$3")
 			),
 			mapOf(Pair("ible", "able")),
@@ -27,7 +27,8 @@ class RegexWithWordListOrthographyTests : FunSpec
 				Pair("responsible", 10),
 				Pair("huter", 20),
 				Pair("hutter", 30),
-				Pair("hugger", 20)
+				Pair("hugger", 20),
+				Pair("Huger", 30)
 			)
 		)
 
@@ -39,6 +40,8 @@ class RegexWithWordListOrthographyTests : FunSpec
 		replacements.apply("response", "ible") shouldBe "responsible"
 		replacements.apply("hut", "er") shouldBe "huter"
 		replacements.apply("hug", "er") shouldBe "hugger"
+		replacements.apply("Narrate", "ing") shouldBe "Narrating"
+		replacements.apply("Hug", "er") shouldBe "Hugger"
 
 		replacements.testUnmatchedInvariance()
 	}
