@@ -8,7 +8,7 @@
 	android:layout_height="wrap_content"
 	android:gravity="center"
 	android:foreground="@drawable/dictionary_item_foreground"
-	android:background="@drawable/dictionary_item">
+	android:background="@drawable/path_item">
 
 	<Space
 		android:layout_width="0dp"

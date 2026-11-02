@@ -4,33 +4,27 @@
 package nimble.dotterel
 
 import android.content.Context
-import android.content.Intent
-import android.os.Build
 import android.os.Bundle
-import android.preference.*
 import android.view.*
 import android.widget.*
 import android.widget.AbsListView.*
 
 import com.eclipsesource.json.*
 
-import nimble.dotterel.translation.EMPTY_KEY_LAYOUT
-import nimble.dotterel.translation.KeyLayout
 import nimble.dotterel.util.toJson
-import nimble.dotterel.util.set
 import nimble.dotterel.util.ui.ReorderableListAdapter
 import nimble.dotterel.util.ui.ReorderableListView
 
-data class DictionaryItem(
+data class PathItem(
 	var path: String,
 	var enabled: Boolean,
 	var accessible: Boolean = true)
 
-private class DictionariesPreferenceAdapter(
+private class PathListPreferenceAdapter(
 	context: Context,
-	val items: MutableList<DictionaryItem> = mutableListOf()
+	val items: MutableList<PathItem> = mutableListOf()
 ) :
-	ArrayAdapter<DictionaryItem>(context, R.layout.pref_dictionaries_item, items),
+	ArrayAdapter<PathItem>(context, R.layout.pref_path_list_item, items),
 	ReorderableListAdapter
 {
 	override fun removeAt(i: Int)
@@ -49,7 +43,7 @@ private class DictionariesPreferenceAdapter(
 		: View
 	{
 		val v = convertView ?: LayoutInflater.from(this.context)
-			.inflate(R.layout.pref_dictionaries_item, parent, false)
+			.inflate(R.layout.pref_path_list_item, parent, false)
 
 		val item = this.getItem(position) ?: return v
 
@@ -60,9 +54,9 @@ private class DictionariesPreferenceAdapter(
 			})
 
 		val background = if(item.accessible)
-			R.drawable.dictionary_item
+			R.drawable.path_item
 		else
-			R.drawable.dictionary_item_inaccessible
+			R.drawable.path_item_inaccessible
 		v.background =
 			if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
 				this.context.resources.getDrawable(background, null)
@@ -74,9 +68,9 @@ private class DictionariesPreferenceAdapter(
 	}
 }
 
-private class DictionariesPreferenceModalListener(
+private class PathListPreferenceModalListener(
 	val list: ReorderableListView,
-	val adapter: DictionariesPreferenceAdapter
+	val adapter: PathListPreferenceAdapter
 ) :
 	MultiChoiceModeListener
 {
@@ -131,7 +125,7 @@ private class DictionariesPreferenceModalListener(
 
 	override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean
 	{
-		mode.menuInflater.inflate(R.menu.dictionaries_context, menu)
+		mode.menuInflater.inflate(R.menu.path_list_context, menu)
 		this.list.allowDragging = false
 		this.list.actionMode = mode
 		return true
@@ -146,46 +140,13 @@ private class DictionariesPreferenceModalListener(
 	override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean = false
 }
 
-class DictionaryAssetBrowser : AssetBrowser()
+
+abstract class PathListPreferenceFragment : PreferenceFragment()
 {
-	private val systemManager get() =
-		(this.application as DotterelApplication).systemManager
-
-	override fun onCreate(savedInstanceState: Bundle?)
-	{
-		super.onCreate(savedInstanceState)
-
-		this.setRoots(listOf(
-			AssetBrowserRoot(this.assets, "/dictionaries/"),
-			JsonTreeBrowserRoot(
-				JsonObject().also({ tree ->
-					for(path in this.systemManager.resources.codeDictionaries)
-					{
-						val segments = path.key.split("/")
-						if(segments.size > 1)
-							tree.set(segments, true)
-						else
-							tree.set(segments[0], true)
-					}
-				}),
-				"Code",
-				"code_dictionary",
-				"/")
-		))
-
-		this.navigate("asset:/dictionaries/")
-	}
-}
-
-private const val SELECT_DICTIONARY_FILE = 2
-private const val SELECT_ASSET_DICTIONARY_FILE = 3
-
-class DictionariesPreferenceFragment : PreferenceFragment()
-{
-	private var readOnly = true
-	private var view: ReorderableListView? = null
-	private var adapter: DictionariesPreferenceAdapter? = null
-	private val systemManager get() =
+	protected var readOnly = true
+	protected var view: ReorderableListView? = null
+	private var adapter: PathListPreferenceAdapter? = null
+	protected val systemManager get() =
 		(this.requireActivity().application as DotterelApplication)
 		.systemManager
 
@@ -207,7 +168,7 @@ class DictionariesPreferenceFragment : PreferenceFragment()
 
 		val view = inflater.inflate(R.layout.pref_dictionaries, container, false)
 
-		val adapter = DictionariesPreferenceAdapter(inflater.context)
+		val adapter = PathListPreferenceAdapter(inflater.context)
 
 		val listView = view.findViewById<ReorderableListView>(R.id.dictionaries)
 		listView.adapter = adapter
@@ -215,7 +176,7 @@ class DictionariesPreferenceFragment : PreferenceFragment()
 		{
 			listView.choiceMode = ListView.CHOICE_MODE_MULTIPLE_MODAL
 			listView.setMultiChoiceModeListener(
-				DictionariesPreferenceModalListener(listView, adapter))
+				PathListPreferenceModalListener(listView, adapter))
 		}
 		listView.allowDragging = !this.readOnly
 
@@ -243,91 +204,7 @@ class DictionariesPreferenceFragment : PreferenceFragment()
 		super.onPause()
 	}
 
-	private fun chooseAssetDictionaryFile()
-	{
-		val intent = Intent(this.requireContext(), DictionaryAssetBrowser::class.java)
-		intent.type = "*/*"
-		intent.addCategory(Intent.CATEGORY_OPENABLE)
-		intent.putExtra("initialPath", "asset:/dictionaries/")
-
-		try
-		{
-			this.startActivityForResult(
-				intent,
-				SELECT_ASSET_DICTIONARY_FILE)
-		}
-		catch(e: android.content.ActivityNotFoundException)
-		{
-			Toast.makeText(
-				this.requireContext(),
-				"Please install a File Manager.",
-				Toast.LENGTH_LONG
-			).show()
-		}
-	}
-
-	private fun chooseDictionaryFile()
-	{
-		val intent = Intent(
-			if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT)
-				Intent.ACTION_OPEN_DOCUMENT
-			else
-				Intent.ACTION_GET_CONTENT)
-		intent.type = "*/*"
-		intent.addCategory(Intent.CATEGORY_OPENABLE)
-		try
-		{
-			this.startActivityForResult(
-				Intent.createChooser(
-					intent,
-					"Select your .json dictionary file"),
-				SELECT_DICTIONARY_FILE)
-		}
-		catch(e: android.content.ActivityNotFoundException)
-		{
-			Toast.makeText(
-				this.requireContext(),
-				"Please install a File Manager.",
-				Toast.LENGTH_LONG
-			).show()
-		}
-	}
-
-	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?)
-	{
-		val uri = data?.data
-		if(uri != null)
-			when(requestCode)
-			{
-				SELECT_DICTIONARY_FILE ->
-					if(resultCode == PreferenceActivity.RESULT_OK)
-					{
-						if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
-							this.requireContext()
-								.contentResolver
-								.takePersistableUriPermission(
-									uri,
-									Intent.FLAG_GRANT_READ_URI_PERMISSION
-										or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-
-						this.add(uri.toString())
-						// A resume will occur immediately after this,
-						// which will reload the preference.
-						this.save()
-					}
-				SELECT_ASSET_DICTIONARY_FILE ->
-					if(resultCode == PreferenceActivity.RESULT_OK)
-					{
-						this.add(uri.toString())
-						// A resume will occur immediately after this,
-						// which will reload the preference.
-						this.save()
-					}
-			}
-		super.onActivityResult(requestCode, resultCode, data)
-	}
-
-	private fun reset()
+	fun reset()
 	{
 		if(this.readOnly)
 			return
@@ -339,18 +216,18 @@ class DictionariesPreferenceFragment : PreferenceFragment()
 		this.load()
 	}
 
-	private fun add(uri: String)
+	fun add(uri: String)
 	{
 		this.adapter?.also({
 			if(it.items.all({ dictionary -> dictionary.path != uri }))
 			{
-				it.items.add(DictionaryItem(uri, true))
+				it.items.add(PathItem(uri, true))
 				it.notifyDataSetChanged()
 			}
 		})
 	}
 
-	private fun save()
+	fun save()
 	{
 		if(this.readOnly)
 			return
@@ -368,16 +245,12 @@ class DictionariesPreferenceFragment : PreferenceFragment()
 			?.safePut(preference.key, dictionaries)
 	}
 
-	private fun load()
+	protected abstract fun isAccessible(path: String): Boolean
+
+	open fun load()
 	{
 		val preference = this.preference!!
 		val dataStore = (preference.preferenceDataStore as? JsonDataStore)
-		val keyLayout = dataStore
-			?.safeGet(
-				"keyLayout",
-				EMPTY_KEY_LAYOUT,
-				{ KeyLayout(it.asObject()) })
-			?: EMPTY_KEY_LAYOUT
 		val dictionaries = dataStore
 			?.safeGet(
 				preference.key,
@@ -387,10 +260,10 @@ class DictionariesPreferenceFragment : PreferenceFragment()
 						.map({ it.asObject() })
 						.map({
 							val path = it.get("path").asString()
-							DictionaryItem(
+							PathItem(
 								path,
 								it.get("enabled").asBoolean(),
-								this.systemManager.openDictionary(keyLayout, path) != null)
+								this.isAccessible(path))
 						})
 				})
 			?: listOf()
@@ -399,38 +272,4 @@ class DictionariesPreferenceFragment : PreferenceFragment()
 		this.adapter?.addAll(dictionaries)
 		this.adapter?.notifyDataSetChanged()
 	}
-
-	override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater)
-	{
-		inflater.inflate(R.menu.dictionaries, menu)
-
-		if(this.readOnly)
-		{
-			menu.findItem(R.id.add_asset_dictionary).isEnabled = false
-			menu.findItem(R.id.add_dictionary).isEnabled = false
-			menu.findItem(R.id.reset_dictionaries).isEnabled = false
-		}
-	}
-
-	override fun onOptionsItemSelected(item: MenuItem): Boolean =
-		when(item.itemId)
-		{
-			R.id.add_asset_dictionary ->
-			{
-				this.chooseAssetDictionaryFile()
-				true
-			}
-			R.id.add_dictionary ->
-			{
-				this.chooseDictionaryFile()
-				true
-			}
-			R.id.reset_dictionaries ->
-			{
-				this.reset()
-				this.view?.actionMode?.finish()
-				true
-			}
-			else -> super.onOptionsItemSelected(item)
-		}
 }

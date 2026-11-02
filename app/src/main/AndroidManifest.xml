@@ -50,6 +50,9 @@
 		<activity
 			android:name=".DictionaryAssetBrowser"
 			android:label="@string/app_name" />
+		<activity
+			android:name=".OrthographyAssetBrowser"
+			android:label="@string/app_name" />
 
 	</application>
 
