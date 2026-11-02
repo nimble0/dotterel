@@ -7,45 +7,57 @@ import com.eclipsesource.json.Json
 
 import java.io.InputStream
 
+import kotlin.math.min
+
 import nimble.dotterel.translation.FileParseException
 import nimble.dotterel.translation.Orthography
 import nimble.dotterel.util.mapValues
 
+private val LAST_WORD_PATTERN = Regex("(?:[0-9]+[.,][0-9]+|['\\w]+[-\\w']*|[^\\w\\s]+)$")
+
 class RegexWithWordListOrthography(
-	var replacements: List<Replacement>,
-	var suffixAliases: Map<String, String>,
-	var wordList: Map<String, Int>
+	val replacements: List<Replacement>,
+	val suffixAliases: Map<String, String>,
+	wordList: Map<String, Int>
 ) : Orthography
 {
+	val wordList: Map<String, Int> = wordList.let({ wordList ->
+		val result = mutableMapOf<String, Int>()
+		for(kv in wordList)
+		{
+			val k = kv.key.lowercase()
+			result[k] = min(result[k] ?: Int.MAX_VALUE, kv.value)
+		}
+		result
+	})
+
 	data class Replacement(val pattern: Regex, var replacement: String)
 
 	override fun match(a: String, b: String): Orthography.Result?
 	{
+		val lastWord = LAST_WORD_PATTERN.find(a)?.value ?: ""
+		val simpleJoin = lastWord + b
 		// uffff is an non-character (shouldn't appear in any real unicode strings)
-		val s = a + '\uffff' + b
-
-		val leftWordPattern = Regex("(\\S*)$")
-		val simpleJoin = leftWordPattern.find(a)?.value + b
+		val patternJoin = lastWord + '\uffff' + b
 
 		val candidates = (
 			listOfNotNull(
-				if(simpleJoin in this.wordList)
-					Orthography.Result(a.length, simpleJoin)
+				if(simpleJoin.lowercase() in this.wordList)
+					Orthography.Result(lastWord.length, simpleJoin)
 				else
 					null,
 				this.suffixAliases[b]?.let({ this.match(a, it) })
 			)
 			+ this.replacements.mapNotNull({
-				val match = it.pattern.find(s)
-				if(match != null)
+				if(it.pattern.matches(patternJoin))
 					Orthography.Result(
-						a.length - match.range.start,
-						it.pattern.replace(s, it.replacement).substring(match.range.start))
+						lastWord.length,
+						it.pattern.replaceFirst(patternJoin, it.replacement))
 				else
 					null
 			}))
 
-		return candidates.minByOrNull({ this.wordList[it.text] ?: Int.MAX_VALUE })
+		return candidates.minByOrNull({ this.wordList[it.text.lowercase()] ?: Int.MAX_VALUE })
 	}
 
 	companion object

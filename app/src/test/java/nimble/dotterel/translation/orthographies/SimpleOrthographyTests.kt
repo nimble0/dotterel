@@ -27,7 +27,7 @@ class SimpleOrthographyTests : FunSpec
 
 		replacements.apply("nation", "al") shouldBe "national"
 		replacements.apply("ton", "al") shouldBe "tonal"
-		replacements.apply("ton", "ase")shouldBe "tonnase"
+		replacements.apply("ton", "ase") shouldBe "tonnase"
 		replacements.apply("nation", "ale") shouldBe "nationale"
 		replacements.apply("ration", "ala") shouldBe "rationalla"
 		replacements.apply("yon", "el") shouldBe null
@@ -37,5 +37,7 @@ class SimpleOrthographyTests : FunSpec
 		replacements.apply("glub", "it") shouldBe "glubiit"
 
 		replacements.apply("Nation", "aL") shouldBe "NationaL"
+
+		replacements.testUnmatchedInvariance()
 	}
 })
